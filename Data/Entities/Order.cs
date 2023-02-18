@@ -17,6 +17,10 @@ public partial class Order
 
     public bool IsPaid { get; set; }
 
+    public string Status { get; set; } = null!;
+
+    public string? Description { get; set; }
+
     public virtual Customer Customer { get; set; } = null!;
 
     public virtual ICollection<ExpensesIncurred> ExpensesIncurreds { get; } = new List<ExpensesIncurred>();

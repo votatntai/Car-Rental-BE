@@ -11,6 +11,8 @@ public partial class Image
 
     public string Type { get; set; } = null!;
 
+    public Guid? ShowroomId { get; set; }
+
     public Guid? CarId { get; set; }
 
     public Guid? CarRegistrationId { get; set; }
@@ -22,4 +24,6 @@ public partial class Image
     public virtual CarRegistration? CarRegistration { get; set; }
 
     public virtual ExpensesIncurred? ExpensesIncurred { get; set; }
+
+    public virtual Showroom? Showroom { get; set; }
 }

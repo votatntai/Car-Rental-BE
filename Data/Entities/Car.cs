@@ -37,6 +37,8 @@ public partial class Car
 
     public double? Star { get; set; }
 
+    public string Status { get; set; } = null!;
+
     public virtual ICollection<Calendar> Calendars { get; } = new List<Calendar>();
 
     public virtual ICollection<CarFeature> CarFeatures { get; } = new List<CarFeature>();

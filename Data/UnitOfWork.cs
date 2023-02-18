@@ -10,7 +10,10 @@ namespace Data
 
         private IAccountRepository _account = null!;
         private IUserRepository _user = null!;
-
+        private IWalletRepository _wallet = null!;
+        private ICarOwnerRepository _carOwner = null!;
+        private IDriverRepository _driver = null!;
+        private ICustomerRepository _customer = null!;
 
         public UnitOfWork(CarRentalContext context)
         {
@@ -24,6 +27,23 @@ namespace Data
         public IUserRepository User
         {
             get { return _user ??= new UserRepository(_context); }
+        }
+        public IWalletRepository Wallet
+        {
+            get { return _wallet ??= new WalletRepository(_context); }
+        }
+
+        public ICarOwnerRepository CarOwner
+        {
+            get { return _carOwner ??= new CarOwnerRepository(_context); }
+        }
+        public IDriverRepository Driver
+        {
+            get { return _driver ??= new DriverRepository(_context); }
+        }
+        public ICustomerRepository Customer
+        {
+            get { return _customer ??= new CustomerRepository(_context); }
         }
 
         public async Task<int> SaveChanges()

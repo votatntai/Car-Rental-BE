@@ -17,11 +17,18 @@ Create Table Wallet(
 	Status nvarchar(256) not null
 )
 Go
+Create Table [Location](
+	Id uniqueidentifier primary key,
+	Longitude varchar(256) not null,
+	Latitude varchar(256) not null
+)
+Go
 Create Table Customer(
 	Id uniqueidentifier primary key,
 	Name nvarchar(256) not null,
 	Address nvarchar(256),
-	Phone varchar(256) not null,
+	Phone varchar(256) not null unique,
+	Gender nvarchar(256) not null,
 	AvartarUrl nvarchar(max),
 	BankAccountNumber nvarchar(256),
 	BankName nvarchar(256),
@@ -33,7 +40,8 @@ Create Table CarOwner(
 	Id uniqueidentifier primary key,
 	Name nvarchar(256) not null,
 	Address nvarchar(256),
-	Phone varchar(256) not null,
+	Phone varchar(256) not null unique,
+	Gender nvarchar(256) not null,
 	AvartarUrl nvarchar(max),
 	BankAccountNumber nvarchar(256),
 	BankName nvarchar(256),
@@ -45,35 +53,40 @@ Create Table Driver(
 	Id uniqueidentifier primary key,
 	Name nvarchar(256) not null,
 	Address nvarchar(256),
-	Phone varchar(256) not null,
+	Phone varchar(256) not null unique,
+	Gender nvarchar(256) not null,
 	AvartarUrl nvarchar(max),
 	Star float,
 	BankAccountNumber nvarchar(256),
 	BankName nvarchar(256),
 	AccountId uniqueidentifier foreign key references Account(Id) not null,
 	WalletId uniqueidentifier foreign key references Wallet(Id) not null,
+	LocationId uniqueidentifier foreign key references [Location](Id),
+	Status nvarchar(256) not null
 )
 Go
 Create Table [User](
 	Id uniqueidentifier primary key,
 	Name nvarchar(256) not null,
-	Phone varchar(256) not null,
+	Phone varchar(256) not null unique,
+	Gender nvarchar(256) not null,
 	AvartarUrl nvarchar(max),
 	Role nvarchar(256) not null,
 	AccountId uniqueidentifier foreign key references Account(Id) not null,
 	WalletId uniqueidentifier foreign key references Wallet(Id) not null,
 )
 Go
+Create Table Showroom(
+	Id uniqueidentifier primary key,
+	Name nvarchar(256) not null,
+	Description nvarchar(max),
+	LocationId uniqueidentifier foreign key references [Location](Id),
+)
+Go
 Create Table ProductionCompany(
 	Id uniqueidentifier primary key,
 	Name nvarchar(256) not null,
 	Description nvarchar(max),
-)
-Go
-Create Table [Location](
-	Id uniqueidentifier primary key,
-	Longitude varchar(256) not null,
-	Latitude varchar(256) not null
 )
 Go
 Create Table [Route](
@@ -100,6 +113,7 @@ Create Table Car(
 	RouteId uniqueidentifier foreign key references [Route](Id),
 	Rented int not null default 0,
 	Star float,
+	Status nvarchar(256) not null,
 )
 Go
 Create Table Feature(
@@ -191,6 +205,8 @@ Create Table [Order](
 	Amount float not null,
 	PromotionId uniqueidentifier foreign key references Promotion(Id),
 	IsPaid bit not null default 0,
+	Status nvarchar(256) not null,
+	Description nvarchar(max)
 )
 Go
 Create Table OrderDetail(
@@ -214,6 +230,7 @@ Create Table [Image](
 	Id uniqueidentifier primary key,
 	Url nvarchar(256) not null,
 	Type nvarchar(256) not null,
+	ShowroomId uniqueidentifier foreign key references Showroom(Id),
 	CarId uniqueidentifier foreign key references Car(Id),
 	CarRegistrationId uniqueidentifier foreign key references CarRegistration(Id),
 	ExpensesIncurredId uniqueidentifier foreign key references ExpensesIncurred(Id),
