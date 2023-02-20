@@ -45,21 +45,35 @@ namespace Service.Implementations
 
         public async Task<CarOwnerViewModel> CreateCarOwner(CarOwnerCreateModel model)
         {
-            var accountId = await CreateAccount(model.Username, model.Password);
-            var walletId = await CreateWallet();
+            var result = 0;
             var id = Guid.NewGuid();
-            var carOwner = new CarOwner
+            using (var transaction = _unitOfWork.Transaction())
             {
-                Id = id,
-                Address = model.Address,
-                Gender = model.Gender,
-                Name = model.Name,
-                Phone = model.Phone,
-                AccountId =accountId,
-                WalletId= walletId,
+                try
+                {
+                    var accountId = await CreateAccount(model.Username, model.Password);
+                    var walletId = await CreateWallet();
+
+                    var carOwner = new CarOwner
+                    {
+                        Id = id,
+                        Address = model.Address,
+                        Gender = model.Gender,
+                        Name = model.Name,
+                        Phone = model.Phone,
+                        AccountId = accountId,
+                        WalletId = walletId,
+                    };
+                    _carOwnerRepository.Add(carOwner);
+                    result = await _unitOfWork.SaveChanges();
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
             };
-            _carOwnerRepository.Add(carOwner);
-            var result = await _unitOfWork.SaveChanges();
             return result > 0 ? await GetCarOwner(id) : null!;
         }
 

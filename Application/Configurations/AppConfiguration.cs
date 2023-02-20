@@ -12,6 +12,8 @@ namespace Application.Configurations
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IDriverService, DriverService>();
+            services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<ICarOwnerService, CarOwnerService>();
 
             services.AddTransient<IUnitOfWork, UnitOfWork>();
         }

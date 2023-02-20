@@ -2,6 +2,7 @@
 using Data.Entities;
 using Data.Models.Create;
 using Data.Models.Views;
+using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
@@ -45,21 +46,34 @@ namespace Service.Implementations
 
         public async Task<UserViewModel> CreateManager(UserCreateModel model)
         {
-            var accountId = await CreateAccount(model.Username, model.Password);
-            var walletId = await CreateWallet();
+            var result = 0;
             var id = Guid.NewGuid();
-            var user = new User
+            using (var transaction = _unitOfWork.Transaction())
             {
-                Id = id,
-                Gender = model.Gender,
-                Name = model.Name,
-                Phone = model.Phone,
-                Role = UserRole.Manager.ToString(),
-                AccountId = accountId,
-                WalletId = walletId,
+                try
+                {
+                    var accountId = await CreateAccount(model.Username, model.Password);
+                    var walletId = await CreateWallet();
+
+                    var user = new User
+                    {
+                        Id = id,
+                        Gender = model.Gender,
+                        Name = model.Name,
+                        Phone = model.Phone,
+                        AccountId = accountId,
+                        WalletId = walletId,
+                    };
+                    _userRepository.Add(user);
+                    result = await _unitOfWork.SaveChanges();
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
             };
-            _userRepository.Add(user);
-            var result = await _unitOfWork.SaveChanges();
             return result > 0 ? await GetUser(id) : null!;
         }
 

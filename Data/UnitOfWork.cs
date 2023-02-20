@@ -1,6 +1,7 @@
 ﻿using Data.Entities;
 using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Data
 {
@@ -49,6 +50,11 @@ namespace Data
         public async Task<int> SaveChanges()
         {
             return await _context.SaveChangesAsync();
+        }
+
+        public IDbContextTransaction Transaction()
+        {
+            return _context.Database.BeginTransaction();
         }
     }
 }

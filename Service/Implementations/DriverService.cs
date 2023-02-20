@@ -2,6 +2,7 @@
 using Data.Entities;
 using Data.Models.Create;
 using Data.Models.Views;
+using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
@@ -53,22 +54,35 @@ namespace Service.Implementations
 
         public async Task<DriverViewModel> CreateDriver(DriverCreateModel model)
         {
-            var accountId = await CreateAccount(model.Username, model.Password);
-            var walletId = await CreateWallet();
+            var result = 0;
             var id = Guid.NewGuid();
-            var driver = new Driver
+            using (var transaction = _unitOfWork.Transaction())
             {
-                Id = id,
-                Address = model.Address,
-                Gender = model.Gender,
-                Name = model.Name,
-                Phone = model.Phone,
-                AccountId = accountId,
-                WalletId = walletId,
-                Status = DriverStatus.Idle.ToString(),
+                try
+                {
+                    var accountId = await CreateAccount(model.Username, model.Password);
+                    var walletId = await CreateWallet();
+
+                    var driver = new Driver
+                    {
+                        Id = id,
+                        Address = model.Address,
+                        Gender = model.Gender,
+                        Name = model.Name,
+                        Phone = model.Phone,
+                        AccountId = accountId,
+                        WalletId = walletId,
+                    };
+                    _driverRepository.Add(driver);
+                    result = await _unitOfWork.SaveChanges();
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
             };
-            _driverRepository.Add(driver);
-            var result = await _unitOfWork.SaveChanges();
             return result > 0 ? await GetDriver(id) : null!;
         }
 

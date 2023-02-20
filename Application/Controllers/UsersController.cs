@@ -1,6 +1,7 @@
 ﻿using Data.Models.Create;
 using Data.Models.Views;
 using Microsoft.AspNetCore.Mvc;
+using Service.Implementations;
 using Service.Interfaces;
 
 namespace Application.Controllers
@@ -32,8 +33,15 @@ namespace Application.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<UserViewModel>> CreateManager([FromBody] UserCreateModel model)
         {
-            var user = await _userService.CreateManager(model);
-            return user != null ? Ok(user) : BadRequest();
+            try
+            {
+                var user = await _userService.CreateManager(model);
+                return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, e.InnerException != null ? e.InnerException.Message : e.Message);
+            }
         }
 
     }
