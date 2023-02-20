@@ -1,4 +1,5 @@
-﻿using Data;
+﻿using Application.Configurations.Middleware;
+using Data;
 using Microsoft.OpenApi.Models;
 using Service.Implementations;
 using Service.Interfaces;
@@ -52,7 +53,7 @@ namespace Application.Configurations
         }
         public static void UseJwt(this IApplicationBuilder app)
         {
-            //app.UseMiddleware<JwtMiddleware>();
+            app.UseMiddleware<JwtMiddleware>();
         }
     }
 }

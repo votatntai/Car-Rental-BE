@@ -63,6 +63,7 @@ namespace Service.Implementations
                         Phone = model.Phone,
                         AccountId = accountId,
                         WalletId = walletId,
+                        Role = UserRole.Manager.ToString()
                     };
                     _userRepository.Add(user);
                     result = await _unitOfWork.SaveChanges();

@@ -3,6 +3,9 @@
     public enum UserRole
     {
         Admin,
-        Manager
+        Manager,
+        Customer,
+        Driver,
+        CarOwner
     }
 }

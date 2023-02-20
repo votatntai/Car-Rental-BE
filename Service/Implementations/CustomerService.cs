@@ -81,7 +81,9 @@ namespace Service.Implementations
 
         public async Task<CustomerViewModel> UpdateCustomer(Guid id, CustomerUpdateModel model)
         {
-            var customer = await _customerRepository.GetMany(customer => customer.Id.Equals(id)).FirstOrDefaultAsync();
+            var customer = await _customerRepository.GetMany(customer => customer.Id.Equals(id))
+                .Include(customer => customer.Account)
+                .FirstOrDefaultAsync();
             if(customer != null)
             {
                 if(model.Name != null) customer.Name = model.Name;
@@ -90,6 +92,7 @@ namespace Service.Implementations
                 if (model.BankName != null) customer.BankName = model.BankName;
                 if (model.BankAccountNumber != null) customer.BankAccountNumber = model.BankAccountNumber;
                 if (model.Phone != null) customer.Phone = model.Phone;
+                if (model.Password != null) customer.Account.Password= model.Password;
                 _customerRepository.Update(customer);
                 var result = await _unitOfWork.SaveChanges();
                 return await GetCustomer(id);

@@ -13,5 +13,7 @@
         public string? BankAccountNumber { get; set; }
 
         public string? BankName { get; set; }
+
+        public string? Password { get; set; }
     }
 }

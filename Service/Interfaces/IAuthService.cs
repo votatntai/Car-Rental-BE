@@ -5,7 +5,10 @@ namespace Service.Interfaces
 {
     public interface IAuthService
     {
-        Task<AuthViewModel> AuthenticatedUser(AuthRequestModel model);
-        Task<AuthViewModel> GetUserById(Guid id);
+        Task<AuthViewModel> AuthById(Guid id);
+        Task<TokenViewModel> AuthenticatedUser(AuthRequestModel model);
+        Task<UserViewModel> GetUserById(Guid id);
+        Task<TokenViewModel> AuthenticatedCustomer(AuthRequestModel model);
+        Task<CustomerViewModel> GetCustomerById(Guid id);
     }
 }
