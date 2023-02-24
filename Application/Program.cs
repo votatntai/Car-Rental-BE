@@ -37,6 +37,7 @@ app.UseCors(x => x
 // Configure the HTTP request pipeline.
 
 app.UseSwagger();
+
 app.UseSwaggerUI();
 
 app.UseJwt();

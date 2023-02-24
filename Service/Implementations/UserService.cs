@@ -1,8 +1,9 @@
 ﻿using Data;
 using Data.Entities;
 using Data.Models.Create;
+using Data.Models.Get;
+using Data.Models.Update;
 using Data.Models.Views;
-using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
@@ -25,22 +26,59 @@ namespace Service.Implementations
 
         // PUBLIC METHODS
 
+        public async Task<ListViewModel<UserViewModel>> GetUsers(UserFilterModel filter, PaginationRequestModel pagination)
+        {
+            var query = _userRepository.GetMany(user => filter.Name != null ? user.Name.Contains(filter.Name) : true
+            && user.Role.Equals(UserRole.Manager.ToString()))
+                .Select(user => new UserViewModel
+                {
+                    Id = user.Id,
+                    Gender = user.Gender,
+                    Name = user.Name,
+                    AvartarUrl = user.AvartarUrl,
+                    Phone = user.Phone,
+                    Role = user.Role,
+                    Wallet = new WalletViewModel
+                    {
+                        Id = user.Wallet.Id,
+                        Balance = user.Wallet.Balance,
+                        Status = user.Wallet.Status
+                    }
+                });
+            var users = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
+            var totalRow = await query.AsNoTracking().CountAsync();
+            if (users != null || users != null && users.Any())
+            {
+                return new ListViewModel<UserViewModel>
+                {
+                    Pagination = new PaginationViewModel
+                    {
+                        PageNumber = pagination.PageNumber,
+                        PageSize = pagination.PageSize,
+                        TotalRow = totalRow
+                    },
+                    Data = users
+                };
+            }
+            return null!;
+        }
+
         public async Task<UserViewModel> GetUser(Guid id)
         {
             return await _userRepository.GetMany(user => user.Id.Equals(id)).Select(user => new UserViewModel
             {
                 Id = user.Id,
                 Gender = user.Gender,
-                 Name =user.Name,
-                 AvartarUrl = user.AvartarUrl,
-                 Phone = user.Phone,
-                 Role = user.Role,
-                 Wallet = new WalletViewModel
-                 {
-                     Id = user.Wallet.Id,
-                     Balance = user.Wallet.Balance,
-                     Status = user.Wallet.Status
-                 }
+                Name = user.Name,
+                AvartarUrl = user.AvartarUrl,
+                Phone = user.Phone,
+                Role = user.Role,
+                Wallet = new WalletViewModel
+                {
+                    Id = user.Wallet.Id,
+                    Balance = user.Wallet.Balance,
+                    Status = user.Wallet.Status
+                }
             }).FirstOrDefaultAsync() ?? null!;
         }
 
@@ -76,6 +114,23 @@ namespace Service.Implementations
                 }
             };
             return result > 0 ? await GetUser(id) : null!;
+        }
+
+        public async Task<UserViewModel> UpdateUser(Guid id, UserUpdateModel model)
+        {
+            var user = await _userRepository.GetMany(user => user.Id.Equals(id)).Include(user => user.Account).FirstOrDefaultAsync();
+            if (user != null)
+            {
+                if (model.Name != null) user.Name = model.Name;
+                if (model.Gender != null) user.Gender = model.Gender;
+                if (model.Phone != null) user.Phone = model.Phone;
+                if (model.Password != null) user.Account.Password = model.Password;
+                if (model.Status != null) user.Account.Status = (bool)model.Status;
+                _userRepository.Update(user);
+                var result = await _unitOfWork.SaveChanges();
+                return result > 0 ? await GetUser(id) : null!;
+            }
+            return null!;
         }
 
         // PRIVATE METHODS

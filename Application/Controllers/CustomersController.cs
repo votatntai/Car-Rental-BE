@@ -1,9 +1,9 @@
 ﻿using Data.Models.Create;
+using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
-using System;
 
 namespace Application.Controllers
 {
@@ -16,6 +16,15 @@ namespace Application.Controllers
         public CustomersController(ICustomerService customerService)
         {
             _customerService = customerService;
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ListViewModel<CustomerViewModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ListViewModel<CustomerViewModel>>> GetCustomers([FromQuery] CustomerFilterModel filter, [FromQuery] PaginationRequestModel pagination)
+        {
+            var customer = await _customerService.GetCustomers(filter, pagination);
+            return customer != null ? Ok(customer) : BadRequest();
         }
 
         [Route("{id}")]

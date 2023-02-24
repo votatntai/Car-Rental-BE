@@ -20,6 +20,7 @@ namespace Service.Implementations
     {
         private readonly IUserRepository _userRepository;
         private readonly IDriverRepository _driverRepository;
+        private readonly ICarOwnerRepository _carOwnerRepository;
         private readonly ICustomerRepository _customerRepository;
 
         private readonly AppSetting _appSettings;
@@ -28,6 +29,7 @@ namespace Service.Implementations
         {
             _appSettings = appSettings.Value;
             _userRepository = unitOfWork.User;
+            _carOwnerRepository = unitOfWork.CarOwner;
             _driverRepository = unitOfWork.Driver;
             _customerRepository = unitOfWork.Customer;
         }
@@ -64,6 +66,48 @@ namespace Service.Implementations
                 {
                     Id = user.Id,
                     Role = UserRole.Customer.ToString(),
+                    Status = user.Account.Status
+                });
+                return new TokenViewModel
+                {
+                    Token = token
+                };
+            }
+            return null!;
+        }
+
+        public async Task<TokenViewModel> AuthenticatedDriver(AuthRequestModel model)
+        {
+            var user = await _driverRepository.GetMany(user => user.Account.Username.Equals(model.Username) && user.Account.Password.Equals(model.Password))
+                .Include(user => user.Account)
+                .FirstOrDefaultAsync();
+            if (user != null)
+            {
+                var token = GenerateJwtToken(new AuthViewModel
+                {
+                    Id = user.Id,
+                    Role = UserRole.Driver.ToString(),
+                    Status = user.Account.Status
+                });
+                return new TokenViewModel
+                {
+                    Token = token
+                };
+            }
+            return null!;
+        }
+
+        public async Task<TokenViewModel> AuthenticatedCarOwner(AuthRequestModel model)
+        {
+            var user = await _carOwnerRepository.GetMany(user => user.Account.Username.Equals(model.Username) && user.Account.Password.Equals(model.Password))
+                .Include(user => user.Account)
+                .FirstOrDefaultAsync();
+            if (user != null)
+            {
+                var token = GenerateJwtToken(new AuthViewModel
+                {
+                    Id = user.Id,
+                    Role = UserRole.Driver.ToString(),
                     Status = user.Account.Status
                 });
                 return new TokenViewModel
@@ -129,6 +173,71 @@ namespace Service.Implementations
             }
             return null!;
         }
+        public async Task<DriverViewModel> GetDriverById(Guid id)
+        {
+            var driver = await _driverRepository.GetMany(driver => driver.Id.Equals(id))
+                .Include(driver => driver.Account)
+                .Include(driver => driver.Wallet)
+                .FirstOrDefaultAsync();
+            if (driver != null)
+            {
+                return new DriverViewModel
+                {
+                    Id = driver.Id,
+                    Name = driver.Name,
+                    Phone = driver.Phone,
+                    AvartarUrl = driver.AvartarUrl,
+                    Gender = driver.Gender,
+                    Address = driver.Address,
+                    BankAccountNumber = driver.BankAccountNumber,
+                    BankName = driver.BankName,
+                    Wallet = new WalletViewModel
+                    {
+                        Id = driver.Wallet.Id,
+                        Balance = driver.Wallet.Balance,
+                        Status = driver.Wallet.Status
+                    },
+                    Star = driver.Star,
+                    Location = driver.Location != null ? new LocationViewModel
+                    {
+                        Id = driver.Location.Id,
+                        Latitude = driver.Location.Latitude,
+                        Longitude = driver.Location.Longitude,
+                    } : null!,
+                };
+            }
+            return null!;
+        }
+
+        public async Task<CarOwnerViewModel> GetCarOwnerById(Guid id)
+        {
+            var carOwner = await _carOwnerRepository.GetMany(carOwner => carOwner.Id.Equals(id))
+                .Include(carOwner => carOwner.Account)
+                .Include(carOwner => carOwner.Wallet)
+                .FirstOrDefaultAsync();
+            if (carOwner != null)
+            {
+                return new CarOwnerViewModel
+                {
+                    Id = carOwner.Id,
+                    Name = carOwner.Name,
+                    Phone = carOwner.Phone,
+                    AvartarUrl = carOwner.AvartarUrl,
+                    Gender = carOwner.Gender,
+                    Address = carOwner.Address,
+                    BankAccountNumber = carOwner.BankAccountNumber,
+                    BankName = carOwner.BankName,
+                    Wallet = new WalletViewModel
+                    {
+                        Id = carOwner.Wallet.Id,
+                        Balance = carOwner.Wallet.Balance,
+                        Status = carOwner.Wallet.Status
+                    },
+                };
+            }
+            return null!;
+        }
+
 
         public async Task<AuthViewModel>AuthById(Guid id)
         {
@@ -148,6 +257,15 @@ namespace Service.Implementations
                     Id = driver.Id,
                     Role = UserRole.Customer.ToString(),
                     Status = driver.Account.Status
+                }).FirstOrDefaultAsync() ?? null!;
+            }
+            if (_carOwnerRepository.Any(carOwner => carOwner.Id.Equals(id)))
+            {
+                return await _carOwnerRepository.GetMany(carOwner => carOwner.Id.Equals(id)).Select(carOwner => new AuthViewModel
+                {
+                    Id = carOwner.Id,
+                    Role = UserRole.Customer.ToString(),
+                    Status = carOwner.Account.Status
                 }).FirstOrDefaultAsync() ?? null!;
             }
             if (_userRepository.Any(user => user.Id.Equals(id)))

@@ -1,8 +1,9 @@
 ﻿using Data;
 using Data.Entities;
 using Data.Models.Create;
+using Data.Models.Get;
+using Data.Models.Update;
 using Data.Models.Views;
-using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
@@ -21,6 +22,52 @@ namespace Service.Implementations
             _driverRepository = unitOfWork.Driver;
             _accountRepository = unitOfWork.Account;
             _walletRepository = unitOfWork.Wallet;
+        }
+
+        public async Task<ListViewModel<DriverViewModel>> GetDrivers(DriverFilterModel filter, PaginationRequestModel pagination)
+        {
+            var query = _driverRepository.GetMany(driver => filter.Name != null ? driver.Name.Contains(filter.Name) : true)
+                .Select(driver => new DriverViewModel
+                {
+                    Id = driver.Id,
+                    Gender = driver.Gender,
+                    Name = driver.Name,
+                    AvartarUrl = driver.AvartarUrl,
+                    Phone = driver.Phone,
+                    Wallet = new WalletViewModel
+                    {
+                        Id = driver.Wallet.Id,
+                        Balance = driver.Wallet.Balance,
+                        Status = driver.Wallet.Status
+                    },
+                    Address= driver.Address,
+                    BankAccountNumber= driver.BankAccountNumber,
+                    BankName= driver.BankName,
+                    Star = driver.Star,
+                    Location = driver.Location != null ? new LocationViewModel
+                    {
+                        Id = driver.Location.Id,
+                        Latitude= driver.Location.Latitude,
+                        Longitude= driver.Location.Longitude,
+                    }: null!,
+                    Status= driver.Status,
+                });
+            var drivers = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
+            var totalRow = await query.AsNoTracking().CountAsync();
+            if (drivers != null || drivers != null && drivers.Any())
+            {
+                return new ListViewModel<DriverViewModel>
+                {
+                    Pagination = new PaginationViewModel
+                    {
+                        PageNumber = pagination.PageNumber,
+                        PageSize = pagination.PageSize,
+                        TotalRow = totalRow
+                    },
+                    Data = drivers
+                };
+            }
+            return null!;
         }
 
         public async Task<DriverViewModel> GetDriver(Guid id)
@@ -72,6 +119,7 @@ namespace Service.Implementations
                         Phone = model.Phone,
                         AccountId = accountId,
                         WalletId = walletId,
+                        Status = DriverStatus.Idle.ToString(),
                     };
                     _driverRepository.Add(driver);
                     result = await _unitOfWork.SaveChanges();
@@ -84,6 +132,27 @@ namespace Service.Implementations
                 }
             };
             return result > 0 ? await GetDriver(id) : null!;
+        }
+
+        public async Task<DriverViewModel> UpdateDriver(Guid id, DriverUpdateModel model)
+        {
+            var driver = await _driverRepository.GetMany(driver => driver.Id.Equals(id))
+                .Include(driver => driver.Account)
+                .FirstOrDefaultAsync();
+            if (driver != null)
+            {
+                if (model.Name != null) driver.Name = model.Name;
+                if (model.Address != null) driver.Address = model.Address;
+                if (model.Gender != null) driver.Gender = model.Gender;
+                if (model.BankName != null) driver.BankName = model.BankName;
+                if (model.BankAccountNumber != null) driver.BankAccountNumber = model.BankAccountNumber;
+                if (model.Phone != null) driver.Phone = model.Phone;
+                if (model.Password != null) driver.Account.Password = model.Password;
+                _driverRepository.Update(driver);
+                var result = await _unitOfWork.SaveChanges();
+                return await GetDriver(id);
+            }
+            return null!;
         }
 
         // PRIVATE METHODS

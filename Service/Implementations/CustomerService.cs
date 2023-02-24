@@ -1,12 +1,13 @@
 ﻿using Data;
 using Data.Entities;
 using Data.Models.Create;
+using Data.Models.Get;
+using Data.Models.Update;
 using Data.Models.Views;
 using Data.Repositories.Interfaces;
-using Service.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Service.Interfaces;
 using Utility.Constants;
-using Data.Models.Update;
 
 namespace Service.Implementations
 {
@@ -16,11 +17,51 @@ namespace Service.Implementations
         private readonly IAccountRepository _accountRepository;
         private readonly IWalletRepository _walletRepository;
 
-        public CustomerService(IUnitOfWork unitOfWork, CarRentalContext context) : base(unitOfWork)
+        public CustomerService(IUnitOfWork unitOfWork) : base(unitOfWork)
         {
             _customerRepository = unitOfWork.Customer;
             _accountRepository = unitOfWork.Account;
             _walletRepository = unitOfWork.Wallet;
+        }
+
+        // PUBLIC METHOD
+
+        public async Task<ListViewModel<CustomerViewModel>> GetCustomers(CustomerFilterModel filter, PaginationRequestModel pagination)
+        {
+            var query = _customerRepository.GetMany(customer => filter.Name != null ? customer.Name.Contains(filter.Name) : true)
+                .Select(customer => new CustomerViewModel
+                {
+                    Id = customer.Id,
+                    Gender = customer.Gender,
+                    Name = customer.Name,
+                    AvartarUrl = customer.AvartarUrl,
+                    Phone = customer.Phone,
+                    Wallet = new WalletViewModel
+                    {
+                        Id = customer.Wallet.Id,
+                        Balance = customer.Wallet.Balance,
+                        Status = customer.Wallet.Status
+                    },
+                    BankName = customer.BankName,
+                    BankAccountNumber = customer.BankAccountNumber,
+                    Address = customer.Address
+                });
+            var customers = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
+            var totalRow = await query.AsNoTracking().CountAsync();
+            if (customers != null || customers != null && customers.Any())
+            {
+                return new ListViewModel<CustomerViewModel>
+                {
+                    Pagination = new PaginationViewModel
+                    {
+                        PageNumber = pagination.PageNumber,
+                        PageSize = pagination.PageSize,
+                        TotalRow = totalRow
+                    },
+                    Data = customers
+                };
+            }
+            return null!;
         }
 
         public async Task<CustomerViewModel> GetCustomer(Guid id)
@@ -84,15 +125,15 @@ namespace Service.Implementations
             var customer = await _customerRepository.GetMany(customer => customer.Id.Equals(id))
                 .Include(customer => customer.Account)
                 .FirstOrDefaultAsync();
-            if(customer != null)
+            if (customer != null)
             {
-                if(model.Name != null) customer.Name = model.Name;
-                if(model.Address != null) customer.Address = model.Address;
+                if (model.Name != null) customer.Name = model.Name;
+                if (model.Address != null) customer.Address = model.Address;
                 if (model.Gender != null) customer.Gender = model.Gender;
                 if (model.BankName != null) customer.BankName = model.BankName;
                 if (model.BankAccountNumber != null) customer.BankAccountNumber = model.BankAccountNumber;
                 if (model.Phone != null) customer.Phone = model.Phone;
-                if (model.Password != null) customer.Account.Password= model.Password;
+                if (model.Password != null) customer.Account.Password = model.Password;
                 _customerRepository.Update(customer);
                 var result = await _unitOfWork.SaveChanges();
                 return await GetCustomer(id);

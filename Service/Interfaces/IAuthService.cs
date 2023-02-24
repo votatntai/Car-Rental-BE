@@ -10,5 +10,9 @@ namespace Service.Interfaces
         Task<UserViewModel> GetUserById(Guid id);
         Task<TokenViewModel> AuthenticatedCustomer(AuthRequestModel model);
         Task<CustomerViewModel> GetCustomerById(Guid id);
+        Task<TokenViewModel> AuthenticatedDriver(AuthRequestModel model);
+        Task<DriverViewModel> GetDriverById(Guid id);
+        Task<TokenViewModel> AuthenticatedCarOwner(AuthRequestModel model);
+        Task<CarOwnerViewModel> GetCarOwnerById(Guid id);
     }
 }

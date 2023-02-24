@@ -1,4 +1,6 @@
 ﻿using Data.Models.Create;
+using Data.Models.Get;
+using Data.Models.Update;
 using Data.Models.Views;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
@@ -14,6 +16,15 @@ namespace Application.Controllers
         public UsersController(IUserService userService)
         {
             _userService = userService;
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ListViewModel<UserViewModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ListViewModel<UserViewModel>>> GetUsers([FromQuery]  UserFilterModel filter, [FromQuery] PaginationRequestModel pagination)
+        {
+            var user = await _userService.GetUsers(filter, pagination);
+            return user != null ? Ok(user) : BadRequest();
         }
 
         [Route("{id}")]
@@ -41,6 +52,16 @@ namespace Application.Controllers
             {
                 return StatusCode(StatusCodes.Status400BadRequest, e.InnerException != null ? e.InnerException.Message : e.Message);
             }
+        }
+
+        [Route("{id}")]
+        [HttpPut]
+        [ProducesResponseType(typeof(UserViewModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<UserViewModel>> UpdateUser([FromRoute] Guid id, [FromBody] UserUpdateModel model)
+        {
+            var user = await _userService.UpdateUser(id, model);
+            return user != null ? Ok(user) : BadRequest();
         }
 
     }
