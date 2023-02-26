@@ -12,6 +12,7 @@ namespace Data
         public ICarOwnerRepository CarOwner { get; }
         public IDriverRepository Driver { get; }
         public ICustomerRepository Customer { get; }
+        public ICarRepository Car { get; }
 
 
         Task<int> SaveChanges();

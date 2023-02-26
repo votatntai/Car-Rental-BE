@@ -15,6 +15,7 @@ namespace Data
         private ICarOwnerRepository _carOwner = null!;
         private IDriverRepository _driver = null!;
         private ICustomerRepository _customer = null!;
+        private ICarRepository _car = null!;
 
         public UnitOfWork(CarRentalContext context)
         {
@@ -46,7 +47,10 @@ namespace Data
         {
             get { return _customer ??= new CustomerRepository(_context); }
         }
-
+        public ICarRepository Car
+        {
+            get { return _car ??= new CarRepository(_context); }
+        }
         public async Task<int> SaveChanges()
         {
             return await _context.SaveChangesAsync();
