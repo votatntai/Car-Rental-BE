@@ -16,6 +16,9 @@ namespace Data
         private IDriverRepository _driver = null!;
         private ICustomerRepository _customer = null!;
         private ICarRepository _car = null!;
+        private ILocationRepository _location = null!;
+        private IRouteRepository _route = null!;
+
 
         public UnitOfWork(CarRentalContext context)
         {
@@ -51,6 +54,17 @@ namespace Data
         {
             get { return _car ??= new CarRepository(_context); }
         }
+
+        public ILocationRepository Location
+        {
+            get { return _location ??= new LocationRepository(_context); }
+        }
+
+        public IRouteRepository Route
+        {
+            get { return _route ??= new RouteRepository(_context); }
+        }
+
         public async Task<int> SaveChanges()
         {
             return await _context.SaveChangesAsync();
