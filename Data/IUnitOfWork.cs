@@ -15,6 +15,7 @@ namespace Data
         public ICarRepository Car { get; }
         public ILocationRepository Location { get; }
         public IRouteRepository Route { get; }
+        public ICarRegistrationRepository CarRegistration { get; }
 
         Task<int> SaveChanges();
         IDbContextTransaction Transaction();

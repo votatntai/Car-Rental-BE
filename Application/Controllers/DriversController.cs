@@ -35,7 +35,7 @@ namespace Application.Controllers
         public async Task<ActionResult<DriverViewModel>> GetDriver([FromRoute] Guid id)
         {
             var driver = await _driverService.GetDriver(id);
-            return driver != null ? Ok(driver) : BadRequest();
+            return driver != null ? Ok(driver) : NotFound();
         }
 
         [HttpPost]

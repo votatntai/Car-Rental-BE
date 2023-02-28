@@ -18,7 +18,7 @@ namespace Data
         private ICarRepository _car = null!;
         private ILocationRepository _location = null!;
         private IRouteRepository _route = null!;
-
+        private ICarRegistrationRepository _carRegistration = null!;
 
         public UnitOfWork(CarRentalContext context)
         {
@@ -63,6 +63,11 @@ namespace Data
         public IRouteRepository Route
         {
             get { return _route ??= new RouteRepository(_context); }
+        }
+
+        public ICarRegistrationRepository CarRegistration
+        {
+            get { return _carRegistration ??= new CarRegistrationRepository(_context); }
         }
 
         public async Task<int> SaveChanges()

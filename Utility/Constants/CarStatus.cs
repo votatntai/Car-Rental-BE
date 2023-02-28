@@ -2,6 +2,7 @@
 {
     public enum CarStatus
     {
+        Blocked,
         Idle,
     }
 }

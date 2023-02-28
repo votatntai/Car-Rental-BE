@@ -35,7 +35,7 @@ namespace Application.Controllers
         public async Task<ActionResult<CarOwnerViewModel>> GetCarOwner([FromRoute] Guid id)
         {
             var carOwner = await _carOwnerService.GetCarOwner(id);
-            return carOwner != null ? Ok(carOwner) : BadRequest();
+            return carOwner != null ? Ok(carOwner) : NotFound();
         }
 
         [HttpPost]

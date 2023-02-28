@@ -3,7 +3,6 @@ using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
 using Microsoft.AspNetCore.Mvc;
-using Service.Implementations;
 using Service.Interfaces;
 
 namespace Application.Controllers
@@ -35,7 +34,7 @@ namespace Application.Controllers
         public async Task<ActionResult<CarViewModel>> GetCar([FromRoute] Guid id)
         {
             var car = await _carService.GetCar(id);
-            return car != null ? Ok(car) : BadRequest();
+            return car != null ? Ok(car) : NotFound();
         }
 
         [HttpPost]

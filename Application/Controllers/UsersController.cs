@@ -34,7 +34,7 @@ namespace Application.Controllers
         public async Task<ActionResult<UserViewModel>> GetUser([FromRoute] Guid id)
         {
             var user = await _userService.GetUser(id);
-            return user != null ? Ok(user) : BadRequest();
+            return user != null ? Ok(user) : NotFound();
         }
 
         [Route("manager")]
