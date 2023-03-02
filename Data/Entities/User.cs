@@ -10,7 +10,7 @@ public partial class User
 
     public string Gender { get; set; } = null!;
 
-    public string? AvartarUrl { get; set; }
+    public string? AvatarUrl { get; set; }
 
     public string Role { get; set; } = null!;
 

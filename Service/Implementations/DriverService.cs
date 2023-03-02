@@ -32,7 +32,7 @@ namespace Service.Implementations
                     Id = driver.Id,
                     Gender = driver.Gender,
                     Name = driver.Name,
-                    AvartarUrl = driver.AvartarUrl,
+                    AvatarUrl = driver.AvatarUrl,
                     Phone = driver.Phone,
                     Wallet = new WalletViewModel
                     {
@@ -72,11 +72,13 @@ namespace Service.Implementations
 
         public async Task<DriverViewModel> GetDriver(Guid id)
         {
-            return await _driverRepository.GetMany(driver => driver.Id.Equals(id)).Select(driver => new DriverViewModel
+            return await _driverRepository.GetMany(driver => driver.Id.Equals(id))
+                .Include(driver => driver.Account)
+                .Select(driver => new DriverViewModel
             {
                 Id = driver.Id,
                 Address = driver.Address,
-                AvartarUrl = driver.AvartarUrl,
+                AvatarUrl = driver.AvatarUrl,
                 BankAccountNumber = driver.BankAccountNumber,
                 BankName = driver.BankName,
                 Gender = driver.Gender,
@@ -96,6 +98,7 @@ namespace Service.Implementations
                 } : null!,
                 Star = driver.Star,
                 Status = driver.Status,
+                AccountStatus = driver.Account.Status,
             }).FirstOrDefaultAsync() ?? null!;
         }
 
@@ -148,6 +151,8 @@ namespace Service.Implementations
                 if (model.BankAccountNumber != null) driver.BankAccountNumber = model.BankAccountNumber;
                 if (model.Phone != null) driver.Phone = model.Phone;
                 if (model.Password != null) driver.Account.Password = model.Password;
+                if (model.Status != null) driver.Status= model.Status;
+                if (model.AccountStatus != null) driver.Account.Status = (bool)model.AccountStatus;
                 _driverRepository.Update(driver);
                 var result = await _unitOfWork.SaveChanges();
                 return await GetDriver(id);

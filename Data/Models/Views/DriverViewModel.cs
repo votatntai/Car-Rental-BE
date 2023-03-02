@@ -18,7 +18,7 @@ namespace Data.Models.Views
 
         public string Gender { get; set; } = null!;
 
-        public string? AvartarUrl { get; set; }
+        public string? AvatarUrl { get; set; }
 
         public double? Star { get; set; }
 
@@ -31,5 +31,8 @@ namespace Data.Models.Views
         public LocationViewModel? Location { get; set; }
 
         public string Status { get; set; } = null!;
+
+        public bool AccountStatus { get; set; }
+
     }
 }

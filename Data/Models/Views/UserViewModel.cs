@@ -10,9 +10,11 @@
 
         public string Phone { get; set; } = null!;
 
-        public string? AvartarUrl { get; set; }
+        public string? AvatarUrl { get; set; }
 
         public string Role { get; set; } = null!;
+
+        public bool Status { get; set; }
 
         public WalletViewModel Wallet { get; set; } = null!;
     }

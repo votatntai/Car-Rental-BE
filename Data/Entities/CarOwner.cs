@@ -15,7 +15,7 @@ public partial class CarOwner
 
     public string Gender { get; set; } = null!;
 
-    public string? AvartarUrl { get; set; }
+    public string? AvatarUrl { get; set; }
 
     public string? BankAccountNumber { get; set; }
 

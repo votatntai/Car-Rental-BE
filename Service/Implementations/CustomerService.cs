@@ -34,7 +34,7 @@ namespace Service.Implementations
                     Id = customer.Id,
                     Gender = customer.Gender,
                     Name = customer.Name,
-                    AvartarUrl = customer.AvartarUrl,
+                    AvatarUrl = customer.AvatarUrl,
                     Phone = customer.Phone,
                     Wallet = new WalletViewModel
                     {
@@ -67,16 +67,18 @@ namespace Service.Implementations
         public async Task<CustomerViewModel> GetCustomer(Guid id)
         {
             return await _customerRepository.GetMany(customer => customer.Id.Equals(id))
+                .Include(customer => customer.Account)
                 .Select(customer => new CustomerViewModel
                 {
                     Id = customer.Id,
                     Address = customer.Address,
-                    AvartarUrl = customer.AvartarUrl,
+                    AvatarUrl = customer.AvatarUrl,
                     BankAccountNumber = customer.BankAccountNumber,
                     BankName = customer.BankName,
                     Gender = customer.Gender,
                     Name = customer.Name,
                     Phone = customer.Phone,
+                    Status = customer.Account.Status,
                     Wallet = new WalletViewModel()
                     {
                         Id = customer.Wallet.Id,
@@ -134,6 +136,7 @@ namespace Service.Implementations
                 if (model.BankAccountNumber != null) customer.BankAccountNumber = model.BankAccountNumber;
                 if (model.Phone != null) customer.Phone = model.Phone;
                 if (model.Password != null) customer.Account.Password = model.Password;
+                if (model.Status != null) customer.Account.Status = (bool)model.Status;
                 _customerRepository.Update(customer);
                 var result = await _unitOfWork.SaveChanges();
                 return await GetCustomer(id);

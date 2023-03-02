@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Data.Models.Views
+﻿namespace Data.Models.Views
 {
     public class CustomerViewModel
     {
@@ -18,12 +12,14 @@ namespace Data.Models.Views
 
         public string Gender { get; set; } = null!;
 
-        public string? AvartarUrl { get; set; }
+        public string? AvatarUrl { get; set; }
 
         public string? BankAccountNumber { get; set; }
 
         public string? BankName { get; set; }
 
         public WalletViewModel Wallet { get; set; } = null!;
+
+        public bool Status { get; set; }
     }
 }

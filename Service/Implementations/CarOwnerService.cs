@@ -35,7 +35,7 @@ namespace Service.Implementations
                     Id = carOwner.Id,
                     Gender = carOwner.Gender,
                     Name = carOwner.Name,
-                    AvartarUrl = carOwner.AvartarUrl,
+                    AvatarUrl = carOwner.AvatarUrl,
                     Phone = carOwner.Phone,
                     Wallet = new WalletViewModel
                     {
@@ -71,7 +71,7 @@ namespace Service.Implementations
             {
                 Id = carOwner.Id,
                 Address = carOwner.Address,
-                AvartarUrl = carOwner.AvartarUrl,
+                AvatarUrl = carOwner.AvatarUrl,
                 BankAccountNumber = carOwner.BankAccountNumber,
                 BankName = carOwner.BankName,
                 Gender = carOwner.Gender,

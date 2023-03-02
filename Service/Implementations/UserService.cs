@@ -28,16 +28,18 @@ namespace Service.Implementations
 
         public async Task<ListViewModel<UserViewModel>> GetUsers(UserFilterModel filter, PaginationRequestModel pagination)
         {
-            var query = _userRepository.GetMany(user => filter.Name != null ? user.Name.Contains(filter.Name) : true
+            var query = _userRepository.GetMany(user => (filter.Name != null ? user.Name.Contains(filter.Name) : true)
             && user.Role.Equals(UserRole.Manager.ToString()))
+                .Include(user => user.Account)
                 .Select(user => new UserViewModel
                 {
                     Id = user.Id,
                     Gender = user.Gender,
                     Name = user.Name,
-                    AvartarUrl = user.AvartarUrl,
+                    AvatarUrl = user.AvatarUrl,
                     Phone = user.Phone,
                     Role = user.Role,
+                    Status = user.Account.Status,
                     Wallet = new WalletViewModel
                     {
                         Id = user.Wallet.Id,
@@ -45,7 +47,8 @@ namespace Service.Implementations
                         Status = user.Wallet.Status
                     }
                 });
-            var users = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
+            var order = filter.Order != null && filter.Order.Equals(OrderBy.Asc.ToString().ToLower()) ? query.OrderBy(user => user.Name) : query.OrderByDescending(user => user.Name);
+            var users = await order.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
             var totalRow = await query.AsNoTracking().CountAsync();
             if (users != null || users != null && users.Any())
             {
@@ -65,14 +68,17 @@ namespace Service.Implementations
 
         public async Task<UserViewModel> GetUser(Guid id)
         {
-            return await _userRepository.GetMany(user => user.Id.Equals(id)).Select(user => new UserViewModel
+            return await _userRepository.GetMany(user => user.Id.Equals(id))
+                .Include(user => user.Account)
+                .Select(user => new UserViewModel
             {
                 Id = user.Id,
                 Gender = user.Gender,
                 Name = user.Name,
-                AvartarUrl = user.AvartarUrl,
+                AvatarUrl = user.AvatarUrl,
                 Phone = user.Phone,
                 Role = user.Role,
+                Status = user.Account.Status,
                 Wallet = new WalletViewModel
                 {
                     Id = user.Wallet.Id,
