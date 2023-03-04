@@ -29,6 +29,7 @@ namespace Service.Implementations
         public async Task<ListViewModel<CustomerViewModel>> GetCustomers(CustomerFilterModel filter, PaginationRequestModel pagination)
         {
             var query = _customerRepository.GetMany(customer => filter.Name != null ? customer.Name.Contains(filter.Name) : true)
+                .Include(customer => customer.Account)
                 .Select(customer => new CustomerViewModel
                 {
                     Id = customer.Id,
@@ -42,6 +43,7 @@ namespace Service.Implementations
                         Balance = customer.Wallet.Balance,
                         Status = customer.Wallet.Status
                     },
+                    Status = customer.Account.Status,
                     BankName = customer.BankName,
                     BankAccountNumber = customer.BankAccountNumber,
                     Address = customer.Address

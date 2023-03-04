@@ -27,6 +27,7 @@ namespace Service.Implementations
         public async Task<ListViewModel<DriverViewModel>> GetDrivers(DriverFilterModel filter, PaginationRequestModel pagination)
         {
             var query = _driverRepository.GetMany(driver => filter.Name != null ? driver.Name.Contains(filter.Name) : true)
+                .Include(driver => driver.Account)
                 .Select(driver => new DriverViewModel
                 {
                     Id = driver.Id,
@@ -51,6 +52,7 @@ namespace Service.Implementations
                         Longitude= driver.Location.Longitude,
                     }: null!,
                     Status= driver.Status,
+                    AccountStatus = driver.Account.Status,
                 });
             var drivers = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
             var totalRow = await query.AsNoTracking().CountAsync();

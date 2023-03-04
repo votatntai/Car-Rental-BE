@@ -22,5 +22,7 @@ namespace Data.Models.Update
 
         public string? BankName { get; set; }
 
+        public bool? Status { get; set; }
+
     }
 }

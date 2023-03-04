@@ -30,6 +30,7 @@ namespace Service.Implementations
         public async Task<ListViewModel<CarOwnerViewModel>> GetCarOwners(CarOwnerFilterModel filter, PaginationRequestModel pagination)
         {
             var query = _carOwnerRepository.GetMany(carOwner => filter.Name != null ? carOwner.Name.Contains(filter.Name) : true)
+                .Include(carOwner => carOwner.Account)
                 .Select(carOwner => new CarOwnerViewModel
                 {
                     Id = carOwner.Id,
@@ -45,7 +46,8 @@ namespace Service.Implementations
                     },
                     Address = carOwner.Address,
                     BankAccountNumber = carOwner.BankAccountNumber,
-                    BankName = carOwner.BankName
+                    BankName = carOwner.BankName,
+                    Status = carOwner.Account.Status,
                 });
             var carOwners = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
             var totalRow = await query.AsNoTracking().CountAsync();
@@ -67,7 +69,9 @@ namespace Service.Implementations
 
         public async Task<CarOwnerViewModel> GetCarOwner(Guid id)
         {
-            return await _carOwnerRepository.GetMany(carOwner => carOwner.Id.Equals(id)).Select(carOwner => new CarOwnerViewModel
+            return await _carOwnerRepository.GetMany(carOwner => carOwner.Id.Equals(id))
+                .Include(carOwner => carOwner.Account)
+                .Select(carOwner => new CarOwnerViewModel
             {
                 Id = carOwner.Id,
                 Address = carOwner.Address,
@@ -82,7 +86,8 @@ namespace Service.Implementations
                     Id = carOwner.Wallet.Id,
                     Balance = carOwner.Wallet.Balance,
                     Status = carOwner.Wallet.Status,
-                }
+                },
+                Status = carOwner.Account.Status,
             }).FirstOrDefaultAsync() ?? null!;
         }
 
@@ -134,6 +139,7 @@ namespace Service.Implementations
                 if (model.BankAccountNumber != null) carOwner.BankAccountNumber = model.BankAccountNumber;
                 if (model.Phone != null) carOwner.Phone = model.Phone;
                 if (model.Password != null) carOwner.Account.Password = model.Password;
+                if (model.Status != null) carOwner.Account.Status = (bool)model.Status;
                 _carOwnerRepository.Update(carOwner);
                 var result = await _unitOfWork.SaveChanges();
                 return await GetCarOwner(id);
