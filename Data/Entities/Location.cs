@@ -7,9 +7,9 @@ public partial class Location
 {
     public Guid Id { get; set; }
 
-    public string Longitude { get; set; } = null!;
+    public double Longitude { get; set; }
 
-    public string Latitude { get; set; } = null!;
+    public double Latitude { get; set; }
 
     public virtual ICollection<Car> Cars { get; } = new List<Car>();
 

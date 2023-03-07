@@ -2,8 +2,8 @@
 {
     public class LocationCreateModel
     {
-        public string Longitude { get; set; } = null!;
+        public double Longitude { get; set; }
 
-        public string Latitude { get; set; } = null!;
+        public double Latitude { get; set; }
     }
 }

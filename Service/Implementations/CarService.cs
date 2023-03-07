@@ -4,8 +4,8 @@ using Data.Models.Create;
 using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
-using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
+using Extensions.MyExtentions;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
 using Utility.Constants;
@@ -27,7 +27,12 @@ namespace Service.Implementations
 
         public async Task<ListViewModel<CarViewModel>> GetCars(CarFilterModel filter, PaginationRequestModel pagination)
         {
-            var query = _carRepository.GetMany(car => car.Name != null && filter.Name != null ? car.Name.Contains(filter.Name) : true)
+            var query = _carRepository.GetMany(car => car.Name != null && filter.Name != null ? car.Name.Contains(filter.Name) : true);
+            if (filter.Location != null)
+            {
+                query = query.AsQueryable().DistanceFilter(filter.Location.Latitude, filter.Location.Longitude, 'K');
+            }
+            var cars = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize)
                 .Select(car => new CarViewModel
                 {
                     Id = car.Id,
@@ -63,8 +68,7 @@ namespace Service.Implementations
                         MaximumDistance = car.Route.MaximumDistance,
                         TimeSurcharge = car.Route.TimeSurcharge
                     } : null!
-                });
-            var cars = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).ToListAsync();
+                }).ToListAsync();
             var totalRow = await query.CountAsync();
             if (cars != null || cars != null && cars.Any())
             {
@@ -149,6 +153,7 @@ namespace Service.Implementations
                         TransmissionType = model.TransmissionType,
                         YearOfManufacture = model.YearOfManufacture,
                         Status = CarStatus.Idle.ToString(),
+                        CreateAt = DateTime.Now
                     };
                     _carRepository.Add(car);
                     result = await _unitOfWork.SaveChanges();

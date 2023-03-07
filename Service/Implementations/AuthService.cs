@@ -1,8 +1,6 @@
 ﻿using Data;
-using Data.Entities;
 using Data.Models.Get;
 using Data.Models.Views;
-using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

@@ -19,8 +19,8 @@ Create Table Wallet(
 Go
 Create Table [Location](
 	Id uniqueidentifier primary key,
-	Longitude varchar(256) not null,
-	Latitude varchar(256) not null
+	Longitude float not null,
+	Latitude float not null
 )
 Go
 Create Table Customer(
