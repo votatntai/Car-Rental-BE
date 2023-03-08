@@ -1,5 +1,4 @@
-﻿using Microsoft.SqlServer.Types;
-using System.Data.Entity;
+﻿using System.Data.Entity;
 
 namespace Utility.Helpers
 {
