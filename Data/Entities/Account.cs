@@ -19,5 +19,7 @@ public partial class Account
 
     public virtual ICollection<Driver> Drivers { get; } = new List<Driver>();
 
+    public virtual ICollection<Notification> Notifications { get; } = new List<Notification>();
+
     public virtual ICollection<User> Users { get; } = new List<User>();
 }

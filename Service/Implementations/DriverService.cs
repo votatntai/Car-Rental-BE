@@ -121,6 +121,8 @@ namespace Service.Implementations
                         Address = model.Address,
                         Gender = model.Gender,
                         Name = model.Name,
+                        BankName = model.BankName,
+                        BankAccountNumber = model.BankAccountNumber,
                         Phone = model.Phone,
                         AccountId = accountId,
                         WalletId = walletId,

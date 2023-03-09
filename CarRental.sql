@@ -8,7 +8,7 @@ Create Table Account(
 	Id uniqueidentifier primary key,
 	Username varchar(256) not null unique,
 	Password varchar(256) not null,
-	Status bit not null default 1
+	Status bit not null
 )
 Go
 Create Table Wallet(
@@ -165,6 +165,14 @@ Create Table CarRegistration(
 	Type nvarchar(256)not null,
 	CreateAt datetime not null,
 	Description nvarchar(max),
+)
+Go
+Create Table [Notification](
+	Id uniqueidentifier primary key,
+	Message nvarchar(max) not null,
+	AccountId uniqueidentifier foreign key references Account(Id) not null,
+	IsRead bit not null default 0,
+	CreateAt datetime not null default getdate(),
 )
 Go
 Create Table [FeedBack](

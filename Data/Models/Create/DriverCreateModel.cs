@@ -8,6 +8,10 @@
 
         public string Name { get; set; } = null!;
 
+        public string BankName { get; set; } = null!;
+
+        public string BankAccountNumber { get; set; } = null!;
+
         public string? Address { get; set; }
 
         public string Phone { get; set; } = null!;

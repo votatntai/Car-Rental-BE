@@ -49,7 +49,7 @@ public partial class Car
 
     public virtual ICollection<Image> Images { get; } = new List<Image>();
 
-    public virtual Location Location { get; set; } = null!;
+    public virtual Location? Location { get; set; }
 
     public virtual ICollection<OrderDetail> OrderDetails { get; } = new List<OrderDetail>();
 
