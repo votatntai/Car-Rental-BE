@@ -24,7 +24,7 @@
 
         public LocationUpdateModel? Location { get; set; }
 
-        public RouteUpdateModel? Route { get; set; }
+        public AdditionalChargeUpdateModel? AdditionalCharge { get; set; }
 
         public string? Status { get; set; } = null!;
     }

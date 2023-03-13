@@ -3,9 +3,9 @@ using Data.Repositories.Interfaces;
 
 namespace Data.Repositories.Implementations
 {
-    public class RouteRepository : Repository<Route>, IRouteRepository
+    public class AdditionalChargeRepository : Repository<AdditionalCharge>, IAdditionalChargeRepository
     {
-        public RouteRepository(CarRentalContext context) : base(context)
+        public AdditionalChargeRepository(CarRentalContext context) : base(context)
         {
         }
     }

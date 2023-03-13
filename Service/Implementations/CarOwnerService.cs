@@ -1,4 +1,6 @@
-﻿using Data;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Data;
 using Data.Entities;
 using Data.Models.Create;
 using Data.Models.Get;
@@ -8,7 +10,7 @@ using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
-using Utility.Constants;
+using Utility.Enums;
 
 namespace Service.Implementations
 {
@@ -17,12 +19,14 @@ namespace Service.Implementations
         private readonly ICarOwnerRepository _carOwnerRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly IWalletRepository _walletRepository;
+        private new readonly IMapper _mapper;
 
-        public CarOwnerService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public CarOwnerService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
         {
             _carOwnerRepository = unitOfWork.CarOwner;
             _accountRepository = unitOfWork.Account;
             _walletRepository = unitOfWork.Wallet;
+            _mapper = mapper;
         }
 
         // PUBLIC METHOD
@@ -31,24 +35,7 @@ namespace Service.Implementations
         {
             var query = _carOwnerRepository.GetMany(carOwner => filter.Name != null ? carOwner.Name.Contains(filter.Name) : true)
                 .Include(carOwner => carOwner.Account)
-                .Select(carOwner => new CarOwnerViewModel
-                {
-                    Id = carOwner.Id,
-                    Gender = carOwner.Gender,
-                    Name = carOwner.Name,
-                    AvatarUrl = carOwner.AvatarUrl,
-                    Phone = carOwner.Phone,
-                    Wallet = new WalletViewModel
-                    {
-                        Id = carOwner.Wallet.Id,
-                        Balance = carOwner.Wallet.Balance,
-                        Status = carOwner.Wallet.Status
-                    },
-                    Address = carOwner.Address,
-                    BankAccountNumber = carOwner.BankAccountNumber,
-                    BankName = carOwner.BankName,
-                    Status = carOwner.Account.Status,
-                });
+                .ProjectTo<CarOwnerViewModel>(_mapper.ConfigurationProvider);
             var carOwners = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
             var totalRow = await query.AsNoTracking().CountAsync();
             if (carOwners != null || carOwners != null && carOwners.Any())
@@ -71,24 +58,8 @@ namespace Service.Implementations
         {
             return await _carOwnerRepository.GetMany(carOwner => carOwner.Id.Equals(id))
                 .Include(carOwner => carOwner.Account)
-                .Select(carOwner => new CarOwnerViewModel
-            {
-                Id = carOwner.Id,
-                Address = carOwner.Address,
-                AvatarUrl = carOwner.AvatarUrl,
-                BankAccountNumber = carOwner.BankAccountNumber,
-                BankName = carOwner.BankName,
-                Gender = carOwner.Gender,
-                Name = carOwner.Name,
-                Phone = carOwner.Phone,
-                Wallet = new WalletViewModel
-                {
-                    Id = carOwner.Wallet.Id,
-                    Balance = carOwner.Wallet.Balance,
-                    Status = carOwner.Wallet.Status,
-                },
-                Status = carOwner.Account.Status,
-            }).FirstOrDefaultAsync() ?? null!;
+                .ProjectTo<CarOwnerViewModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync() ?? null!;
         }
 
         public async Task<CarOwnerViewModel> CreateCarOwner(CarOwnerCreateModel model)

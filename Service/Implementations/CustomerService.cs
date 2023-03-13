@@ -1,4 +1,6 @@
-﻿using Data;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Data;
 using Data.Entities;
 using Data.Models.Create;
 using Data.Models.Get;
@@ -7,7 +9,7 @@ using Data.Models.Views;
 using Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
-using Utility.Constants;
+using Utility.Enums;
 
 namespace Service.Implementations
 {
@@ -16,12 +18,14 @@ namespace Service.Implementations
         private readonly ICustomerRepository _customerRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly IWalletRepository _walletRepository;
+        private new readonly IMapper _mapper;
 
-        public CustomerService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
         {
             _customerRepository = unitOfWork.Customer;
             _accountRepository = unitOfWork.Account;
             _walletRepository = unitOfWork.Wallet;
+            _mapper = mapper;
         }
 
         // PUBLIC METHOD
@@ -30,24 +34,7 @@ namespace Service.Implementations
         {
             var query = _customerRepository.GetMany(customer => filter.Name != null ? customer.Name.Contains(filter.Name) : true)
                 .Include(customer => customer.Account)
-                .Select(customer => new CustomerViewModel
-                {
-                    Id = customer.Id,
-                    Gender = customer.Gender,
-                    Name = customer.Name,
-                    AvatarUrl = customer.AvatarUrl,
-                    Phone = customer.Phone,
-                    Wallet = new WalletViewModel
-                    {
-                        Id = customer.Wallet.Id,
-                        Balance = customer.Wallet.Balance,
-                        Status = customer.Wallet.Status
-                    },
-                    Status = customer.Account.Status,
-                    BankName = customer.BankName,
-                    BankAccountNumber = customer.BankAccountNumber,
-                    Address = customer.Address
-                });
+                .ProjectTo<CustomerViewModel>(_mapper.ConfigurationProvider);
             var customers = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
             var totalRow = await query.AsNoTracking().CountAsync();
             if (customers != null || customers != null && customers.Any())
@@ -70,24 +57,8 @@ namespace Service.Implementations
         {
             return await _customerRepository.GetMany(customer => customer.Id.Equals(id))
                 .Include(customer => customer.Account)
-                .Select(customer => new CustomerViewModel
-                {
-                    Id = customer.Id,
-                    Address = customer.Address,
-                    AvatarUrl = customer.AvatarUrl,
-                    BankAccountNumber = customer.BankAccountNumber,
-                    BankName = customer.BankName,
-                    Gender = customer.Gender,
-                    Name = customer.Name,
-                    Phone = customer.Phone,
-                    Status = customer.Account.Status,
-                    Wallet = new WalletViewModel()
-                    {
-                        Id = customer.Wallet.Id,
-                        Balance = customer.Wallet.Balance,
-                        Status = customer.Wallet.Status
-                    }
-                }).FirstOrDefaultAsync() ?? null!;
+                .ProjectTo<CustomerViewModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync() ?? null!;
         }
 
         public async Task<CustomerViewModel> CreateCustomer(CustomerCreateModel model)

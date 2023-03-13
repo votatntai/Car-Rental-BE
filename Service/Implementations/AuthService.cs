@@ -1,4 +1,6 @@
-﻿using Data;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Data;
 using Data.Models.Get;
 using Data.Models.Views;
 using Data.Repositories.Interfaces;
@@ -9,7 +11,7 @@ using Service.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Utility.Constants;
+using Utility.Enums;
 using Utility.Settings;
 
 namespace Service.Implementations
@@ -23,13 +25,14 @@ namespace Service.Implementations
 
         private readonly AppSetting _appSettings;
 
-        public AuthService(IUnitOfWork unitOfWork, IOptions<AppSetting> appSettings) : base(unitOfWork)
+        public AuthService(IUnitOfWork unitOfWork, IMapper mapper, IOptions<AppSetting> appSettings) : base(unitOfWork, mapper)
         {
             _appSettings = appSettings.Value;
             _userRepository = unitOfWork.User;
             _carOwnerRepository = unitOfWork.CarOwner;
             _driverRepository = unitOfWork.Driver;
             _customerRepository = unitOfWork.Customer;
+            _mapper = mapper;
         }
 
         public async Task<TokenViewModel> AuthenticatedUser(AuthRequestModel model)
@@ -121,26 +124,9 @@ namespace Service.Implementations
             var user = await _userRepository.GetMany(user => user.Id.Equals(id))
                 .Include(user => user.Account)
                 .Include(user => user.Wallet)
+                .ProjectTo<UserViewModel>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();
-            if (user != null)
-            {
-                return new UserViewModel
-                {
-                    Id = user.Id,
-                    Role = user.Role,
-                    Name= user.Name,
-                    Phone= user.Phone,
-                    AvatarUrl= user.AvatarUrl,
-                    Gender= user.Gender,
-                    Wallet = new WalletViewModel
-                    {
-                        Id= user.Wallet.Id,
-                        Balance = user.Wallet.Balance,
-                        Status = user.Wallet.Status
-                    }
-                };
-            }
-            return null!;
+            return user != null ? user : null!;
         }
 
         public async Task<CustomerViewModel> GetCustomerById(Guid id)
@@ -148,63 +134,18 @@ namespace Service.Implementations
             var customer = await _customerRepository.GetMany(customer => customer.Id.Equals(id))
                 .Include(customer => customer.Account)
                 .Include(customer => customer.Wallet)
+                .ProjectTo<CustomerViewModel>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();
-            if (customer != null)
-            {
-                return new CustomerViewModel
-                {
-                    Id = customer.Id,
-                    Name = customer.Name,
-                    Phone = customer.Phone,
-                    AvatarUrl = customer.AvatarUrl,
-                    Gender = customer.Gender,
-                    Address = customer.Address,
-                    BankAccountNumber = customer.BankAccountNumber,
-                    BankName = customer.BankName,
-                    Wallet = new WalletViewModel
-                    {
-                        Id = customer.Wallet.Id,
-                        Balance = customer.Wallet.Balance,
-                        Status = customer.Wallet.Status
-                    }
-                };
-            }
-            return null!;
+            return customer != null ? customer : null!;
         }
         public async Task<DriverViewModel> GetDriverById(Guid id)
         {
             var driver = await _driverRepository.GetMany(driver => driver.Id.Equals(id))
                 .Include(driver => driver.Account)
                 .Include(driver => driver.Wallet)
+                .ProjectTo<DriverViewModel>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();
-            if (driver != null)
-            {
-                return new DriverViewModel
-                {
-                    Id = driver.Id,
-                    Name = driver.Name,
-                    Phone = driver.Phone,
-                    AvatarUrl = driver.AvatarUrl,
-                    Gender = driver.Gender,
-                    Address = driver.Address,
-                    BankAccountNumber = driver.BankAccountNumber,
-                    BankName = driver.BankName,
-                    Wallet = new WalletViewModel
-                    {
-                        Id = driver.Wallet.Id,
-                        Balance = driver.Wallet.Balance,
-                        Status = driver.Wallet.Status
-                    },
-                    Star = driver.Star,
-                    Location = driver.Location != null ? new LocationViewModel
-                    {
-                        Id = driver.Location.Id,
-                        Latitude = driver.Location.Latitude,
-                        Longitude = driver.Location.Longitude,
-                    } : null!,
-                };
-            }
-            return null!;
+            return driver != null ? driver : null!;
         }
 
         public async Task<CarOwnerViewModel> GetCarOwnerById(Guid id)
@@ -212,28 +153,9 @@ namespace Service.Implementations
             var carOwner = await _carOwnerRepository.GetMany(carOwner => carOwner.Id.Equals(id))
                 .Include(carOwner => carOwner.Account)
                 .Include(carOwner => carOwner.Wallet)
+                .ProjectTo<CarOwnerViewModel>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();
-            if (carOwner != null)
-            {
-                return new CarOwnerViewModel
-                {
-                    Id = carOwner.Id,
-                    Name = carOwner.Name,
-                    Phone = carOwner.Phone,
-                    AvatarUrl = carOwner.AvatarUrl,
-                    Gender = carOwner.Gender,
-                    Address = carOwner.Address,
-                    BankAccountNumber = carOwner.BankAccountNumber,
-                    BankName = carOwner.BankName,
-                    Wallet = new WalletViewModel
-                    {
-                        Id = carOwner.Wallet.Id,
-                        Balance = carOwner.Wallet.Balance,
-                        Status = carOwner.Wallet.Status
-                    },
-                };
-            }
-            return null!;
+            return carOwner != null ? carOwner : null!;
         }
 
 

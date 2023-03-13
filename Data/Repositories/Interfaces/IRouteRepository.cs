@@ -2,7 +2,7 @@
 
 namespace Data.Repositories.Interfaces
 {
-    public interface IRouteRepository: IRepository<Route>
+    public interface IAdditionalChargeRepository: IRepository<AdditionalCharge>
     {
     }
 }

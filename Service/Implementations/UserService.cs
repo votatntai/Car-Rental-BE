@@ -1,4 +1,6 @@
-﻿using Data;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Data;
 using Data.Entities;
 using Data.Models.Create;
 using Data.Models.Get;
@@ -7,7 +9,7 @@ using Data.Models.Views;
 using Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
-using Utility.Constants;
+using Utility.Enums;
 
 namespace Service.Implementations
 {
@@ -16,12 +18,14 @@ namespace Service.Implementations
         private readonly IUserRepository _userRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly IWalletRepository _walletRepository;
+        private new readonly IMapper _mapper;
 
-        public UserService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
         {
             _userRepository = unitOfWork.User;
             _accountRepository = unitOfWork.Account;
             _walletRepository = unitOfWork.Wallet;
+            _mapper = mapper;
         }
 
         // PUBLIC METHODS
@@ -31,22 +35,7 @@ namespace Service.Implementations
             var query = _userRepository.GetMany(user => (filter.Name != null ? user.Name.Contains(filter.Name) : true)
             && user.Role.Equals(UserRole.Manager.ToString()))
                 .Include(user => user.Account)
-                .Select(user => new UserViewModel
-                {
-                    Id = user.Id,
-                    Gender = user.Gender,
-                    Name = user.Name,
-                    AvatarUrl = user.AvatarUrl,
-                    Phone = user.Phone,
-                    Role = user.Role,
-                    Status = user.Account.Status,
-                    Wallet = new WalletViewModel
-                    {
-                        Id = user.Wallet.Id,
-                        Balance = user.Wallet.Balance,
-                        Status = user.Wallet.Status
-                    }
-                });
+                .ProjectTo<UserViewModel>(_mapper.ConfigurationProvider);
             var order = filter.Order != null && filter.Order.Equals(OrderBy.Asc.ToString().ToLower()) ? query.OrderBy(user => user.Name) : query.OrderByDescending(user => user.Name);
             var users = await order.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
             var totalRow = await query.AsNoTracking().CountAsync();
@@ -70,22 +59,7 @@ namespace Service.Implementations
         {
             return await _userRepository.GetMany(user => user.Id.Equals(id))
                 .Include(user => user.Account)
-                .Select(user => new UserViewModel
-            {
-                Id = user.Id,
-                Gender = user.Gender,
-                Name = user.Name,
-                AvatarUrl = user.AvatarUrl,
-                Phone = user.Phone,
-                Role = user.Role,
-                Status = user.Account.Status,
-                Wallet = new WalletViewModel
-                {
-                    Id = user.Wallet.Id,
-                    Balance = user.Wallet.Balance,
-                    Status = user.Wallet.Status
-                }
-            }).FirstOrDefaultAsync() ?? null!;
+                .ProjectTo<UserViewModel>(_mapper.ConfigurationProvider).FirstOrDefaultAsync() ?? null!;
         }
 
         public async Task<UserViewModel> CreateManager(UserCreateModel model)

@@ -1,6 +1,6 @@
 ﻿namespace Data.Models.Views
 {
-    public class RouteViewModel
+    public class AdditionalChargeViewModel
     {
         public Guid Id { get; set; }
 

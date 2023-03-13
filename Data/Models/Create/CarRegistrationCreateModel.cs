@@ -10,6 +10,8 @@
 
         public string FuelType { get; set; } = null!;
 
+        public string Model { get; set; } = null!;
+
         public int Seater { get; set; }
 
         public double Price { get; set; }

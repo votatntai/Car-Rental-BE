@@ -1,4 +1,6 @@
-﻿using Data;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Data;
 using Data.Entities;
 using Data.Models.Create;
 using Data.Models.Get;
@@ -7,7 +9,7 @@ using Data.Models.Views;
 using Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
-using Utility.Constants;
+using Utility.Enums;
 
 namespace Service.Implementations
 {
@@ -16,44 +18,20 @@ namespace Service.Implementations
         private readonly IDriverRepository _driverRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly IWalletRepository _walletRepository;
+        private new readonly IMapper _mapper;
 
-        public DriverService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public DriverService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
         {
             _driverRepository = unitOfWork.Driver;
             _accountRepository = unitOfWork.Account;
             _walletRepository = unitOfWork.Wallet;
+            _mapper = mapper;
         }
 
         public async Task<ListViewModel<DriverViewModel>> GetDrivers(DriverFilterModel filter, PaginationRequestModel pagination)
         {
             var query = _driverRepository.GetMany(driver => filter.Name != null ? driver.Name.Contains(filter.Name) : true)
-                .Include(driver => driver.Account)
-                .Select(driver => new DriverViewModel
-                {
-                    Id = driver.Id,
-                    Gender = driver.Gender,
-                    Name = driver.Name,
-                    AvatarUrl = driver.AvatarUrl,
-                    Phone = driver.Phone,
-                    Wallet = new WalletViewModel
-                    {
-                        Id = driver.Wallet.Id,
-                        Balance = driver.Wallet.Balance,
-                        Status = driver.Wallet.Status
-                    },
-                    Address= driver.Address,
-                    BankAccountNumber= driver.BankAccountNumber,
-                    BankName= driver.BankName,
-                    Star = driver.Star,
-                    Location = driver.Location != null ? new LocationViewModel
-                    {
-                        Id = driver.Location.Id,
-                        Latitude= driver.Location.Latitude,
-                        Longitude= driver.Location.Longitude,
-                    }: null!,
-                    Status= driver.Status,
-                    AccountStatus = driver.Account.Status,
-                });
+                .Include(driver => driver.Account).ProjectTo<DriverViewModel>(_mapper.ConfigurationProvider);
             var drivers = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
             var totalRow = await query.AsNoTracking().CountAsync();
             if (drivers != null || drivers != null && drivers.Any())

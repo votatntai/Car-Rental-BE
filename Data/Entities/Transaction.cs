@@ -13,6 +13,8 @@ public partial class Transaction
 
     public Guid? CarOwnerId { get; set; }
 
+    public Guid? CustomerId{ get; set; }
+
     public string Type { get; set; } = null!;
 
     public double Amount { get; set; }

@@ -1,4 +1,4 @@
-﻿namespace Utility.Constants
+﻿namespace Utility.Enums
 {
     public enum CarStatus
     {

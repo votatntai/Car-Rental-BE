@@ -1,6 +1,6 @@
 ﻿namespace Data.Models.Update
 {
-    public class RouteUpdateModel
+    public class AdditionalChargeUpdateModel
     {
         public int MaximumDistance { get; set; }
 

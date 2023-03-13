@@ -1,6 +1,6 @@
 ﻿namespace Data.Models.Create
 {
-    public class RouteCreateModel
+    public class AdditionalChargeCreateModel
     {
         public int MaximumDistance { get; set; }
 

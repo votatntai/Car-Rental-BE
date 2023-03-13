@@ -1,5 +1,7 @@
 using Application.Configurations;
+using AutoMapper;
 using Data.Entities;
+using Data.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -26,6 +28,7 @@ builder.Services.AddCors();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger();
 builder.Services.AddDependenceInjection();
+builder.Services.AddAutoMapper(typeof (GeneralProfile));
 
 var app = builder.Build();
 

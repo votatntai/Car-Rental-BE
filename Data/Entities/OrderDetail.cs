@@ -7,6 +7,8 @@ public partial class OrderDetail
 {
     public Guid Id { get; set; }
 
+    public Guid? OrderId { get; set; }
+
     public Guid? CarId { get; set; }
 
     public Guid? DeliveryLocationId { get; set; }
@@ -24,6 +26,8 @@ public partial class OrderDetail
     public virtual Location? DeliveryLocation { get; set; }
 
     public virtual Driver? Driver { get; set; }
+
+    public virtual Order? Order { get; set; }
 
     public virtual Location? PickUpLocation { get; set; }
 }

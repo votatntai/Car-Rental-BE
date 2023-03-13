@@ -27,6 +27,8 @@ public partial class CarOwner
 
     public virtual Account Account { get; set; } = null!;
 
+    public virtual ICollection<Car> Cars { get; } = new List<Car>();
+
     public virtual ICollection<Transaction> Transactions { get; } = new List<Transaction>();
 
     public virtual Wallet Wallet { get; set; } = null!;

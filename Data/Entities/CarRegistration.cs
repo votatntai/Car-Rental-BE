@@ -25,13 +25,15 @@ public partial class CarRegistration
 
     public string ProductionCompany { get; set; } = null!;
 
-    public string Location { get; set; } = null!;
+    public string Model { get; set; } = null!;
 
-    public string Type { get; set; } = null!;
+    public string Location { get; set; } = null!;
 
     public DateTime CreateAt { get; set; }
 
     public string? Description { get; set; }
+
+    public virtual ICollection<CarRegistrationCalendar> CarRegistrationCalendars { get; } = new List<CarRegistrationCalendar>();
 
     public virtual ICollection<Image> Images { get; } = new List<Image>();
 }

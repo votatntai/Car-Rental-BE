@@ -23,7 +23,9 @@ public partial class Order
 
     public virtual Customer Customer { get; set; } = null!;
 
-    public virtual ICollection<ExpensesIncurred> ExpensesIncurreds { get; } = new List<ExpensesIncurred>();
+    public virtual ICollection<FeedBack> FeedBacks { get; } = new List<FeedBack>();
+
+    public virtual ICollection<OrderDetail> OrderDetails { get; } = new List<OrderDetail>();
 
     public virtual Promotion? Promotion { get; set; }
 }

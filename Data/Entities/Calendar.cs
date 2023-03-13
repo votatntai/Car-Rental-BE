@@ -7,15 +7,15 @@ public partial class Calendar
 {
     public Guid Id { get; set; }
 
-    public DateTime StartTime { get; set; }
+    public string Weekday { get; set; } = null!;
 
-    public DateTime EndTime { get; set; }
+    public TimeSpan StartTime { get; set; }
 
-    public Guid? CarId { get; set; }
+    public TimeSpan EndTime { get; set; }
 
-    public Guid? DriverId { get; set; }
+    public virtual ICollection<CarCalendar> CarCalendars { get; } = new List<CarCalendar>();
 
-    public virtual Car? Car { get; set; }
+    public virtual ICollection<CarRegistrationCalendar> CarRegistrationCalendars { get; } = new List<CarRegistrationCalendar>();
 
-    public virtual Driver? Driver { get; set; }
+    public virtual ICollection<DriverCalendar> DriverCalendars { get; } = new List<DriverCalendar>();
 }

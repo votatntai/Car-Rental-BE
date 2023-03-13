@@ -17,8 +17,11 @@ namespace Data
         private ICustomerRepository _customer = null!;
         private ICarRepository _car = null!;
         private ILocationRepository _location = null!;
-        private IRouteRepository _route = null!;
+        private IAdditionalChargeRepository _additionalCharge = null!;
         private ICarRegistrationRepository _carRegistration = null!;
+        private ITransactionRepository _transaction = null!;
+        private INotificationRepository _notification = null!;
+        private IOrderRepository _order = null!;
 
         public UnitOfWork(CarRentalContext context)
         {
@@ -60,14 +63,27 @@ namespace Data
             get { return _location ??= new LocationRepository(_context); }
         }
 
-        public IRouteRepository Route
+        public IAdditionalChargeRepository AdditionalCharge
         {
-            get { return _route ??= new RouteRepository(_context); }
+            get { return _additionalCharge ??= new AdditionalChargeRepository(_context); }
         }
 
         public ICarRegistrationRepository CarRegistration
         {
             get { return _carRegistration ??= new CarRegistrationRepository(_context); }
+        }
+        public ITransactionRepository Transactions
+        {
+            get { return _transaction ??= new TransactionRepository(_context); }
+        }
+        public INotificationRepository Notification
+        {
+            get { return _notification ??= new NotificationRepository(_context); }
+        }
+
+        public IOrderRepository Order
+        {
+            get { return _order ??= new OrderRepository(_context); }
         }
 
         public async Task<int> SaveChanges()

@@ -33,7 +33,9 @@ public partial class Driver
 
     public virtual Account Account { get; set; } = null!;
 
-    public virtual ICollection<Calendar> Calendars { get; } = new List<Calendar>();
+    public virtual ICollection<Car> Cars { get; } = new List<Car>();
+
+    public virtual ICollection<DriverCalendar> DriverCalendars { get; } = new List<DriverCalendar>();
 
     public virtual ICollection<FeedBack> FeedBacks { get; } = new List<FeedBack>();
 

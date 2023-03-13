@@ -13,6 +13,8 @@ public partial class Showroom
 
     public Guid? LocationId { get; set; }
 
+    public virtual ICollection<Car> Cars { get; } = new List<Car>();
+
     public virtual ICollection<Image> Images { get; } = new List<Image>();
 
     public virtual Location? Location { get; set; }

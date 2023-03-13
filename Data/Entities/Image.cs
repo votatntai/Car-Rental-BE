@@ -17,13 +17,9 @@ public partial class Image
 
     public Guid? CarRegistrationId { get; set; }
 
-    public Guid? ExpensesIncurredId { get; set; }
-
     public virtual Car? Car { get; set; }
 
     public virtual CarRegistration? CarRegistration { get; set; }
-
-    public virtual ExpensesIncurred? ExpensesIncurred { get; set; }
 
     public virtual Showroom? Showroom { get; set; }
 }

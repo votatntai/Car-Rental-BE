@@ -89,29 +89,45 @@ Create Table ProductionCompany(
 	Description nvarchar(max),
 )
 Go
-Create Table [Route](
+Create Table Model(
+	Id uniqueidentifier primary key,
+	Name nvarchar(256) not null,
+	CeilingPrice float not null,
+	FloorPrice float not null,
+	Seater int not null,
+	Chassis nvarchar(256) not null,
+	YearOfManufacture int not null,
+	TransmissionType nvarchar(256) not null,
+	FuelType nvarchar(256) not null,
+	FuelConsumption nvarchar(256) not null,
+	ProductionCompanyId uniqueidentifier foreign key references ProductionCompany(Id) not null,
+)
+Go
+Create Table AdditionalCharge(
 	Id uniqueidentifier primary key,
 	MaximumDistance int not null,
 	DistanceSurcharge float not null,
 	TimeSurcharge float not null,
+	AdditionalDdistance float not null,
+	AdditionalTime float not null
 )
 Go
 Create Table Car(
 	Id uniqueidentifier primary key,
 	Name nvarchar(256),
 	LicensePlate varchar(256) not null,
-	TransmissionType nvarchar(256) not null,
-	FuelType nvarchar(256) not null,
-	Seater int not null,
 	Price float not null,
-	FuelConsumption nvarchar(256) not null,
-	YearOfManufacture int not null,
 	CreateAt datetime not null,
 	Description nvarchar(max),
-	ProductionCompanyId uniqueidentifier foreign key references ProductionCompany(Id) not null,
+	ModelId uniqueidentifier foreign key references Model(Id) not null,
 	LocationId uniqueidentifier foreign key references [Location](Id),
-	RouteId uniqueidentifier foreign key references [Route](Id),
+	AdditionalChargeId uniqueidentifier foreign key references AdditionalCharge(Id),
+	DriverId uniqueidentifier foreign key references Driver(Id),
+	CarOwnerId uniqueidentifier foreign key references CarOwner(Id),
+	ShowroomId uniqueidentifier foreign key references Showroom(Id),
 	Rented int not null default 0,
+	ReceiveTime time not null default '06:00:00',
+	ReturnTime time not null default '22:00:00',
 	Star float,
 	Status nvarchar(256) not null,
 )
@@ -142,14 +158,6 @@ Create Table CarType(
 	Primary key (CarId, TypeId)
 )
 Go
-Create Table Calendar(
-	Id uniqueidentifier primary key,
-	StartTime datetime not null,
-	EndTime datetime not null,
-	CarId uniqueidentifier foreign key references Car(Id),
-	DriverId uniqueidentifier foreign key references Driver(Id),
-)
-Go
 Create Table CarRegistration(
 	Id uniqueidentifier primary key,
 	Name nvarchar(256),
@@ -161,10 +169,39 @@ Create Table CarRegistration(
 	FuelConsumption nvarchar(256) not null,
 	YearOfManufacture int not null,
 	ProductionCompany nvarchar(256) not null,
+	Model varchar(256) not null,
 	Location nvarchar(256) not null,
-	Type nvarchar(256)not null,
 	CreateAt datetime not null,
 	Description nvarchar(max),
+)
+Go
+Create Table Calendar(
+	Id uniqueidentifier primary key,
+	Weekday nvarchar(256) not null,
+	StartTime time not null default '06:00:00',
+	EndTime time not null default '22:00:00',
+)
+Go
+Create Table CarCalendar(
+	CalendarId uniqueidentifier foreign key references Calendar(Id) not null,
+	CarId uniqueidentifier foreign key references Car(Id) not null,
+	Description nvarchar(max),
+	Primary key (CalendarId, CarId)
+)
+Go
+Create Table CarRegistrationCalendar(
+	CalendarId uniqueidentifier foreign key references Calendar(Id) not null,
+	CarRegistrationId uniqueidentifier foreign key references CarRegistration(Id) not null,
+	Description nvarchar(max),
+	Primary key (CalendarId, CarRegistrationId)
+)
+Go
+Create Table DriverCalendar(
+	CalendarId uniqueidentifier foreign key references Calendar(Id) not null,
+	CarId uniqueidentifier foreign key references Car(Id) not null,
+	DriverId uniqueidentifier foreign key references Driver(Id) not null,
+	Description nvarchar(max),
+	Primary key (CalendarId, DriverId, CarId)
 )
 Go
 Create Table [Notification](
@@ -175,20 +212,11 @@ Create Table [Notification](
 	CreateAt datetime not null default getdate(),
 )
 Go
-Create Table [FeedBack](
-	Id uniqueidentifier primary key,
-	CustomerId uniqueidentifier foreign key references Customer(Id) not null,
-	CarId uniqueidentifier foreign key references Car(Id),
-	DriverId uniqueidentifier foreign key references Driver(Id),
-	Star int not null,
-	CreateAt datetime not null default getDate(),
-	Content nvarchar(max)
-)
-Go
 Create Table [Transaction](
 	Id uniqueidentifier primary key,
 	UserId uniqueidentifier foreign key references [User](Id),
 	DriverId uniqueidentifier foreign key references Driver(Id),
+	CustomerId uniqueidentifier foreign key references Customer(Id),
 	CarOwnerId uniqueidentifier foreign key references CarOwner(Id),
 	Type nvarchar(256) not null,
 	Amount float not null,
@@ -219,6 +247,7 @@ Create Table [Order](
 Go
 Create Table OrderDetail(
 	Id uniqueidentifier primary key,
+	OrderId uniqueidentifier foreign key references [Order](Id),
 	CarId uniqueidentifier foreign key references Car(Id),
 	DeliveryLocationId uniqueidentifier foreign key references [Location](Id),
 	PickUpLocationId uniqueidentifier foreign key references [Location](Id),
@@ -227,11 +256,15 @@ Create Table OrderDetail(
 	DriverId uniqueidentifier foreign key references Driver(Id),
 )
 Go
-Create Table ExpensesIncurred(
+Create Table [FeedBack](
 	Id uniqueidentifier primary key,
-	OrderId uniqueidentifier foreign key references [Order](Id) not null,
-	Amount float not null,
-	Description nvarchar(max)
+	OrderId uniqueidentifier foreign key references [Order](Id)  not null,
+	CustomerId uniqueidentifier foreign key references Customer(Id) not null,
+	CarId uniqueidentifier foreign key references Car(Id),
+	DriverId uniqueidentifier foreign key references Driver(Id),
+	Star int not null,
+	CreateAt datetime not null default getDate(),
+	Content nvarchar(max)
 )
 Go
 Create Table [Image](
@@ -241,7 +274,6 @@ Create Table [Image](
 	ShowroomId uniqueidentifier foreign key references Showroom(Id),
 	CarId uniqueidentifier foreign key references Car(Id),
 	CarRegistrationId uniqueidentifier foreign key references CarRegistration(Id),
-	ExpensesIncurredId uniqueidentifier foreign key references ExpensesIncurred(Id),
 )
 GO
 INSERT [dbo].[Account] ([Id], [Username], [Password], [Status]) VALUES (N'f6c89e0e-7261-45d1-ad58-23122b5567c8', N'carowner', N'carowner', 1)
@@ -272,18 +304,10 @@ INSERT [dbo].[Wallet] ([Id], [Balance], [Status]) VALUES (N'74668d25-18f4-48d1-8
 GO
 INSERT [dbo].[Customer] ([Id], [Name], [Address], [Phone], [Gender], [AvatarUrl], [BankAccountNumber], [BankName], [AccountId], [WalletId]) VALUES (N'e9a0d281-b6a9-49f4-bd34-7634c900bc75', N'Customer', N'Customer Address', N'0348040506', N'Nam', NULL, NULL, NULL, N'8ad9b7c4-290b-484d-9217-6f5b9b736bd3', N'74668d25-18f4-48d1-8f48-f6a3c4a8b3d5')
 GO
-INSERT [dbo].[Location] ([Id], [Longitude], [Latitude]) VALUES (N'311b7110-020d-407a-8c4e-520dfa5d1c45', 10.838333781154026, 106.83131318182623)
-INSERT [dbo].[Location] ([Id], [Longitude], [Latitude]) VALUES (N'52016854-5f2c-4168-9e5b-914645a52578', 10.84127505108961, 106.8103872633409)
-GO
 INSERT [dbo].[ProductionCompany] ([Id], [Name], [Description]) VALUES (N'1a91dd16-48ec-447f-ad9a-50b0d03c294d', N'Audi', NULL)
 GO
-INSERT [dbo].[Route] ([Id], [MaximumDistance], [DistanceSurcharge], [TimeSurcharge]) VALUES (N'62817ad2-b664-4f51-8b58-5bb19354e5f3', 0, 0, 0)
-INSERT [dbo].[Route] ([Id], [MaximumDistance], [DistanceSurcharge], [TimeSurcharge]) VALUES (N'df1da6af-d530-4d24-bfce-8d610a13162b', 0, 0, 0)
-GO
-INSERT [dbo].[Car] ([Id], [Name], [LicensePlate], [TransmissionType], [FuelType], [Seater], [Price], [FuelConsumption], [YearOfManufacture], [CreateAt], [Description], [ProductionCompanyId], [LocationId], [RouteId], [Rented], [Star], [Status]) VALUES (N'a640ad49-f4b3-47b9-b690-5c644c6b18f4', N'S-Start Light', N'71S1-14533', N'string', N'string', 1, 2500000, N'string', 2023, CAST(N'2023-03-07T23:47:31.873' AS DateTime), N'string', N'1a91dd16-48ec-447f-ad9a-50b0d03c294d', N'52016854-5f2c-4168-9e5b-914645a52578', N'62817ad2-b664-4f51-8b58-5bb19354e5f3', 0, NULL, N'Idle')
-INSERT [dbo].[Car] ([Id], [Name], [LicensePlate], [TransmissionType], [FuelType], [Seater], [Price], [FuelConsumption], [YearOfManufacture], [CreateAt], [Description], [ProductionCompanyId], [LocationId], [RouteId], [Rented], [Star], [Status]) VALUES (N'72ab5ee5-6591-4529-9d8f-e7ca75a436cb', N'S-Start Light S101', N'71S1-14533', N'string', N'string', 1, 2500000, N'string', 2023, CAST(N'2023-03-07T23:49:03.243' AS DateTime), N'string', N'1a91dd16-48ec-447f-ad9a-50b0d03c294d', N'311b7110-020d-407a-8c4e-520dfa5d1c45', N'df1da6af-d530-4d24-bfce-8d610a13162b', 0, NULL, N'Idle')
-GO
-INSERT [dbo].[CarRegistration] ([Id], [Name], [LicensePlate], [TransmissionType], [FuelType], [Seater], [Price], [FuelConsumption], [YearOfManufacture], [ProductionCompany], [Location], [Type], [CreateAt], [Description]) VALUES (N'80093235-0688-4f53-9888-f2abf0a84a66', N'Audi M3', N'71-B1-16567', N'Hộp số tự động', N'Xăng', 7, 50000, N'Thấp', 2013, N'Audi', N'15A đường Tân Hòa 2', N'Bán tải', CAST(N'2023-02-28T15:01:32.700' AS DateTime), N'string')
+INSERT [dbo].AdditionalCharge ([Id], [MaximumDistance], [DistanceSurcharge], [TimeSurcharge]) VALUES (N'62817ad2-b664-4f51-8b58-5bb19354e5f3', 0, 0, 0)
+INSERT [dbo].AdditionalCharge ([Id], [MaximumDistance], [DistanceSurcharge], [TimeSurcharge]) VALUES (N'df1da6af-d530-4d24-bfce-8d610a13162b', 0, 0, 0)
 GO
 INSERT [dbo].[Driver] ([Id], [Name], [Address], [Phone], [Gender], [AvatarUrl], [Star], [BankAccountNumber], [BankName], [AccountId], [WalletId], [LocationId], [Status]) VALUES (N'e88ac41c-cf83-4996-814f-4552311a8142', N'Driver', N'Driver address', N'0345667887', N'Nam', NULL, NULL, NULL, NULL, N'2eab62fb-8898-4f7c-9c99-4ce43bd88996', N'38be23d3-7cbf-484f-9171-4d598289e40a', NULL, N'Idle')
 GO

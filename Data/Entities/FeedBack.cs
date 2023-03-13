@@ -7,6 +7,8 @@ public partial class FeedBack
 {
     public Guid Id { get; set; }
 
+    public Guid OrderId { get; set; }
+
     public Guid CustomerId { get; set; }
 
     public Guid? CarId { get; set; }
@@ -24,4 +26,6 @@ public partial class FeedBack
     public virtual Customer Customer { get; set; } = null!;
 
     public virtual Driver? Driver { get; set; }
+
+    public virtual Order Order { get; set; } = null!;
 }

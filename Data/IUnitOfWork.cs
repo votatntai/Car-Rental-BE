@@ -14,8 +14,11 @@ namespace Data
         public ICustomerRepository Customer { get; }
         public ICarRepository Car { get; }
         public ILocationRepository Location { get; }
-        public IRouteRepository Route { get; }
+        public IAdditionalChargeRepository AdditionalCharge { get; }
         public ICarRegistrationRepository CarRegistration { get; }
+        public ITransactionRepository Transactions { get; }
+        public INotificationRepository Notification { get; }
+        public IOrderRepository Order { get; }
 
         Task<int> SaveChanges();
         IDbContextTransaction Transaction();
