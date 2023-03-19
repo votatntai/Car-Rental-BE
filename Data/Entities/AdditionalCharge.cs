@@ -13,7 +13,7 @@ public partial class AdditionalCharge
 
     public double TimeSurcharge { get; set; }
 
-    public double AdditionalDdistance { get; set; }
+    public double AdditionalDistance { get; set; }
 
     public double AdditionalTime { get; set; }
 

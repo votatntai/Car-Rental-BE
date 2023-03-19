@@ -1,6 +1,5 @@
 ﻿using Data.Models.Get;
 using Data.Models.Views;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
 

@@ -11,9 +11,9 @@ public partial class Transaction
 
     public Guid? DriverId { get; set; }
 
-    public Guid? CarOwnerId { get; set; }
+    public Guid? CustomerId { get; set; }
 
-    public Guid? CustomerId{ get; set; }
+    public Guid? CarOwnerId { get; set; }
 
     public string Type { get; set; } = null!;
 
@@ -26,6 +26,8 @@ public partial class Transaction
     public string? Status { get; set; }
 
     public virtual CarOwner? CarOwner { get; set; }
+
+    public virtual Customer? Customer { get; set; }
 
     public virtual Driver? Driver { get; set; }
 

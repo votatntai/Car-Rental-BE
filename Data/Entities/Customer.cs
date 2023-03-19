@@ -31,5 +31,7 @@ public partial class Customer
 
     public virtual ICollection<Order> Orders { get; } = new List<Order>();
 
+    public virtual ICollection<Transaction> Transactions { get; } = new List<Transaction>();
+
     public virtual Wallet Wallet { get; set; } = null!;
 }

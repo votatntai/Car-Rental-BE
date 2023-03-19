@@ -33,6 +33,10 @@ public partial class CarRegistration
 
     public string? Description { get; set; }
 
+    public Guid? CarOwnerId { get; set; }
+
+    public virtual CarOwner? CarOwner { get; set; }
+
     public virtual ICollection<CarRegistrationCalendar> CarRegistrationCalendars { get; } = new List<CarRegistrationCalendar>();
 
     public virtual ICollection<Image> Images { get; } = new List<Image>();

@@ -48,8 +48,10 @@ namespace Service.Implementations
         public async Task<CarRegistrationViewModel> GetCarRegistration(Guid id)
         {
             return await _carRegistrationRepository.GetMany(carRegistration => carRegistration.Id.Equals(id))
-                    .ProjectTo<CarRegistrationViewModel>(_mapper.ConfigurationProvider)
-                    .FirstOrDefaultAsync() ?? null!;
+                .Include(carRegistration => carRegistration.CarRegistrationCalendars)
+                .ThenInclude(carRegistrationCalendar => carRegistrationCalendar.Calendar)
+                .ProjectTo<CarRegistrationViewModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync() ?? null!;
         }
 
         public async Task<CarRegistrationViewModel> CreateCarRegistration(CarRegistrationCreateModel model)

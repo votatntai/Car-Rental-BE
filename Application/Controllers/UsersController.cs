@@ -21,7 +21,7 @@ namespace Application.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(ListViewModel<UserViewModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ListViewModel<UserViewModel>>> GetUsers([FromQuery]  UserFilterModel filter, [FromQuery] PaginationRequestModel pagination)
+        public async Task<ActionResult<ListViewModel<UserViewModel>>> GetUsers([FromQuery] UserFilterModel filter, [FromQuery] PaginationRequestModel pagination)
         {
             var user = await _userService.GetUsers(filter, pagination);
             return user != null ? Ok(user) : BadRequest();

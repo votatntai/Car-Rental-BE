@@ -23,7 +23,7 @@ namespace Application.Controllers
         public async Task<ActionResult<ListViewModel<CarRegistrationViewModel>>> GetCarRegistrations([FromQuery] CarRegistrationFilterModel filter, [FromQuery] PaginationRequestModel pagination)
         {
             var carRegistration = await _carRegistrationService.GetCarRegistrations(filter, pagination);
-            return carRegistration != null ? Ok(carRegistration) : BadRequest();
+            return carRegistration != null ? Ok(carRegistration) : NotFound();
         }
 
         [Route("{id}")]

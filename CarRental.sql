@@ -117,10 +117,11 @@ Create Table Car(
 	Name nvarchar(256),
 	LicensePlate varchar(256) not null,
 	Price float not null,
-	CreateAt datetime not null,
+	CreateAt datetime not null default getdate(),
 	Description nvarchar(max),
 	ModelId uniqueidentifier foreign key references Model(Id) not null,
 	LocationId uniqueidentifier foreign key references [Location](Id),
+	ProductionCompanyId uniqueidentifier foreign key references [ProductionCompany](Id),
 	AdditionalChargeId uniqueidentifier foreign key references AdditionalCharge(Id),
 	DriverId uniqueidentifier foreign key references Driver(Id),
 	CarOwnerId uniqueidentifier foreign key references CarOwner(Id),
@@ -171,7 +172,8 @@ Create Table CarRegistration(
 	ProductionCompany nvarchar(256) not null,
 	Model varchar(256) not null,
 	Location nvarchar(256) not null,
-	CreateAt datetime not null,
+	CreateAt datetime not null default getdate(),
+	CarOwnerId uniqueidentifier foreign key references CarOwner(Id) not null,
 	Description nvarchar(max),
 )
 Go

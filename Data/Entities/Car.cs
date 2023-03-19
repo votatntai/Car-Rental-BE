@@ -39,6 +39,8 @@ public partial class Car
 
     public string Status { get; set; } = null!;
 
+    public Guid? ProductionCompanyId { get; set; }
+
     public virtual AdditionalCharge? AdditionalCharge { get; set; }
 
     public virtual ICollection<CarCalendar> CarCalendars { get; } = new List<CarCalendar>();
@@ -62,6 +64,8 @@ public partial class Car
     public virtual Model Model { get; set; } = null!;
 
     public virtual ICollection<OrderDetail> OrderDetails { get; } = new List<OrderDetail>();
+
+    public virtual ProductionCompany? ProductionCompany { get; set; }
 
     public virtual Showroom? Showroom { get; set; }
 }

@@ -24,10 +24,16 @@
 
         public string Location { get; set; } = null!;
 
+        public string Model { get; set; } = null!;
+
         public DateTime CreateAt { get; set; }
 
         public string? Description { get; set; }
 
-        public ICollection<string> ImageUrls { get; set; } = null!;
+        public CarOwnerViewModel CarOwner { get; set; } = null!;
+
+        public ICollection<ImageViewModel> Images { get; set; } = null!;
+
+        public ICollection<CarRegistrationCalendarViewModel> Calendars { get; set; } = null!;
     }
 }

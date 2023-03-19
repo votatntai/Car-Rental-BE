@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Data.Entities;
 using Data.Models.Views;
+using Type = Data.Entities.Type;
 
 namespace Data.Mapping
 {
@@ -9,6 +10,21 @@ namespace Data.Mapping
         public GeneralProfile()
         {
             CreateMap<Car, CarViewModel>();
+            CreateMap<Type, TypeViewModel>();
+            CreateMap<Model, CarModelViewModel>();
+            CreateMap<CarType, CarTypeViewModel>();
+            CreateMap<Image, ImageViewModel>();
+            CreateMap<FeedBack, FeedBackViewModel>();
+            CreateMap<Car, CarViewModel>();
+            CreateMap<CarRegistration, CarRegistrationViewModel>()
+                .ForMember(carRegistrationVM => carRegistrationVM.Calendars, config => config.MapFrom(carRegistration => carRegistration.CarRegistrationCalendars));
+            CreateMap<Calendar, CalendarViewModel>();
+            CreateMap<CarRegistrationCalendar, CarRegistrationCalendarViewModel>();
+            CreateMap<CarCalendar, CarCalendarViewModel>();
+            CreateMap<AdditionalCharge, AdditionalChargeViewModel>();
+            CreateMap<DriverCalendar, DriverCalendarViewModel>();
+            CreateMap<Showroom, ShowroomViewModel>();
+            CreateMap<ProductionCompany, ProductionCompanyViewModel>();
             CreateMap<User, UserViewModel>()
                 .ForMember(userVM => userVM.Status, config => config.MapFrom(user => user.Account.Status));
             CreateMap<Customer, CustomerViewModel>()

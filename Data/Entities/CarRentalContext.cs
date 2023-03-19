@@ -148,6 +148,10 @@ public partial class CarRentalContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Car__ModelId__5CD6CB2B");
 
+            entity.HasOne(d => d.ProductionCompany).WithMany(p => p.Cars)
+                .HasForeignKey(d => d.ProductionCompanyId)
+                .HasConstraintName("FK_Car_ProductionCompany");
+
             entity.HasOne(d => d.Showroom).WithMany(p => p.Cars)
                 .HasForeignKey(d => d.ShowroomId)
                 .HasConstraintName("FK__Car__ShowroomId__619B8048");
@@ -236,6 +240,10 @@ public partial class CarRentalContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(256);
             entity.Property(e => e.ProductionCompany).HasMaxLength(256);
             entity.Property(e => e.TransmissionType).HasMaxLength(256);
+
+            entity.HasOne(d => d.CarOwner).WithMany(p => p.CarRegistrations)
+                .HasForeignKey(d => d.CarOwnerId)
+                .HasConstraintName("FK_CarRegistration_CarOwner");
         });
 
         modelBuilder.Entity<CarRegistrationCalendar>(entity =>
@@ -556,7 +564,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Transaction>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC074B349DED");
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC0757AD3317");
 
             entity.ToTable("Transaction");
 
@@ -569,15 +577,19 @@ public partial class CarRentalContext : DbContext
 
             entity.HasOne(d => d.CarOwner).WithMany(p => p.Transactions)
                 .HasForeignKey(d => d.CarOwnerId)
-                .HasConstraintName("FK__Transacti__CarOw__0B91BA14");
+                .HasConstraintName("FK__Transacti__CarOw__3F115E1A");
+
+            entity.HasOne(d => d.Customer).WithMany(p => p.Transactions)
+                .HasForeignKey(d => d.CustomerId)
+                .HasConstraintName("FK__Transacti__Custo__3E1D39E1");
 
             entity.HasOne(d => d.Driver).WithMany(p => p.Transactions)
                 .HasForeignKey(d => d.DriverId)
-                .HasConstraintName("FK__Transacti__Drive__0A9D95DB");
+                .HasConstraintName("FK__Transacti__Drive__3D2915A8");
 
             entity.HasOne(d => d.User).WithMany(p => p.Transactions)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Transacti__UserI__09A971A2");
+                .HasConstraintName("FK__Transacti__UserI__3C34F16F");
         });
 
         modelBuilder.Entity<Type>(entity =>
