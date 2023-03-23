@@ -33,16 +33,37 @@ namespace Service.Implementations
         public async Task<ListViewModel<CarViewModel>> GetCars(CarFilterModel filter, PaginationRequestModel pagination)
         {
             var query = _carRepository.GetMany(car => car.Name != null && filter.Name != null ? car.Name.Contains(filter.Name) : true);
-
             if (filter.Location != null)
             {
                 query = query.AsQueryable().DistanceFilter(filter.Location.Latitude, filter.Location.Longitude);
             }
+            if (filter.CarType != null)
+            {
+                query = query.AsQueryable().Where(car => car.CarTypes.Equals(filter.CarType.ToString()));
+            }
+            if (filter.ModelId != null)
+            {
+                query = query.AsQueryable().Where(car => car.ModelId.Equals(filter.ModelId));
+            }
+            if (filter.Price != null)
+            {
+                query = query.AsQueryable().Where(car => car.Price >= filter.Price.MinPrice && car.Price <= filter.Price.MaxPrice);
+            }
+            if (filter.HasDriver != null)
+            {
+                query.AsQueryable().Where(car => car.DriverId != null);
+            }
+            if (filter.TransmissionType != null)
+            {
+                query = query.AsQueryable().Where(car => car.Model.TransmissionType.Equals(filter.TransmissionType.ToString()));
+            }
             var cars = await query
-                .Include(car => car.Model).ThenInclude(model => model.ProductionCompany)
-                .ProjectTo<CarViewModel>(_mapper.ConfigurationProvider)
-                .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize)
-                .ToListAsync();
+            .Include(car => car.Model).ThenInclude(model => model.ProductionCompany)
+            .OrderByDescending(car => car.Star)
+            .ThenByDescending(car => car.Rented)
+            .ProjectTo<CarViewModel>(_mapper.ConfigurationProvider)
+            .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize)
+            .ToListAsync();
             var totalRow = await query.CountAsync();
             if (cars != null || cars != null && cars.Any())
             {
@@ -70,82 +91,85 @@ namespace Service.Implementations
 
         public async Task<CarViewModel> CreateCar(CarCreateModel model)
         {
-            var result = 0;
-            var id = Guid.NewGuid();
-            using (var transaction = _unitOfWork.Transaction())
+            using var transaction = _unitOfWork.Transaction();
+            try
             {
-                try
-                {
-                    var locationId = await CreateLocation(model.Location);
-                    var AdditionalChargeId = await CreateAdditionalCharge(model.AdditionalCharge);
+                var locationId = await CreateLocation(model.Location);
+                var additionalChargeId = await CreateAdditionalCharge(model.AdditionalCharge);
 
-                    var car = new Car
-                    {
-                        Id = id,
-                        Description = model.Description,
-                        LocationId = locationId,
-                        AdditionalChargeId = AdditionalChargeId,
-                        LicensePlate = model.LicensePlate,
-                        Name = model.Name,
-                        Price = model.Price,
-                        Status = CarStatus.Idle.ToString(),
-                        ModelId = model.ModelId,
-                        ReceiveTime = model.ReceiveTime,
-                        ReturnTime = model.ReturnTime,
-                        Rented = 0,
-                        CreateAt = DateTime.Now
-                    };
-                    _carRepository.Add(car);
-                    result = await _unitOfWork.SaveChanges();
-                    transaction.Commit();
-                }
-                catch (Exception)
+                var car = new Car
                 {
-                    transaction.Rollback();
-                    throw;
+                    Id = Guid.NewGuid(),
+                    Description = model.Description,
+                    LocationId = locationId,
+                    AdditionalChargeId = additionalChargeId,
+                    LicensePlate = model.LicensePlate,
+                    Name = model.Name,
+                    Price = model.Price,
+                    Status = CarStatus.Idle.ToString(),
+                    ModelId = model.ModelId,
+                    ReceiveTime = model.ReceiveTime,
+                    ReturnTime = model.ReturnTime,
+                    Rented = 0,
+                    CreateAt = DateTime.Now
+                };
+                _carRepository.Add(car);
+
+                if (await _unitOfWork.SaveChanges() > 0)
+                {
+                    transaction.Commit();
+                    return await GetCar(car.Id) ?? throw new InvalidOperationException("Failed to retrieve car.");
                 }
+
+                transaction.Rollback();
+                return null!;
             }
-            return result > 0 ? await GetCar(id) : null!;
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public async Task<CarViewModel> UpdateCar(Guid id, CarUpdateModel model)
         {
-            var car = await _carRepository.GetMany(car => car.Id.Equals(id))
-                .Include(car => car.Location)
-                .Include(car => car.AdditionalCharge)
-                .Include(car => car.Model).ThenInclude(model => model.ProductionCompany)
+            var car = await _carRepository.GetMany(c => c.Id.Equals(id))
+                .Include(c => c.Location)
+                .Include(c => c.AdditionalCharge)
+                .Include(c => c.Model).ThenInclude(m => m.ProductionCompany)
                 .FirstOrDefaultAsync();
-            if (car != null)
-            {
-                if (model.Name != null) car.Name = model.Name;
-                if (model.Seater != null) car.Model.Seater = (int)model.Seater;
-                if (model.FuelType != null) car.Model.FuelType = model.FuelType;
-                if (model.FuelConsumption != null) car.Model.FuelConsumption = model.FuelConsumption;
-                if (model.Description != null) car.Description = model.Description;
-                if (model.Status != null) car.Status = model.Status;
-                if (model.LicensePlate != null) car.LicensePlate = model.LicensePlate;
-                if (model.TransmissionType != null) car.Model.TransmissionType = model.TransmissionType;
-                if (model.YearOfManufacture != null) car.Model.YearOfManufacture = (int)model.YearOfManufacture;
-                if (model.ProductionCompanyId != null) car.Model.ProductionCompanyId = (Guid)model.ProductionCompanyId;
-                if (model.Price != null) car.Price = (double)model.Price;
-                if (model.Location != null)
-                {
-                    car.Location!.Longitude = model.Location.Longitude;
-                    car.Location!.Latitude = model.Location.Latitude;
-                }
-                if (model.AdditionalCharge != null)
-                {
-                    car.AdditionalCharge!.TimeSurcharge = model.AdditionalCharge.TimeSurcharge;
-                    car.AdditionalCharge!.MaximumDistance = model.AdditionalCharge.MaximumDistance;
-                    car.AdditionalCharge!.DistanceSurcharge = model.AdditionalCharge.DistanceSurcharge;
-                }
-                if (model.LicensePlate != null) car.LicensePlate = model.LicensePlate;
 
-                _carRepository.Update(car);
-                var result = await _unitOfWork.SaveChanges();
-                return await GetCar(id);
+            if (car == null) return null!;
+
+            car.Name = model.Name ?? car.Name;
+            car.Description = model.Description ?? car.Description;
+            car.Status = model.Status ?? car.Status;
+            car.LicensePlate = model.LicensePlate ?? car.LicensePlate;
+            car.Price = model.Price ?? car.Price;
+
+            if (model.Seater != null) car.Model.Seater = (int)model.Seater;
+            if (model.FuelType != null) car.Model.FuelType = model.FuelType;
+            if (model.FuelConsumption != null) car.Model.FuelConsumption = model.FuelConsumption;
+            if (model.TransmissionType != null) car.Model.TransmissionType = model.TransmissionType;
+            if (model.YearOfManufacture != null) car.Model.YearOfManufacture = (int)model.YearOfManufacture;
+            if (model.ProductionCompanyId != null) car.Model.ProductionCompanyId = (Guid)model.ProductionCompanyId;
+
+            if (model.Location != null)
+            {
+                car.Location!.Longitude = model.Location.Longitude;
+                car.Location!.Latitude = model.Location.Latitude;
             }
-            return null!;
+
+            if (model.AdditionalCharge != null)
+            {
+                car.AdditionalCharge!.TimeSurcharge = model.AdditionalCharge.TimeSurcharge;
+                car.AdditionalCharge!.MaximumDistance = model.AdditionalCharge.MaximumDistance;
+                car.AdditionalCharge!.DistanceSurcharge = model.AdditionalCharge.DistanceSurcharge;
+            }
+
+            _carRepository.Update(car);
+            await _unitOfWork.SaveChanges();
+            return await GetCar(id);
         }
 
         // PRIVATE METHODS

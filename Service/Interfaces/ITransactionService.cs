@@ -5,6 +5,6 @@ namespace Service.Interfaces
 {
     public interface ITransactionService
     {
-        Task<ListViewModel<TransactionViewModel>> GetTransactions(TransactionFilterModel filter, PaginationRequestModel pagination);
+        Task<ListViewModel<TransactionViewModel>> GetTransactions(Guid userId, PaginationRequestModel pagination);
     }
 }

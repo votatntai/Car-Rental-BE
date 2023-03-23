@@ -3,7 +3,6 @@ using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
 using Microsoft.AspNetCore.Mvc;
-using Service.Implementations;
 using Service.Interfaces;
 
 namespace Application.Controllers

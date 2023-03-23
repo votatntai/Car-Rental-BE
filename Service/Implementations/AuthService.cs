@@ -158,7 +158,6 @@ namespace Service.Implementations
             return carOwner != null ? carOwner : null!;
         }
 
-
         public async Task<AuthViewModel>AuthById(Guid id)
         {
             if(_customerRepository.Any(customer => customer.Id.Equals(id)))

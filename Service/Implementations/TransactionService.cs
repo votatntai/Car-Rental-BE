@@ -19,31 +19,19 @@ namespace Service.Implementations
             _mapper = mapper;
         }
 
-        public async Task<ListViewModel<TransactionViewModel>> GetTransactions(TransactionFilterModel filter, PaginationRequestModel pagination)
+        public async Task<ListViewModel<TransactionViewModel>> GetTransactions(Guid userId, PaginationRequestModel pagination)
         {
-            var query = _transactionRepository.GetAll();
-            if (filter.CarOwnerId != null)
-            {
-                query = _transactionRepository.GetMany(transaction => transaction.CarOwnerId.Equals(filter.CarOwnerId));
-            }
-            if (filter.DriverId != null)
-            {
-                query = _transactionRepository.GetMany(transaction => transaction.DriverId.Equals(filter.DriverId));
-            }
-            if (filter.CustomerId != null)
-            {
-                query = _transactionRepository.GetMany(transaction => transaction.CustomerId.Equals(filter.CustomerId));
-            }
-            if (filter.UserId != null)
-            {
-                query = _transactionRepository.GetMany(transaction => transaction.UserId.Equals(filter.UserId));
-            }
+            var query = _transactionRepository.GetAll()
+                .Where(t => t.CarOwnerId == userId || t.DriverId == userId || t.UserId == userId || t.CustomerId == userId);
             var transactions = await query.ProjectTo<TransactionViewModel>(_mapper.ConfigurationProvider)
-                .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
+                .OrderBy(t => t.CreateAt)
+                .Skip(pagination.PageNumber * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .AsNoTracking()
+                .ToListAsync();
             var totalRow = await query.AsNoTracking().CountAsync();
-            if (transactions != null || transactions != null && transactions.Any())
-            {
-                return new ListViewModel<TransactionViewModel>
+            return transactions != null && transactions.Any()
+                ? new ListViewModel<TransactionViewModel>
                 {
                     Pagination = new PaginationViewModel
                     {
@@ -52,9 +40,9 @@ namespace Service.Implementations
                         TotalRow = totalRow
                     },
                     Data = transactions
-                };
-            }   
-                return null!;
+                }
+                : null!;
         }
+
     }
 }

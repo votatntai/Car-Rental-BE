@@ -3,7 +3,9 @@ using AutoMapper.QueryableExtensions;
 using Data;
 using Data.Entities;
 using Data.Models.Get;
+using Data.Models.Update;
 using Data.Models.Views;
+using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
@@ -20,9 +22,9 @@ namespace Service.Implementations
             _mapper = mapper;
         }
 
-        public async Task<ListViewModel<NotificationViewModel>> GetNotifications(NotificationFilterModel filter, PaginationRequestModel pagination)
+        public async Task<ListViewModel<NotificationViewModel>> GetNotifications(Guid userId, PaginationRequestModel pagination)
         {
-            var query = _notificationRepository.GetMany(notification => notification.AccountId.Equals(filter.AccountId))
+            var query = _notificationRepository.GetMany(notification => notification.AccountId.Equals(userId))
                 .ProjectTo<NotificationViewModel>(_mapper.ConfigurationProvider);
             var notifications = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
             var totalRow = await query.AsNoTracking().CountAsync();
@@ -40,7 +42,54 @@ namespace Service.Implementations
                 };
             }
             return null!;
+        }
 
+        public async Task<NotificationViewModel> GetNotification(Guid id)
+        {
+            return await _notificationRepository.GetMany(notification => notification.Id.Equals(id))
+                .ProjectTo<NotificationViewModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync() ?? null!;
+        }
+
+        public async Task<NotificationViewModel> UpdateNotification(Guid id, NotificationUpdateModel model)
+        {
+            var notification = await _notificationRepository.GetMany(notification => notification.Id.Equals(id)).FirstOrDefaultAsync();
+            if (notification == null)
+            {
+                return null!;
+            }
+            notification.IsRead = model.IsRead;
+            _notificationRepository.Update(notification);
+            var result = await _unitOfWork.SaveChanges();
+            return result > 0 ? await GetNotification(id) : null!;
+        }
+
+        public async Task<NotificationViewModel> MakeAsRead(Guid id)
+        {
+            var notifications = await _notificationRepository.GetMany(notification => notification.AccountId.Equals(id)).ToListAsync();
+            if (notifications == null)
+            {
+                return null!;
+            }
+            foreach (var notification in notifications)
+            {
+                notification.IsRead = true;
+            }
+            _notificationRepository.UpdateRange(notifications);
+            var result = await _unitOfWork.SaveChanges();
+            return result > 0 ? await GetNotification(id) : null!;
+        }
+
+        public async Task<bool> DeleteNotification(Guid id)
+        {
+            var notification = await _notificationRepository.GetMany(notification => notification.Id.Equals(id)).FirstOrDefaultAsync();
+            if (notification == null)
+            {
+                return false;
+            }
+            _notificationRepository.Remove(notification);
+            var result = await _unitOfWork.SaveChanges();
+            return result > 0;
         }
     }
 }

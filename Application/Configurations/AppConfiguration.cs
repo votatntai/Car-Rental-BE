@@ -1,8 +1,5 @@
 ﻿using Application.Configurations.Middleware;
-using AutoMapper;
 using Data;
-using Data.Entities;
-using Data.Models.Views;
 using Microsoft.OpenApi.Models;
 using Service.Implementations;
 using Service.Interfaces;
@@ -23,6 +20,8 @@ namespace Application.Configurations
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<ICarRegistrationService, CarRegistrationService>();
             services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IProductionCompanyService, ProductionCompanyService>();
+            services.AddScoped<IModelService, ModelService>();
 
             services.AddTransient<IUnitOfWork, UnitOfWork>();
         }

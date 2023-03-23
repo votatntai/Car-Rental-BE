@@ -22,6 +22,9 @@ namespace Data
         private ITransactionRepository _transaction = null!;
         private INotificationRepository _notification = null!;
         private IOrderRepository _order = null!;
+        private IOrderDetailRepository _orderDetail = null!;
+        private IProductionCompanyRepository _productionCompany = null!;
+        private IModelRepository _model = null!;
 
         public UnitOfWork(CarRentalContext context)
         {
@@ -72,10 +75,12 @@ namespace Data
         {
             get { return _carRegistration ??= new CarRegistrationRepository(_context); }
         }
+
         public ITransactionRepository Transactions
         {
             get { return _transaction ??= new TransactionRepository(_context); }
         }
+
         public INotificationRepository Notification
         {
             get { return _notification ??= new NotificationRepository(_context); }
@@ -84,6 +89,21 @@ namespace Data
         public IOrderRepository Order
         {
             get { return _order ??= new OrderRepository(_context); }
+        }
+
+        public IOrderDetailRepository OrderDetail
+        {
+            get { return _orderDetail ??= new OrderDetailRepository(_context); }
+        }
+
+        public IProductionCompanyRepository ProductionCompany
+        {
+            get { return _productionCompany ??= new ProductionCompanyRepository(_context); }
+        }
+
+        public IModelRepository Model
+        {
+            get { return _model ??= new ModelRepository(_context); }
         }
 
         public async Task<int> SaveChanges()

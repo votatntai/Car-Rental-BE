@@ -28,6 +28,8 @@ namespace Data.Models.Views
 
         public virtual ICollection<CarCalendarViewModel> CarCalendars { get; set; } = null!;
 
+        public virtual ICollection<CarFeatureViewModel> CarFeatures { get; set; } = null!;
+
         public virtual ICollection<CarTypeViewModel> CarTypes { get; set; } = null!;
 
         public ProductionCompanyViewModel ProductionCompany { get; set; } = null!;

@@ -15,7 +15,9 @@ public partial class Account
 
     public virtual ICollection<CarOwner> CarOwners { get; } = new List<CarOwner>();
 
-    public virtual ICollection<Customer> Customers { get; } = new List<Customer>();
+    public virtual Customer? Customer { get; set; }
+
+    public virtual ICollection<DeviceToken> DeviceTokens { get; } = new List<DeviceToken>();
 
     public virtual ICollection<Driver> Drivers { get; } = new List<Driver>();
 

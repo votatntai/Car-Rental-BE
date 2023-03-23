@@ -21,6 +21,8 @@ public partial class Order
 
     public string? Description { get; set; }
 
+    public DateTime CreateAt { get; set; }
+
     public virtual Customer Customer { get; set; } = null!;
 
     public virtual ICollection<FeedBack> FeedBacks { get; } = new List<FeedBack>();

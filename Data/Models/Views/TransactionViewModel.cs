@@ -1,10 +1,12 @@
-﻿namespace Data.Models.Views
+﻿using Utility.Enums;
+
+namespace Data.Models.Views
 {
     public class TransactionViewModel
     {
         public Guid Id { get; set; }
 
-        public string Type { get; set; } = null!;
+        public String Type { get; set; }
 
         public double Amount { get; set; }
 

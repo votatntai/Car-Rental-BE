@@ -1,8 +1,8 @@
 ﻿using Utility.Enums;
 
-namespace Data.Models.Get
+namespace Data.Models.Update
 {
-    public class OrderFilterModel
+    public class OrderUpdateModel
     {
         public OrderStatus? Status { get; set; }
     }

@@ -1,4 +1,5 @@
-﻿using Data.Models.Get;
+﻿using Application.Configurations.Middleware;
+using Data.Models.Get;
 using Data.Models.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,11 +18,13 @@ namespace Application.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         [ProducesResponseType(typeof(ListViewModel<TransactionViewModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ListViewModel<TransactionViewModel>>> GetTransactions([FromQuery] TransactionFilterModel filter, [FromQuery] PaginationRequestModel pagination)
+        public async Task<ActionResult<ListViewModel<TransactionViewModel>>> GetTransactions([FromQuery] PaginationRequestModel pagination)
         {
-            var transaction = await _transactionService.GetTransactions(filter, pagination);
+            var auth = (AuthViewModel?)HttpContext.Items["User"];
+            var transaction = await _transactionService.GetTransactions(auth!.Id, pagination);
             return transaction != null ? Ok(transaction) : BadRequest();
         }
     }

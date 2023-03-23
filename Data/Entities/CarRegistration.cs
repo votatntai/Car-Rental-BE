@@ -31,11 +31,11 @@ public partial class CarRegistration
 
     public DateTime CreateAt { get; set; }
 
+    public Guid CarOwnerId { get; set; }
+
     public string? Description { get; set; }
 
-    public Guid? CarOwnerId { get; set; }
-
-    public virtual CarOwner? CarOwner { get; set; }
+    public virtual CarOwner CarOwner { get; set; } = null!;
 
     public virtual ICollection<CarRegistrationCalendar> CarRegistrationCalendars { get; } = new List<CarRegistrationCalendar>();
 

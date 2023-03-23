@@ -19,6 +19,9 @@ namespace Data
         public ITransactionRepository Transactions { get; }
         public INotificationRepository Notification { get; }
         public IOrderRepository Order { get; }
+        public IOrderDetailRepository OrderDetail { get; }
+        public IProductionCompanyRepository ProductionCompany { get; }
+        public IModelRepository Model { get; }
 
         Task<int> SaveChanges();
         IDbContextTransaction Transaction();

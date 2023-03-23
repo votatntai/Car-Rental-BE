@@ -21,6 +21,8 @@ public partial class Car
 
     public Guid? LocationId { get; set; }
 
+    public Guid? ProductionCompanyId { get; set; }
+
     public Guid? AdditionalChargeId { get; set; }
 
     public Guid? DriverId { get; set; }
@@ -38,8 +40,6 @@ public partial class Car
     public double? Star { get; set; }
 
     public string Status { get; set; } = null!;
-
-    public Guid? ProductionCompanyId { get; set; }
 
     public virtual AdditionalCharge? AdditionalCharge { get; set; }
 

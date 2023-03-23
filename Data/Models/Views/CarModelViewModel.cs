@@ -2,6 +2,7 @@
 {
     public class CarModelViewModel
     {
+        public string Id { get; set; } = null!;
         public string Name { get; set; } = null!;
 
         public string TransmissionType { get; set; } = null!;
