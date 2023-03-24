@@ -33,7 +33,7 @@ Create Table Customer(
 	BankAccountNumber nvarchar(256),
 	BankName nvarchar(256),
 	AccountId uniqueidentifier foreign key references Account(Id) not null unique,
-	WalletId uniqueidentifier foreign key references Wallet(Id) not null,
+	WalletId uniqueidentifier foreign key references Wallet(Id) not null unique,
 )
 Go
 Create Table CarOwner(
@@ -45,8 +45,8 @@ Create Table CarOwner(
 	AvatarUrl nvarchar(max),
 	BankAccountNumber nvarchar(256),
 	BankName nvarchar(256),
-	AccountId uniqueidentifier foreign key references Account(Id) not null,
-	WalletId uniqueidentifier foreign key references Wallet(Id) not null,
+	AccountId uniqueidentifier foreign key references Account(Id) not null unique,
+	WalletId uniqueidentifier foreign key references Wallet(Id) not null unique,
 )
 Go
 Create Table Driver(
@@ -59,8 +59,8 @@ Create Table Driver(
 	Star float,
 	BankAccountNumber nvarchar(256),
 	BankName nvarchar(256),
-	AccountId uniqueidentifier foreign key references Account(Id) not null,
-	WalletId uniqueidentifier foreign key references Wallet(Id) not null,
+	AccountId uniqueidentifier foreign key references Account(Id) not null unique,
+	WalletId uniqueidentifier foreign key references Wallet(Id) not null unique,
 	LocationId uniqueidentifier foreign key references [Location](Id),
 	Status nvarchar(256) not null
 )
@@ -72,8 +72,8 @@ Create Table [User](
 	Gender nvarchar(256) not null,
 	AvatarUrl nvarchar(max),
 	Role nvarchar(256) not null,
-	AccountId uniqueidentifier foreign key references Account(Id) not null,
-	WalletId uniqueidentifier foreign key references Wallet(Id) not null,
+	AccountId uniqueidentifier foreign key references Account(Id) not null unique,
+	WalletId uniqueidentifier foreign key references Wallet(Id) not null unique,
 )
 Go
 Create Table DeviceToken(

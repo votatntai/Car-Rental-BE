@@ -13,15 +13,15 @@ public partial class Account
 
     public bool Status { get; set; }
 
-    public virtual ICollection<CarOwner> CarOwners { get; } = new List<CarOwner>();
+    public virtual CarOwner? CarOwner { get; set; }
 
     public virtual Customer? Customer { get; set; }
 
     public virtual ICollection<DeviceToken> DeviceTokens { get; } = new List<DeviceToken>();
 
-    public virtual ICollection<Driver> Drivers { get; } = new List<Driver>();
+    public virtual Driver? Driver { get; set; }
 
     public virtual ICollection<Notification> Notifications { get; } = new List<Notification>();
 
-    public virtual ICollection<User> Users { get; } = new List<User>();
+    public virtual User? User { get; set; }
 }

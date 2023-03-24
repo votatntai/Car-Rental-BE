@@ -26,8 +26,6 @@ namespace Data.Models.Views
 
         public string? BankName { get; set; }
 
-        public WalletViewModel Wallet { get; set; } = null!;
-
         public LocationViewModel? Location { get; set; }
 
         public string Status { get; set; } = null!;

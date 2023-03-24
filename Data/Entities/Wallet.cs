@@ -11,11 +11,11 @@ public partial class Wallet
 
     public string Status { get; set; } = null!;
 
-    public virtual ICollection<CarOwner> CarOwners { get; } = new List<CarOwner>();
+    public virtual CarOwner? CarOwner { get; set; }
 
-    public virtual ICollection<Customer> Customers { get; } = new List<Customer>();
+    public virtual Customer? Customer { get; set; }
 
-    public virtual ICollection<Driver> Drivers { get; } = new List<Driver>();
+    public virtual Driver? Driver { get; set; }
 
-    public virtual ICollection<User> Users { get; } = new List<User>();
+    public virtual User? User { get; set; }
 }

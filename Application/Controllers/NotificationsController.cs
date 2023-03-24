@@ -2,9 +2,7 @@
 using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Service.Implementations;
 using Service.Interfaces;
 
 namespace Application.Controllers
@@ -27,7 +25,7 @@ namespace Application.Controllers
         {
             var auth = (AuthViewModel?)HttpContext.Items["User"];
             var notification = await _notificationService.GetNotifications(auth!.Id, pagination);
-            return notification != null ? Ok(notification) : BadRequest();
+            return notification != null ? Ok(notification) : NotFound();
         }
 
         [HttpGet]
@@ -42,7 +40,7 @@ namespace Application.Controllers
 
         [HttpPut]
         [Route("{id}")]
-        [ProducesResponseType(typeof(NotificationViewModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(NotificationViewModel), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<NotificationViewModel>> UpdateNotification([FromRoute] Guid id, [FromBody] NotificationUpdateModel model)
         {
@@ -50,6 +48,25 @@ namespace Application.Controllers
             {
                 var notification = await _notificationService.UpdateNotification(id, model);
                 return CreatedAtAction(nameof(GetNotification), new { id = notification.Id }, notification);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, e.InnerException != null ? e.InnerException.Message : e.Message);
+            }
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("make-as-read")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<NotificationViewModel>> MakeAsRead()
+        {
+            try
+            {
+                var auth = (AuthViewModel?)HttpContext.Items["User"];
+                var notification = await _notificationService.MakeAsRead(auth!.Id);
+                return Ok();
             }
             catch (Exception e)
             {

@@ -18,8 +18,6 @@
 
         public string? BankName { get; set; }
 
-        public WalletViewModel Wallet { get; set; } = null!;
-
         public bool Status { get; set; }
     }
 }

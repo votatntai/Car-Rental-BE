@@ -24,13 +24,23 @@ namespace Service.Implementations
 
         public async Task<ListViewModel<NotificationViewModel>> GetNotifications(Guid userId, PaginationRequestModel pagination)
         {
-            var query = _notificationRepository.GetMany(notification => notification.AccountId.Equals(userId))
-                .ProjectTo<NotificationViewModel>(_mapper.ConfigurationProvider);
-            var notifications = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
+            var query = _notificationRepository.GetMany(notification =>
+                    notification.Account.Customer != null ? notification.Account.Customer.Id.Equals(userId) :
+                    notification.Account.CarOwner != null ? notification.Account.CarOwner.Id.Equals(userId) :
+                    notification.Account.Driver != null ? notification.Account.Driver.Id.Equals(userId) :
+                    notification.Account.User != null ? notification.Account.User.Id.Equals(userId) :
+                    false);
+            var notifications = await query
+                .ProjectTo<NotificationViewModel>(_mapper.ConfigurationProvider)
+                .Skip(pagination.PageNumber * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .AsNoTracking()
+                .ToListAsync();
+
             var totalRow = await query.AsNoTracking().CountAsync();
-            if (notifications != null || notifications != null && notifications.Any())
-            {
-                return new ListViewModel<NotificationViewModel>
+
+            return notifications != null && notifications.Any()
+                ? new ListViewModel<NotificationViewModel>
                 {
                     Pagination = new PaginationViewModel
                     {
@@ -39,9 +49,8 @@ namespace Service.Implementations
                         TotalRow = totalRow
                     },
                     Data = notifications
-                };
-            }
-            return null!;
+                }
+                : null!;
         }
 
         public async Task<NotificationViewModel> GetNotification(Guid id)
@@ -64,20 +73,21 @@ namespace Service.Implementations
             return result > 0 ? await GetNotification(id) : null!;
         }
 
-        public async Task<NotificationViewModel> MakeAsRead(Guid id)
+        public async Task<bool> MakeAsRead(Guid userId)
         {
-            var notifications = await _notificationRepository.GetMany(notification => notification.AccountId.Equals(id)).ToListAsync();
-            if (notifications == null)
-            {
-                return null!;
-            }
+            var notifications = await _notificationRepository.GetMany(notification =>
+                notification.Account.Customer != null ? notification.Account.Customer.Id.Equals(userId) :
+                notification.Account.CarOwner != null ? notification.Account.CarOwner.Id.Equals(userId) :
+                notification.Account.Driver != null ? notification.Account.Driver.Id.Equals(userId) :
+                notification.Account.User != null ? notification.Account.User.Id.Equals(userId) :
+                false).ToListAsync();
             foreach (var notification in notifications)
             {
                 notification.IsRead = true;
             }
             _notificationRepository.UpdateRange(notifications);
             var result = await _unitOfWork.SaveChanges();
-            return result > 0 ? await GetNotification(id) : null!;
+            return result > 0;
         }
 
         public async Task<bool> DeleteNotification(Guid id)

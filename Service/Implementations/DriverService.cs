@@ -53,33 +53,7 @@ namespace Service.Implementations
         public async Task<DriverViewModel> GetDriver(Guid id)
         {
             return await _driverRepository.GetMany(driver => driver.Id.Equals(id))
-                .Include(driver => driver.Account)
-                .Select(driver => new DriverViewModel
-            {
-                Id = driver.Id,
-                Address = driver.Address,
-                AvatarUrl = driver.AvatarUrl,
-                BankAccountNumber = driver.BankAccountNumber,
-                BankName = driver.BankName,
-                Gender = driver.Gender,
-                Name = driver.Name,
-                Phone = driver.Phone,
-                Wallet = new WalletViewModel
-                {
-                    Id = driver.Wallet.Id,
-                    Balance = driver.Wallet.Balance,
-                    Status = driver.Wallet.Status,
-                },
-                Location = driver.Location != null ? new LocationViewModel
-                {
-                    Id = driver.Location.Id,
-                    Latitude = driver.Location.Latitude,
-                    Longitude = driver.Location.Longitude,
-                } : null!,
-                Star = driver.Star,
-                Status = driver.Status,
-                AccountStatus = driver.Account.Status,
-            }).FirstOrDefaultAsync() ?? null!;
+                .ProjectTo<DriverViewModel>(_mapper.ConfigurationProvider).FirstOrDefaultAsync() ?? null!;
         }
 
         public async Task<DriverViewModel> CreateDriver(DriverCreateModel model)

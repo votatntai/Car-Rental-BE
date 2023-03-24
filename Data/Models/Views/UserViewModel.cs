@@ -15,7 +15,5 @@
         public string Role { get; set; } = null!;
 
         public bool Status { get; set; }
-
-        public WalletViewModel Wallet { get; set; } = null!;
     }
 }

@@ -9,7 +9,7 @@ namespace Service.Interfaces
         Task<ListViewModel<NotificationViewModel>> GetNotifications(Guid userId, PaginationRequestModel pagination);
         Task<NotificationViewModel> GetNotification(Guid id);
         Task<NotificationViewModel> UpdateNotification(Guid id, NotificationUpdateModel model);
-        Task<NotificationViewModel> MakeAsRead(Guid id);
+        Task<bool> MakeAsRead(Guid userId);
         Task<bool> DeleteNotification(Guid id);
     }
 }

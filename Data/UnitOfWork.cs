@@ -25,6 +25,7 @@ namespace Data
         private IOrderDetailRepository _orderDetail = null!;
         private IProductionCompanyRepository _productionCompany = null!;
         private IModelRepository _model = null!;
+        private IPromotionRepository _promotion= null!;
 
         public UnitOfWork(CarRentalContext context)
         {
@@ -104,6 +105,11 @@ namespace Data
         public IModelRepository Model
         {
             get { return _model ??= new ModelRepository(_context); }
+        } 
+
+        public IPromotionRepository Promotion
+        {
+            get { return _promotion ??= new PromotionRepository(_context); }
         }
 
         public async Task<int> SaveChanges()

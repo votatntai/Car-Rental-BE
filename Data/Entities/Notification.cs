@@ -7,7 +7,11 @@ public partial class Notification
 {
     public Guid Id { get; set; }
 
-    public string Message { get; set; } = null!;
+    public string Title { get; set; } = null!;
+
+    public string Body { get; set; } = null!;
+
+    public string? Link { get; set; }
 
     public Guid AccountId { get; set; }
 

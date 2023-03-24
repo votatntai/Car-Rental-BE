@@ -77,11 +77,11 @@ public partial class CarRentalContext : DbContext
     {
         modelBuilder.Entity<Account>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Account__3214EC0799B5756D");
+            entity.HasKey(e => e.Id).HasName("PK__Account__3214EC07034F0EE5");
 
             entity.ToTable("Account");
 
-            entity.HasIndex(e => e.Username, "UQ__Account__536C85E4D7FCFAF3").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Account__536C85E4C8CC6F59").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Password)
@@ -94,7 +94,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<AdditionalCharge>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Addition__3214EC0763BC41FC");
+            entity.HasKey(e => e.Id).HasName("PK__Addition__3214EC0766D9F54A");
 
             entity.ToTable("AdditionalCharge");
 
@@ -103,7 +103,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Calendar>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Calendar__3214EC07F976758C");
+            entity.HasKey(e => e.Id).HasName("PK__Calendar__3214EC07DAA3ECF9");
 
             entity.ToTable("Calendar");
 
@@ -115,7 +115,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Car>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Car__3214EC07CDAC1102");
+            entity.HasKey(e => e.Id).HasName("PK__Car__3214EC07FD5E8EA5");
 
             entity.ToTable("Car");
 
@@ -133,75 +133,79 @@ public partial class CarRentalContext : DbContext
 
             entity.HasOne(d => d.AdditionalCharge).WithMany(p => p.Cars)
                 .HasForeignKey(d => d.AdditionalChargeId)
-                .HasConstraintName("FK__Car__AdditionalC__656C112C");
+                .HasConstraintName("FK__Car__AdditionalC__6C190EBB");
 
             entity.HasOne(d => d.CarOwner).WithMany(p => p.Cars)
                 .HasForeignKey(d => d.CarOwnerId)
-                .HasConstraintName("FK__Car__CarOwnerId__6754599E");
+                .HasConstraintName("FK__Car__CarOwnerId__6E01572D");
 
             entity.HasOne(d => d.Driver).WithMany(p => p.Cars)
                 .HasForeignKey(d => d.DriverId)
-                .HasConstraintName("FK__Car__DriverId__66603565");
+                .HasConstraintName("FK__Car__DriverId__6D0D32F4");
 
             entity.HasOne(d => d.Location).WithMany(p => p.Cars)
                 .HasForeignKey(d => d.LocationId)
-                .HasConstraintName("FK__Car__LocationId__6383C8BA");
+                .HasConstraintName("FK__Car__LocationId__6A30C649");
 
             entity.HasOne(d => d.Model).WithMany(p => p.Cars)
                 .HasForeignKey(d => d.ModelId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Car__ModelId__628FA481");
+                .HasConstraintName("FK__Car__ModelId__693CA210");
 
             entity.HasOne(d => d.ProductionCompany).WithMany(p => p.Cars)
                 .HasForeignKey(d => d.ProductionCompanyId)
-                .HasConstraintName("FK__Car__ProductionC__6477ECF3");
+                .HasConstraintName("FK__Car__ProductionC__6B24EA82");
 
             entity.HasOne(d => d.Showroom).WithMany(p => p.Cars)
                 .HasForeignKey(d => d.ShowroomId)
-                .HasConstraintName("FK__Car__ShowroomId__68487DD7");
+                .HasConstraintName("FK__Car__ShowroomId__6EF57B66");
         });
 
         modelBuilder.Entity<CarCalendar>(entity =>
         {
-            entity.HasKey(e => new { e.CalendarId, e.CarId }).HasName("PK__CarCalen__A545C70F36A55F87");
+            entity.HasKey(e => new { e.CalendarId, e.CarId }).HasName("PK__CarCalen__A545C70FC0A62774");
 
             entity.ToTable("CarCalendar");
 
             entity.HasOne(d => d.Calendar).WithMany(p => p.CarCalendars)
                 .HasForeignKey(d => d.CalendarId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__CarCalend__Calen__01142BA1");
+                .HasConstraintName("FK__CarCalend__Calen__07C12930");
 
             entity.HasOne(d => d.Car).WithMany(p => p.CarCalendars)
                 .HasForeignKey(d => d.CarId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__CarCalend__CarId__02084FDA");
+                .HasConstraintName("FK__CarCalend__CarId__08B54D69");
         });
 
         modelBuilder.Entity<CarFeature>(entity =>
         {
-            entity.HasKey(e => new { e.CarId, e.FeatureId }).HasName("PK__CarFeatu__E08204920C18FB8B");
+            entity.HasKey(e => new { e.CarId, e.FeatureId }).HasName("PK__CarFeatu__E0820492171793E1");
 
             entity.ToTable("CarFeature");
 
             entity.HasOne(d => d.Car).WithMany(p => p.CarFeatures)
                 .HasForeignKey(d => d.CarId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__CarFeatur__CarId__6FE99F9F");
+                .HasConstraintName("FK__CarFeatur__CarId__76969D2E");
 
             entity.HasOne(d => d.Feature).WithMany(p => p.CarFeatures)
                 .HasForeignKey(d => d.FeatureId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__CarFeatur__Featu__70DDC3D8");
+                .HasConstraintName("FK__CarFeatur__Featu__778AC167");
         });
 
         modelBuilder.Entity<CarOwner>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__CarOwner__3214EC07CFD53345");
+            entity.HasKey(e => e.Id).HasName("PK__CarOwner__3214EC07572B4159");
 
             entity.ToTable("CarOwner");
 
-            entity.HasIndex(e => e.Phone, "UQ__CarOwner__5C7E359E4EE74C9E").IsUnique();
+            entity.HasIndex(e => e.AccountId, "UQ__CarOwner__349DA5A7C46DC2DA").IsUnique();
+
+            entity.HasIndex(e => e.Phone, "UQ__CarOwner__5C7E359EE661A6F5").IsUnique();
+
+            entity.HasIndex(e => e.WalletId, "UQ__CarOwner__84D4F90F4E5E249E").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Address).HasMaxLength(256);
@@ -213,20 +217,20 @@ public partial class CarRentalContext : DbContext
                 .HasMaxLength(256)
                 .IsUnicode(false);
 
-            entity.HasOne(d => d.Account).WithMany(p => p.CarOwners)
-                .HasForeignKey(d => d.AccountId)
+            entity.HasOne(d => d.Account).WithOne(p => p.CarOwner)
+                .HasForeignKey<CarOwner>(d => d.AccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__CarOwner__Accoun__45F365D3");
+                .HasConstraintName("FK__CarOwner__Accoun__48CFD27E");
 
-            entity.HasOne(d => d.Wallet).WithMany(p => p.CarOwners)
-                .HasForeignKey(d => d.WalletId)
+            entity.HasOne(d => d.Wallet).WithOne(p => p.CarOwner)
+                .HasForeignKey<CarOwner>(d => d.WalletId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__CarOwner__Wallet__46E78A0C");
+                .HasConstraintName("FK__CarOwner__Wallet__49C3F6B7");
         });
 
         modelBuilder.Entity<CarRegistration>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__CarRegis__3214EC07F89FCE77");
+            entity.HasKey(e => e.Id).HasName("PK__CarRegis__3214EC0718AA08D7");
 
             entity.ToTable("CarRegistration");
 
@@ -250,52 +254,54 @@ public partial class CarRentalContext : DbContext
             entity.HasOne(d => d.CarOwner).WithMany(p => p.CarRegistrations)
                 .HasForeignKey(d => d.CarOwnerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__CarRegist__CarOw__7A672E12");
+                .HasConstraintName("FK__CarRegist__CarOw__01142BA1");
         });
 
         modelBuilder.Entity<CarRegistrationCalendar>(entity =>
         {
-            entity.HasKey(e => new { e.CalendarId, e.CarRegistrationId }).HasName("PK__CarRegis__FF9A9A47DD6F13D3");
+            entity.HasKey(e => new { e.CalendarId, e.CarRegistrationId }).HasName("PK__CarRegis__FF9A9A472E01F647");
 
             entity.ToTable("CarRegistrationCalendar");
 
             entity.HasOne(d => d.Calendar).WithMany(p => p.CarRegistrationCalendars)
                 .HasForeignKey(d => d.CalendarId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__CarRegist__Calen__04E4BC85");
+                .HasConstraintName("FK__CarRegist__Calen__0B91BA14");
 
             entity.HasOne(d => d.CarRegistration).WithMany(p => p.CarRegistrationCalendars)
                 .HasForeignKey(d => d.CarRegistrationId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__CarRegist__CarRe__05D8E0BE");
+                .HasConstraintName("FK__CarRegist__CarRe__0C85DE4D");
         });
 
         modelBuilder.Entity<CarType>(entity =>
         {
-            entity.HasKey(e => new { e.CarId, e.TypeId }).HasName("PK__CarType__2DB6C415D734843E");
+            entity.HasKey(e => new { e.CarId, e.TypeId }).HasName("PK__CarType__2DB6C4155ACB2323");
 
             entity.ToTable("CarType");
 
             entity.HasOne(d => d.Car).WithMany(p => p.CarTypes)
                 .HasForeignKey(d => d.CarId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__CarType__CarId__75A278F5");
+                .HasConstraintName("FK__CarType__CarId__7C4F7684");
 
             entity.HasOne(d => d.Type).WithMany(p => p.CarTypes)
                 .HasForeignKey(d => d.TypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__CarType__TypeId__76969D2E");
+                .HasConstraintName("FK__CarType__TypeId__7D439ABD");
         });
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Customer__3214EC071EEDEA08");
+            entity.HasKey(e => e.Id).HasName("PK__Customer__3214EC0757A937AD");
 
             entity.ToTable("Customer");
 
-            entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7285C7FEC").IsUnique();
+            entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A7EE1CCC45").IsUnique();
 
-            entity.HasIndex(e => e.Phone, "UQ__Customer__5C7E359E0E5BCD36").IsUnique();
+            entity.HasIndex(e => e.Phone, "UQ__Customer__5C7E359E03141E18").IsUnique();
+
+            entity.HasIndex(e => e.WalletId, "UQ__Customer__84D4F90F7F1D52B5").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Address).HasMaxLength(256);
@@ -310,17 +316,17 @@ public partial class CarRentalContext : DbContext
             entity.HasOne(d => d.Account).WithOne(p => p.Customer)
                 .HasForeignKey<Customer>(d => d.AccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Customer__Accoun__412EB0B6");
+                .HasConstraintName("FK__Customer__Accoun__4222D4EF");
 
-            entity.HasOne(d => d.Wallet).WithMany(p => p.Customers)
-                .HasForeignKey(d => d.WalletId)
+            entity.HasOne(d => d.Wallet).WithOne(p => p.Customer)
+                .HasForeignKey<Customer>(d => d.WalletId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Customer__Wallet__4222D4EF");
+                .HasConstraintName("FK__Customer__Wallet__4316F928");
         });
 
         modelBuilder.Entity<DeviceToken>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__DeviceTo__3214EC07DC1AA796");
+            entity.HasKey(e => e.Id).HasName("PK__DeviceTo__3214EC07B124DBD4");
 
             entity.ToTable("DeviceToken");
 
@@ -332,16 +338,20 @@ public partial class CarRentalContext : DbContext
             entity.HasOne(d => d.Account).WithMany(p => p.DeviceTokens)
                 .HasForeignKey(d => d.AccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__DeviceTok__Accou__5441852A");
+                .HasConstraintName("FK__DeviceTok__Accou__5AEE82B9");
         });
 
         modelBuilder.Entity<Driver>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Driver__3214EC07E23312E8");
+            entity.HasKey(e => e.Id).HasName("PK__Driver__3214EC073F7BC1C0");
 
             entity.ToTable("Driver");
 
-            entity.HasIndex(e => e.Phone, "UQ__Driver__5C7E359EF5D1E2EE").IsUnique();
+            entity.HasIndex(e => e.AccountId, "UQ__Driver__349DA5A78143B9F2").IsUnique();
+
+            entity.HasIndex(e => e.Phone, "UQ__Driver__5C7E359EF54373E4").IsUnique();
+
+            entity.HasIndex(e => e.WalletId, "UQ__Driver__84D4F90F40CB4585").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Address).HasMaxLength(256);
@@ -354,46 +364,46 @@ public partial class CarRentalContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.Status).HasMaxLength(256);
 
-            entity.HasOne(d => d.Account).WithMany(p => p.Drivers)
-                .HasForeignKey(d => d.AccountId)
+            entity.HasOne(d => d.Account).WithOne(p => p.Driver)
+                .HasForeignKey<Driver>(d => d.AccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Driver__AccountI__4AB81AF0");
+                .HasConstraintName("FK__Driver__AccountI__4F7CD00D");
 
             entity.HasOne(d => d.Location).WithMany(p => p.Drivers)
                 .HasForeignKey(d => d.LocationId)
-                .HasConstraintName("FK__Driver__Location__4CA06362");
+                .HasConstraintName("FK__Driver__Location__5165187F");
 
-            entity.HasOne(d => d.Wallet).WithMany(p => p.Drivers)
-                .HasForeignKey(d => d.WalletId)
+            entity.HasOne(d => d.Wallet).WithOne(p => p.Driver)
+                .HasForeignKey<Driver>(d => d.WalletId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Driver__WalletId__4BAC3F29");
+                .HasConstraintName("FK__Driver__WalletId__5070F446");
         });
 
         modelBuilder.Entity<DriverCalendar>(entity =>
         {
-            entity.HasKey(e => new { e.CalendarId, e.DriverId, e.CarId }).HasName("PK__DriverCa__23BC78A93E6C3717");
+            entity.HasKey(e => new { e.CalendarId, e.DriverId, e.CarId }).HasName("PK__DriverCa__23BC78A9EF044D18");
 
             entity.ToTable("DriverCalendar");
 
             entity.HasOne(d => d.Calendar).WithMany(p => p.DriverCalendars)
                 .HasForeignKey(d => d.CalendarId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__DriverCal__Calen__08B54D69");
+                .HasConstraintName("FK__DriverCal__Calen__0F624AF8");
 
             entity.HasOne(d => d.Car).WithMany(p => p.DriverCalendars)
                 .HasForeignKey(d => d.CarId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__DriverCal__CarId__09A971A2");
+                .HasConstraintName("FK__DriverCal__CarId__10566F31");
 
             entity.HasOne(d => d.Driver).WithMany(p => p.DriverCalendars)
                 .HasForeignKey(d => d.DriverId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__DriverCal__Drive__0A9D95DB");
+                .HasConstraintName("FK__DriverCal__Drive__114A936A");
         });
 
         modelBuilder.Entity<Feature>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Feature__3214EC0732B18715");
+            entity.HasKey(e => e.Id).HasName("PK__Feature__3214EC07AC9C7B4C");
 
             entity.ToTable("Feature");
 
@@ -403,7 +413,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<FeedBack>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__FeedBack__3214EC075AD07FFC");
+            entity.HasKey(e => e.Id).HasName("PK__FeedBack__3214EC0739FFA46F");
 
             entity.ToTable("FeedBack");
 
@@ -414,26 +424,26 @@ public partial class CarRentalContext : DbContext
 
             entity.HasOne(d => d.Car).WithMany(p => p.FeedBacks)
                 .HasForeignKey(d => d.CarId)
-                .HasConstraintName("FK__FeedBack__CarId__2A164134");
+                .HasConstraintName("FK__FeedBack__CarId__30C33EC3");
 
             entity.HasOne(d => d.Customer).WithMany(p => p.FeedBacks)
                 .HasForeignKey(d => d.CustomerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__FeedBack__Custom__29221CFB");
+                .HasConstraintName("FK__FeedBack__Custom__2FCF1A8A");
 
             entity.HasOne(d => d.Driver).WithMany(p => p.FeedBacks)
                 .HasForeignKey(d => d.DriverId)
-                .HasConstraintName("FK__FeedBack__Driver__2B0A656D");
+                .HasConstraintName("FK__FeedBack__Driver__31B762FC");
 
             entity.HasOne(d => d.Order).WithMany(p => p.FeedBacks)
                 .HasForeignKey(d => d.OrderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__FeedBack__OrderI__282DF8C2");
+                .HasConstraintName("FK__FeedBack__OrderI__2EDAF651");
         });
 
         modelBuilder.Entity<Image>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Image__3214EC072FB58731");
+            entity.HasKey(e => e.Id).HasName("PK__Image__3214EC0708C9BA43");
 
             entity.ToTable("Image");
 
@@ -443,20 +453,20 @@ public partial class CarRentalContext : DbContext
 
             entity.HasOne(d => d.Car).WithMany(p => p.Images)
                 .HasForeignKey(d => d.CarId)
-                .HasConstraintName("FK__Image__CarId__2FCF1A8A");
+                .HasConstraintName("FK__Image__CarId__367C1819");
 
             entity.HasOne(d => d.CarRegistration).WithMany(p => p.Images)
                 .HasForeignKey(d => d.CarRegistrationId)
-                .HasConstraintName("FK__Image__CarRegist__30C33EC3");
+                .HasConstraintName("FK__Image__CarRegist__37703C52");
 
             entity.HasOne(d => d.Showroom).WithMany(p => p.Images)
                 .HasForeignKey(d => d.ShowroomId)
-                .HasConstraintName("FK__Image__ShowroomI__2EDAF651");
+                .HasConstraintName("FK__Image__ShowroomI__3587F3E0");
         });
 
         modelBuilder.Entity<Location>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Location__3214EC0796F054DB");
+            entity.HasKey(e => e.Id).HasName("PK__Location__3214EC077B4DE882");
 
             entity.ToTable("Location");
 
@@ -465,7 +475,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Model>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Model__3214EC07B801B422");
+            entity.HasKey(e => e.Id).HasName("PK__Model__3214EC07B36D08FB");
 
             entity.ToTable("Model");
 
@@ -479,12 +489,12 @@ public partial class CarRentalContext : DbContext
             entity.HasOne(d => d.ProductionCompany).WithMany(p => p.Models)
                 .HasForeignKey(d => d.ProductionCompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Model__Productio__5CD6CB2B");
+                .HasConstraintName("FK__Model__Productio__6383C8BA");
         });
 
         modelBuilder.Entity<Notification>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Notifica__3214EC07E74E1202");
+            entity.HasKey(e => e.Id).HasName("PK__Notifica__3214EC07FA45F409");
 
             entity.ToTable("Notification");
 
@@ -492,16 +502,18 @@ public partial class CarRentalContext : DbContext
             entity.Property(e => e.CreateAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.Link).HasMaxLength(256);
+            entity.Property(e => e.Title).HasMaxLength(256);
 
             entity.HasOne(d => d.Account).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.AccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Notificat__Accou__0D7A0286");
+                .HasConstraintName("FK__Notificat__Accou__3A4CA8FD");
         });
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Order__3214EC077332B334");
+            entity.HasKey(e => e.Id).HasName("PK__Order__3214EC074E1A6883");
 
             entity.ToTable("Order");
 
@@ -515,16 +527,16 @@ public partial class CarRentalContext : DbContext
             entity.HasOne(d => d.Customer).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.CustomerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Order__CustomerI__1BC821DD");
+                .HasConstraintName("FK__Order__CustomerI__22751F6C");
 
             entity.HasOne(d => d.Promotion).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.PromotionId)
-                .HasConstraintName("FK__Order__Promotion__1CBC4616");
+                .HasConstraintName("FK__Order__Promotion__236943A5");
         });
 
         modelBuilder.Entity<OrderDetail>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__OrderDet__3214EC0705D2C1FF");
+            entity.HasKey(e => e.Id).HasName("PK__OrderDet__3214EC07F5122F83");
 
             entity.ToTable("OrderDetail");
 
@@ -534,28 +546,28 @@ public partial class CarRentalContext : DbContext
 
             entity.HasOne(d => d.Car).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.CarId)
-                .HasConstraintName("FK__OrderDeta__CarId__22751F6C");
+                .HasConstraintName("FK__OrderDeta__CarId__29221CFB");
 
             entity.HasOne(d => d.DeliveryLocation).WithMany(p => p.OrderDetailDeliveryLocations)
                 .HasForeignKey(d => d.DeliveryLocationId)
-                .HasConstraintName("FK__OrderDeta__Deliv__236943A5");
+                .HasConstraintName("FK__OrderDeta__Deliv__2A164134");
 
             entity.HasOne(d => d.Driver).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.DriverId)
-                .HasConstraintName("FK__OrderDeta__Drive__25518C17");
+                .HasConstraintName("FK__OrderDeta__Drive__2BFE89A6");
 
             entity.HasOne(d => d.Order).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.OrderId)
-                .HasConstraintName("FK__OrderDeta__Order__2180FB33");
+                .HasConstraintName("FK__OrderDeta__Order__282DF8C2");
 
             entity.HasOne(d => d.PickUpLocation).WithMany(p => p.OrderDetailPickUpLocations)
                 .HasForeignKey(d => d.PickUpLocationId)
-                .HasConstraintName("FK__OrderDeta__PickU__245D67DE");
+                .HasConstraintName("FK__OrderDeta__PickU__2B0A656D");
         });
 
         modelBuilder.Entity<ProductionCompany>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Producti__3214EC07648FBEFF");
+            entity.HasKey(e => e.Id).HasName("PK__Producti__3214EC07783E877D");
 
             entity.ToTable("ProductionCompany");
 
@@ -565,7 +577,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Promotion>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Promotio__3214EC0767905C02");
+            entity.HasKey(e => e.Id).HasName("PK__Promotio__3214EC070F90F3E7");
 
             entity.ToTable("Promotion");
 
@@ -579,7 +591,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Showroom>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Showroom__3214EC070BE85576");
+            entity.HasKey(e => e.Id).HasName("PK__Showroom__3214EC0781D23CCA");
 
             entity.ToTable("Showroom");
 
@@ -588,12 +600,12 @@ public partial class CarRentalContext : DbContext
 
             entity.HasOne(d => d.Location).WithMany(p => p.Showrooms)
                 .HasForeignKey(d => d.LocationId)
-                .HasConstraintName("FK__Showroom__Locati__5812160E");
+                .HasConstraintName("FK__Showroom__Locati__5EBF139D");
         });
 
         modelBuilder.Entity<Transaction>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC0755326921");
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC0726856E63");
 
             entity.ToTable("Transaction");
 
@@ -606,24 +618,24 @@ public partial class CarRentalContext : DbContext
 
             entity.HasOne(d => d.CarOwner).WithMany(p => p.Transactions)
                 .HasForeignKey(d => d.CarOwnerId)
-                .HasConstraintName("FK__Transacti__CarOw__151B244E");
+                .HasConstraintName("FK__Transacti__CarOw__1BC821DD");
 
             entity.HasOne(d => d.Customer).WithMany(p => p.Transactions)
                 .HasForeignKey(d => d.CustomerId)
-                .HasConstraintName("FK__Transacti__Custo__14270015");
+                .HasConstraintName("FK__Transacti__Custo__1AD3FDA4");
 
             entity.HasOne(d => d.Driver).WithMany(p => p.Transactions)
                 .HasForeignKey(d => d.DriverId)
-                .HasConstraintName("FK__Transacti__Drive__1332DBDC");
+                .HasConstraintName("FK__Transacti__Drive__19DFD96B");
 
             entity.HasOne(d => d.User).WithMany(p => p.Transactions)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Transacti__UserI__123EB7A3");
+                .HasConstraintName("FK__Transacti__UserI__18EBB532");
         });
 
         modelBuilder.Entity<Type>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Type__3214EC0712966D6D");
+            entity.HasKey(e => e.Id).HasName("PK__Type__3214EC076A449D73");
 
             entity.ToTable("Type");
 
@@ -633,11 +645,15 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__User__3214EC070CD437AA");
+            entity.HasKey(e => e.Id).HasName("PK__User__3214EC075DEDF886");
 
             entity.ToTable("User");
 
-            entity.HasIndex(e => e.Phone, "UQ__User__5C7E359E23B5F384").IsUnique();
+            entity.HasIndex(e => e.AccountId, "UQ__User__349DA5A7FACD0C1E").IsUnique();
+
+            entity.HasIndex(e => e.Phone, "UQ__User__5C7E359EF5A35697").IsUnique();
+
+            entity.HasIndex(e => e.WalletId, "UQ__User__84D4F90F6B630758").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Gender).HasMaxLength(256);
@@ -647,20 +663,20 @@ public partial class CarRentalContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.Role).HasMaxLength(256);
 
-            entity.HasOne(d => d.Account).WithMany(p => p.Users)
-                .HasForeignKey(d => d.AccountId)
+            entity.HasOne(d => d.Account).WithOne(p => p.User)
+                .HasForeignKey<User>(d => d.AccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__User__AccountId__5070F446");
+                .HasConstraintName("FK__User__AccountId__571DF1D5");
 
-            entity.HasOne(d => d.Wallet).WithMany(p => p.Users)
-                .HasForeignKey(d => d.WalletId)
+            entity.HasOne(d => d.Wallet).WithOne(p => p.User)
+                .HasForeignKey<User>(d => d.WalletId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__User__WalletId__5165187F");
+                .HasConstraintName("FK__User__WalletId__5812160E");
         });
 
         modelBuilder.Entity<Wallet>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Wallet__3214EC073D9D32E4");
+            entity.HasKey(e => e.Id).HasName("PK__Wallet__3214EC07F5A869DF");
 
             entity.ToTable("Wallet");
 
