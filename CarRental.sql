@@ -215,7 +215,9 @@ Create Table DriverCalendar(
 Go
 Create Table [Notification](
 	Id uniqueidentifier primary key,
-	Message nvarchar(max) not null,
+	Title nvarchar(256) not null,
+	Body nvarchar(max) not null,
+	Link nvarchar(256),
 	AccountId uniqueidentifier foreign key references Account(Id) not null,
 	IsRead bit not null default 0,
 	CreateAt datetime not null default getdate(),

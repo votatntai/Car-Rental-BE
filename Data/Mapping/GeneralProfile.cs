@@ -69,6 +69,10 @@ namespace Data.Mapping
             CreateMap<Driver, DriverViewModel>();
 
             CreateMap<Promotion, PromotionViewModel>();
+
+            CreateMap<Feature, FeatureViewModel>();
+
+            CreateMap<CarFeature, CarFeatureViewModel>();
         }
     }
 }

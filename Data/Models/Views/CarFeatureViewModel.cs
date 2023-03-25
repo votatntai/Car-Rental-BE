@@ -4,6 +4,6 @@
     {
         public string? Description { get; set; }
 
-        public CarFeatureViewModel Feature { get; set; } = null!;
+        public FeatureViewModel Feature { get; set; } = null!;
     }
 }
