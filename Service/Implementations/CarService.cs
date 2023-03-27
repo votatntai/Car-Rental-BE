@@ -132,7 +132,7 @@ namespace Service.Implementations
                 throw;
             }
         }
-
+         
         public async Task<CarViewModel> UpdateCar(Guid id, CarUpdateModel model)
         {
             var car = await _carRepository.GetMany(c => c.Id.Equals(id))
