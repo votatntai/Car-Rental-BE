@@ -11,7 +11,5 @@ public partial class ProductionCompany
 
     public string? Description { get; set; }
 
-    public virtual ICollection<Car> Cars { get; } = new List<Car>();
-
     public virtual ICollection<Model> Models { get; } = new List<Model>();
 }

@@ -12,9 +12,13 @@
 
         public Guid ModelId { get; set; }
 
-        public TimeSpan ReceiveTime { get; set; }
+        public TimeSpan ReceiveStartTime { get; set; }
 
-        public TimeSpan ReturnTime { get; set; }
+        public TimeSpan ReceiveEndTime { get; set; }
+
+        public TimeSpan ReturnStartTime { get; set; }
+
+        public TimeSpan ReturnEndTime { get; set; }
 
         public LocationCreateModel Location { get; set; } = null!;
 

@@ -21,21 +21,23 @@ public partial class Car
 
     public Guid? LocationId { get; set; }
 
-    public Guid? ProductionCompanyId { get; set; }
-
     public Guid? AdditionalChargeId { get; set; }
 
     public Guid? DriverId { get; set; }
 
-    public Guid? CarOwnerId { get; set; }
+    public Guid CarOwnerId { get; set; }
 
     public Guid? ShowroomId { get; set; }
 
     public int Rented { get; set; }
 
-    public TimeSpan ReceiveTime { get; set; }
+    public TimeSpan ReceiveStartTime { get; set; }
 
-    public TimeSpan ReturnTime { get; set; }
+    public TimeSpan ReceiveEndTime { get; set; }
+
+    public TimeSpan ReturnStartTime { get; set; }
+
+    public TimeSpan ReturnEndTime { get; set; }
 
     public double? Star { get; set; }
 
@@ -47,7 +49,7 @@ public partial class Car
 
     public virtual ICollection<CarFeature> CarFeatures { get; } = new List<CarFeature>();
 
-    public virtual CarOwner? CarOwner { get; set; }
+    public virtual CarOwner CarOwner { get; set; } = null!;
 
     public virtual ICollection<CarType> CarTypes { get; } = new List<CarType>();
 
@@ -64,8 +66,6 @@ public partial class Car
     public virtual Model Model { get; set; } = null!;
 
     public virtual ICollection<OrderDetail> OrderDetails { get; } = new List<OrderDetail>();
-
-    public virtual ProductionCompany? ProductionCompany { get; set; }
 
     public virtual Showroom? Showroom { get; set; }
 }

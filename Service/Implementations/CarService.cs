@@ -108,8 +108,10 @@ namespace Service.Implementations
                     Price = model.Price,
                     Status = CarStatus.Idle.ToString(),
                     ModelId = model.ModelId,
-                    ReceiveTime = model.ReceiveTime,
-                    ReturnTime = model.ReturnTime,
+                    ReceiveStartTime = model.ReceiveStartTime,
+                    ReceiveEndTime = model.ReceiveEndTime,
+                    ReturnStartTime = model.ReturnStartTime,
+                    ReturnEndTime = model.ReturnEndTime,
                     Rented = 0,
                     CreateAt = DateTime.Now
                 };

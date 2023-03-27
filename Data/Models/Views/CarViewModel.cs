@@ -16,9 +16,13 @@ namespace Data.Models.Views
 
         public int Rented { get; set; }
 
-        public TimeSpan ReceiveTime  { get; set; }
+        public TimeSpan ReceiveStartTime { get; set; }
 
-        public TimeSpan ReturnTime { get; set; }
+        public TimeSpan ReceiveEndTime { get; set; }
+
+        public TimeSpan ReturnStartTime { get; set; }
+
+        public TimeSpan ReturnEndTime { get; set; }
 
         public string Description { get; set; } = null!;
 
