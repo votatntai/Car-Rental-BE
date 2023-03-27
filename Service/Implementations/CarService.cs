@@ -39,7 +39,7 @@ namespace Service.Implementations
             }
             if (filter.CarType != null)
             {
-                query = query.AsQueryable().Where(car => car.CarTypes.Equals(filter.CarType.ToString()));
+                query = query.AsQueryable().Where(car => car.CarTypes.Any(carType => carType.Type.Name.Equals(filter.CarType.ToString())));
             }
             if (filter.ModelId != null)
             {
