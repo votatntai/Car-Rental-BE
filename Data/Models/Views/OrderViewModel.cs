@@ -6,11 +6,17 @@
 
         public CustomerViewModel Customer { get; set; } = null!;
 
-        public OrderDetailViewModel OrderDetail { get; set; } = null!;
+        public ICollection<OrderDetailViewModel> OrderDetails { get; set; } = null!;
 
         public DateTime RentalTime { get; set; }
 
         public double Amount { get; set; }
+
+        public double UnitPrice { get; set; }
+
+        public double DeliveryFee { get; set; }
+
+        public double Deposit { get; set; }
 
         public bool IsPaid { get; set; }
 
@@ -19,6 +25,8 @@
         public string? Description { get; set; }
 
         public DateTime CreateAt{ get; set; }
+
+        public PromotionViewModel Promotion { get; set; } = null!;
 
     }
 }

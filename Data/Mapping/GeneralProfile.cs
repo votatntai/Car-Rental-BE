@@ -21,7 +21,8 @@ namespace Data.Mapping
 
             CreateMap<FeedBack, FeedBackViewModel>();
 
-            CreateMap<Car, CarViewModel>();
+            CreateMap<Car, CarViewModel>()
+                .ForMember(carVM => carVM.ProductionCompany, config => config.MapFrom(car => car.Model.ProductionCompany));
 
             CreateMap<CarRegistration, CarRegistrationViewModel>()
                 .ForMember(carRegistrationVM => carRegistrationVM.Calendars, config => config.MapFrom(carRegistration => carRegistration.CarRegistrationCalendars));

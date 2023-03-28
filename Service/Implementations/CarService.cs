@@ -57,6 +57,12 @@ namespace Service.Implementations
             {
                 query = query.AsQueryable().Where(car => car.Model.TransmissionType.Equals(filter.TransmissionType.ToString()));
             }
+            if (filter.StartTime != null && filter.EndTime != null)
+            {
+                var startTime = new TimeSpan(filter.StartTime.Value.Hour, filter.StartTime.Value.Minute, filter.StartTime.Value.Second);
+                var endTime = new TimeSpan(filter.EndTime.Value.Hour, filter.StartTime.Value.Minute, filter.StartTime.Value.Second);
+                query = query.AsQueryable().Where(car => car.ReceiveStartTime <= startTime && car.ReceiveEndTime >= endTime);
+            }
             var cars = await query
             .Include(car => car.Model).ThenInclude(model => model.ProductionCompany)
             .OrderByDescending(car => car.Star)

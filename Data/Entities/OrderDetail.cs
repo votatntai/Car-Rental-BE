@@ -11,6 +11,10 @@ public partial class OrderDetail
 
     public Guid? CarId { get; set; }
 
+    public DateTime StartTime { get; set; }
+
+    public DateTime EndTime { get; set; }
+
     public Guid? DeliveryLocationId { get; set; }
 
     public Guid? PickUpLocationId { get; set; }

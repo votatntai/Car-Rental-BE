@@ -8,6 +8,10 @@
 
         public LocationCreateModel? PickUpLocation { get; set; }
 
+        public DateTime DeliveryTime { get; set; }
+
+        public DateTime PickUpTime { get; set; }
+
         public DateTime StartTime { get; set; }
 
         public DateTime EndTime { get; set; }

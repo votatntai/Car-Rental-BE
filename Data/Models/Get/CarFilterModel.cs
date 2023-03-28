@@ -10,6 +10,8 @@ namespace Data.Models.Get
         public bool? HasDriver { get; set; }
         public CarType? CarType { get; set; }
         public Guid? ModelId { get; set; }
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
         public TransmissionType? TransmissionType { get; set; }
     }
 }

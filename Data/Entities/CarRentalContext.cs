@@ -77,11 +77,11 @@ public partial class CarRentalContext : DbContext
     {
         modelBuilder.Entity<Account>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Account__3214EC07631D0E83");
+            entity.HasKey(e => e.Id).HasName("PK__Account__3214EC073ADE56F0");
 
             entity.ToTable("Account");
 
-            entity.HasIndex(e => e.Username, "UQ__Account__536C85E43692BE09").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Account__536C85E44E006733").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Password)
@@ -94,7 +94,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<AdditionalCharge>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Addition__3214EC0780D3C390");
+            entity.HasKey(e => e.Id).HasName("PK__Addition__3214EC07C045283F");
 
             entity.ToTable("AdditionalCharge");
 
@@ -103,7 +103,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Calendar>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Calendar__3214EC0725BE210F");
+            entity.HasKey(e => e.Id).HasName("PK__Calendar__3214EC075A122147");
 
             entity.ToTable("Calendar");
 
@@ -115,7 +115,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Car>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Car__3214EC07A453958D");
+            entity.HasKey(e => e.Id).HasName("PK__Car__3214EC0779227C7A");
 
             entity.ToTable("Car");
 
@@ -127,10 +127,10 @@ public partial class CarRentalContext : DbContext
                 .HasMaxLength(256)
                 .IsUnicode(false);
             entity.Property(e => e.Name).HasMaxLength(256);
-            entity.Property(e => e.ReceiveEndTime).HasDefaultValueSql("('06:00:00')");
+            entity.Property(e => e.ReceiveEndTime).HasDefaultValueSql("('22:00:00')");
             entity.Property(e => e.ReceiveStartTime).HasDefaultValueSql("('06:00:00')");
             entity.Property(e => e.ReturnEndTime).HasDefaultValueSql("('22:00:00')");
-            entity.Property(e => e.ReturnStartTime).HasDefaultValueSql("('22:00:00')");
+            entity.Property(e => e.ReturnStartTime).HasDefaultValueSql("('06:00:00')");
             entity.Property(e => e.Status).HasMaxLength(256);
 
             entity.HasOne(d => d.AdditionalCharge).WithMany(p => p.Cars)
@@ -162,7 +162,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<CarCalendar>(entity =>
         {
-            entity.HasKey(e => new { e.CalendarId, e.CarId }).HasName("PK__CarCalen__A545C70F130FB0CD");
+            entity.HasKey(e => new { e.CalendarId, e.CarId }).HasName("PK__CarCalen__A545C70F3F67AE07");
 
             entity.ToTable("CarCalendar");
 
@@ -179,7 +179,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<CarFeature>(entity =>
         {
-            entity.HasKey(e => new { e.CarId, e.FeatureId }).HasName("PK__CarFeatu__E082049246D4C4DD");
+            entity.HasKey(e => new { e.CarId, e.FeatureId }).HasName("PK__CarFeatu__E08204925A2AFEEC");
 
             entity.ToTable("CarFeature");
 
@@ -196,15 +196,15 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<CarOwner>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__CarOwner__3214EC07BB65F195");
+            entity.HasKey(e => e.Id).HasName("PK__CarOwner__3214EC07D04DFF55");
 
             entity.ToTable("CarOwner");
 
-            entity.HasIndex(e => e.AccountId, "UQ__CarOwner__349DA5A7BA1D7FC8").IsUnique();
+            entity.HasIndex(e => e.AccountId, "UQ__CarOwner__349DA5A7E23DC9CA").IsUnique();
 
-            entity.HasIndex(e => e.Phone, "UQ__CarOwner__5C7E359E8BA1C9C9").IsUnique();
+            entity.HasIndex(e => e.Phone, "UQ__CarOwner__5C7E359ED1EA144B").IsUnique();
 
-            entity.HasIndex(e => e.WalletId, "UQ__CarOwner__84D4F90F425C8B1C").IsUnique();
+            entity.HasIndex(e => e.WalletId, "UQ__CarOwner__84D4F90F9F331876").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Address).HasMaxLength(256);
@@ -229,7 +229,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<CarRegistration>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__CarRegis__3214EC0706340878");
+            entity.HasKey(e => e.Id).HasName("PK__CarRegis__3214EC07B7A6F4F3");
 
             entity.ToTable("CarRegistration");
 
@@ -258,7 +258,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<CarRegistrationCalendar>(entity =>
         {
-            entity.HasKey(e => new { e.CalendarId, e.CarRegistrationId }).HasName("PK__CarRegis__FF9A9A47F596EA3C");
+            entity.HasKey(e => new { e.CalendarId, e.CarRegistrationId }).HasName("PK__CarRegis__FF9A9A47EB579F33");
 
             entity.ToTable("CarRegistrationCalendar");
 
@@ -275,7 +275,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<CarType>(entity =>
         {
-            entity.HasKey(e => new { e.CarId, e.TypeId }).HasName("PK__CarType__2DB6C415B7F4C7DB");
+            entity.HasKey(e => new { e.CarId, e.TypeId }).HasName("PK__CarType__2DB6C41587C294A5");
 
             entity.ToTable("CarType");
 
@@ -292,15 +292,15 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Customer__3214EC07506E968E");
+            entity.HasKey(e => e.Id).HasName("PK__Customer__3214EC071D21DB19");
 
             entity.ToTable("Customer");
 
-            entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A76F731D44").IsUnique();
+            entity.HasIndex(e => e.AccountId, "UQ__Customer__349DA5A785E2FFF7").IsUnique();
 
-            entity.HasIndex(e => e.Phone, "UQ__Customer__5C7E359E3153581F").IsUnique();
+            entity.HasIndex(e => e.Phone, "UQ__Customer__5C7E359E7917DF67").IsUnique();
 
-            entity.HasIndex(e => e.WalletId, "UQ__Customer__84D4F90F0CF1B459").IsUnique();
+            entity.HasIndex(e => e.WalletId, "UQ__Customer__84D4F90FD4EBAD5B").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Address).HasMaxLength(256);
@@ -325,7 +325,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<DeviceToken>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__DeviceTo__3214EC07983E23F3");
+            entity.HasKey(e => e.Id).HasName("PK__DeviceTo__3214EC071ABEF180");
 
             entity.ToTable("DeviceToken");
 
@@ -342,15 +342,15 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Driver>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Driver__3214EC07CCDA92E6");
+            entity.HasKey(e => e.Id).HasName("PK__Driver__3214EC07C1BB1EBF");
 
             entity.ToTable("Driver");
 
-            entity.HasIndex(e => e.AccountId, "UQ__Driver__349DA5A7CC34BB52").IsUnique();
+            entity.HasIndex(e => e.AccountId, "UQ__Driver__349DA5A796056A1E").IsUnique();
 
-            entity.HasIndex(e => e.Phone, "UQ__Driver__5C7E359ECF703780").IsUnique();
+            entity.HasIndex(e => e.Phone, "UQ__Driver__5C7E359EB2B49973").IsUnique();
 
-            entity.HasIndex(e => e.WalletId, "UQ__Driver__84D4F90FDA25C59C").IsUnique();
+            entity.HasIndex(e => e.WalletId, "UQ__Driver__84D4F90F5E1B54EA").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Address).HasMaxLength(256);
@@ -380,7 +380,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<DriverCalendar>(entity =>
         {
-            entity.HasKey(e => new { e.CalendarId, e.DriverId, e.CarId }).HasName("PK__DriverCa__23BC78A9E2DE2E87");
+            entity.HasKey(e => new { e.CalendarId, e.DriverId, e.CarId }).HasName("PK__DriverCa__23BC78A90AF56546");
 
             entity.ToTable("DriverCalendar");
 
@@ -402,7 +402,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Feature>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Feature__3214EC0711D4B29C");
+            entity.HasKey(e => e.Id).HasName("PK__Feature__3214EC07350BADA6");
 
             entity.ToTable("Feature");
 
@@ -412,7 +412,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<FeedBack>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__FeedBack__3214EC0765C7AD5D");
+            entity.HasKey(e => e.Id).HasName("PK__FeedBack__3214EC07215BFA61");
 
             entity.ToTable("FeedBack");
 
@@ -442,7 +442,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Image>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Image__3214EC0757991FDF");
+            entity.HasKey(e => e.Id).HasName("PK__Image__3214EC071BB07591");
 
             entity.ToTable("Image");
 
@@ -465,7 +465,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Location>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Location__3214EC07D6C05581");
+            entity.HasKey(e => e.Id).HasName("PK__Location__3214EC074A2A99A0");
 
             entity.ToTable("Location");
 
@@ -474,7 +474,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Model>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Model__3214EC07CDC00A0A");
+            entity.HasKey(e => e.Id).HasName("PK__Model__3214EC07334479FA");
 
             entity.ToTable("Model");
 
@@ -493,7 +493,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Notification>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Notifica__3214EC072A87F837");
+            entity.HasKey(e => e.Id).HasName("PK__Notifica__3214EC0783E858CC");
 
             entity.ToTable("Notification");
 
@@ -512,7 +512,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Order__3214EC07CF5427F2");
+            entity.HasKey(e => e.Id).HasName("PK__Order__3214EC0715AF05C9");
 
             entity.ToTable("Order");
 
@@ -535,38 +535,40 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<OrderDetail>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__OrderDet__3214EC07F971FC28");
+            entity.HasKey(e => e.Id).HasName("PK__OrderDet__3214EC0737DA98E7");
 
             entity.ToTable("OrderDetail");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.DeliveryTime).HasColumnType("datetime");
+            entity.Property(e => e.EndTime).HasColumnType("datetime");
             entity.Property(e => e.PickUpTime).HasColumnType("datetime");
+            entity.Property(e => e.StartTime).HasColumnType("datetime");
 
             entity.HasOne(d => d.Car).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.CarId)
-                .HasConstraintName("FK__OrderDeta__CarId__2A164134");
+                .HasConstraintName("FK__OrderDeta__CarId__3C34F16F");
 
             entity.HasOne(d => d.DeliveryLocation).WithMany(p => p.OrderDetailDeliveryLocations)
                 .HasForeignKey(d => d.DeliveryLocationId)
-                .HasConstraintName("FK__OrderDeta__Deliv__2B0A656D");
+                .HasConstraintName("FK__OrderDeta__Deliv__3D2915A8");
 
             entity.HasOne(d => d.Driver).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.DriverId)
-                .HasConstraintName("FK__OrderDeta__Drive__2CF2ADDF");
+                .HasConstraintName("FK__OrderDeta__Drive__3F115E1A");
 
             entity.HasOne(d => d.Order).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.OrderId)
-                .HasConstraintName("FK__OrderDeta__Order__29221CFB");
+                .HasConstraintName("FK__OrderDeta__Order__3B40CD36");
 
             entity.HasOne(d => d.PickUpLocation).WithMany(p => p.OrderDetailPickUpLocations)
                 .HasForeignKey(d => d.PickUpLocationId)
-                .HasConstraintName("FK__OrderDeta__PickU__2BFE89A6");
+                .HasConstraintName("FK__OrderDeta__PickU__3E1D39E1");
         });
 
         modelBuilder.Entity<ProductionCompany>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Producti__3214EC07D484D4AE");
+            entity.HasKey(e => e.Id).HasName("PK__Producti__3214EC0789044E57");
 
             entity.ToTable("ProductionCompany");
 
@@ -576,7 +578,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Promotion>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Promotio__3214EC07B20C0362");
+            entity.HasKey(e => e.Id).HasName("PK__Promotio__3214EC07B79C6388");
 
             entity.ToTable("Promotion");
 
@@ -590,7 +592,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Showroom>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Showroom__3214EC07E616A40C");
+            entity.HasKey(e => e.Id).HasName("PK__Showroom__3214EC07C4129EB5");
 
             entity.ToTable("Showroom");
 
@@ -604,7 +606,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Transaction>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC07C3D6EE4D");
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC07EEEB561F");
 
             entity.ToTable("Transaction");
 
@@ -634,7 +636,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Type>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Type__3214EC0720CA0864");
+            entity.HasKey(e => e.Id).HasName("PK__Type__3214EC0790CE91B8");
 
             entity.ToTable("Type");
 
@@ -644,15 +646,15 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__User__3214EC07BFB0B4C4");
+            entity.HasKey(e => e.Id).HasName("PK__User__3214EC077D16B015");
 
             entity.ToTable("User");
 
-            entity.HasIndex(e => e.AccountId, "UQ__User__349DA5A78965652B").IsUnique();
+            entity.HasIndex(e => e.AccountId, "UQ__User__349DA5A700171D27").IsUnique();
 
-            entity.HasIndex(e => e.Phone, "UQ__User__5C7E359E9E5C60D8").IsUnique();
+            entity.HasIndex(e => e.Phone, "UQ__User__5C7E359E66E344F7").IsUnique();
 
-            entity.HasIndex(e => e.WalletId, "UQ__User__84D4F90FB5688E9C").IsUnique();
+            entity.HasIndex(e => e.WalletId, "UQ__User__84D4F90FAFCB90B0").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Gender).HasMaxLength(256);
@@ -675,7 +677,7 @@ public partial class CarRentalContext : DbContext
 
         modelBuilder.Entity<Wallet>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Wallet__3214EC0752CFB96D");
+            entity.HasKey(e => e.Id).HasName("PK__Wallet__3214EC07C80818E0");
 
             entity.ToTable("Wallet");
 

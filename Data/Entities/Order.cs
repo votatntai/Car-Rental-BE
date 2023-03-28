@@ -11,6 +11,12 @@ public partial class Order
 
     public DateTime RentalTime { get; set; }
 
+    public double UnitPrice { get; set; }
+
+    public double? DeliveryFee { get; set; }
+
+    public double Deposit { get; set; }
+
     public double Amount { get; set; }
 
     public Guid? PromotionId { get; set; }

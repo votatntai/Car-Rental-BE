@@ -69,14 +69,19 @@ namespace Service.Implementations
                 Description = model.Description,
                 PromotionId = model.PromotionId,
                 RentalTime = model.RentalTime,
-                Status = OrderStatus.Success.ToString(),
+                Status = OrderStatus.Pending.ToString(),
             };
             _orderRepository.Add(order);
             foreach (var orderDetail in model.OrderDetails)
             {
                 var od = new OrderDetail
                 {
+                    Id = Guid.NewGuid(),
                     CarId = orderDetail.CarId,
+                    DeliveryTime = orderDetail.DeliveryTime,
+                    PickUpTime = orderDetail.PickUpTime,
+                    StartTime = orderDetail.StartTime,
+                    EndTime = orderDetail.EndTime,
                     OrderId = order.Id,
                     DeliveryLocationId = await CreateLocation(orderDetail?.DeliveryLocation!),
                     PickUpLocationId = await CreateLocation(orderDetail?.PickUpLocation!),

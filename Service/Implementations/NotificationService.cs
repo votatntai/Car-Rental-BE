@@ -39,7 +39,7 @@ namespace Service.Implementations
 
             var totalRow = await query.AsNoTracking().CountAsync();
 
-            return notifications != null && notifications.Any()
+            return notifications != null
                 ? new ListViewModel<NotificationViewModel>
                 {
                     Pagination = new PaginationViewModel
