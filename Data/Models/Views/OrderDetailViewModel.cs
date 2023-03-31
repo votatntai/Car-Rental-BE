@@ -6,6 +6,10 @@
 
         public CarViewModel Car { get; set; } = null!;
 
+        public DateTime StartTime { get; set; }
+
+        public DateTime EndTime { get; set; }
+
         public LocationViewModel? DeliveryLocation { get; set; }
 
         public LocationViewModel? PickUpLocation { get; set; }

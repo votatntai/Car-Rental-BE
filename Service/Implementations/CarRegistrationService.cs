@@ -5,19 +5,23 @@ using Data.Entities;
 using Data.Models.Create;
 using Data.Models.Get;
 using Data.Models.Views;
+using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
+using Utility.Enums;
 
 namespace Service.Implementations
 {
     public class CarRegistrationService : BaseService, ICarRegistrationService
     {
         private readonly ICarRegistrationRepository _carRegistrationRepository;
+        private readonly IAdditionalChargeRepository _additionalChargeRepository;
         private new readonly IMapper _mapper;
         public CarRegistrationService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
         {
             _carRegistrationRepository = unitOfWork.CarRegistration;
+            _additionalChargeRepository = unitOfWork.AdditionalCharge;
             _mapper = mapper;
         }
 
@@ -29,7 +33,7 @@ namespace Service.Implementations
             var carRegistrations = await query.OrderBy(carRegistration => carRegistration.CreateAt)
                 .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
             var totalRow = await query.AsNoTracking().CountAsync();
-            if (carRegistrations != null && totalRow > 0)
+            if (carRegistrations != null || carRegistrations != null && carRegistrations.Any())
             {
                 return new ListViewModel<CarRegistrationViewModel>
                 {
@@ -56,27 +60,44 @@ namespace Service.Implementations
 
         public async Task<CarRegistrationViewModel> CreateCarRegistration(CarRegistrationCreateModel model)
         {
-            var id = Guid.NewGuid();
-            var carRegistration = new CarRegistration
+            using var transaction = _unitOfWork.Transaction();
+            try
             {
-                Id = id,
-                Name = model.Name,
-                Description = model.Description,
-                FuelConsumption = model.FuelConsumption,
-                FuelType = model.FuelType,
-                LicensePlate = model.LicensePlate,
-                Location = model.Location,
-                Price = model.Price,
-                ProductionCompany = model.ProductionCompany,
-                Seater = model.Seater,
-                TransmissionType = model.TransmissionType,
-                YearOfManufacture = model.YearOfManufacture,
-                Model = model.Model,
-                CreateAt = DateTime.Now,
-            };
-            _carRegistrationRepository.Add(carRegistration);
-            var result = await _unitOfWork.SaveChanges();
-            return result > 0 ? await GetCarRegistration(id) : null!;
+                var additionalChargeId = await CreateAdditionalCharge(model.AdditionalCharge);
+                var carRegistration = new CarRegistration
+                {
+                    Id = Guid.NewGuid(),
+                    Name = model.Name,
+                    Description = model.Description,
+                    FuelConsumption = model.FuelConsumption,
+                    FuelType = model.FuelType,
+                    LicensePlate = model.LicensePlate,
+                    Location = model.Location,
+                    Price = model.Price,
+                    ProductionCompany = model.ProductionCompany,
+                    Seater = model.Seater,
+                    TransmissionType = model.TransmissionType,
+                    YearOfManufacture = model.YearOfManufacture,
+                    Model = model.Model,
+                    CreateAt = DateTime.Now,
+                    AdditionalChargeId = additionalChargeId,
+                };
+                _carRegistrationRepository.Add(carRegistration);
+
+                if (await _unitOfWork.SaveChanges() > 0)
+                {
+                    transaction.Commit();
+                    return await GetCarRegistration(carRegistration.Id) ?? throw new InvalidOperationException("Failed to retrieve car registration.");
+                }
+
+                transaction.Rollback();
+                return null!;
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public async Task<bool> DeleteCarRegistration(Guid id)
@@ -89,6 +110,24 @@ namespace Service.Implementations
                 result = await _unitOfWork.SaveChanges() > 0;
             }
             return result;
+        }
+
+        // PRIVATE METHOD
+        private async Task<Guid> CreateAdditionalCharge(AdditionalChargeCreateModel model)
+        {
+            var id = Guid.NewGuid();
+            var AdditionalCharge = new AdditionalCharge
+            {
+                Id = id,
+                DistanceSurcharge = model.DistanceSurcharge,
+                MaximumDistance = model.MaximumDistance,
+                TimeSurcharge = model.TimeSurcharge,
+                AdditionalDistance = model.AdditionalDistance,
+                AdditionalTime = model.AdditionalTime,
+            };
+            _additionalChargeRepository.Add(AdditionalCharge);
+            var result = await _unitOfWork.SaveChanges();
+            return result > 0 ? id : Guid.Empty;
         }
     }
 }

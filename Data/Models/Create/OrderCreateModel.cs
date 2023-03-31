@@ -2,7 +2,7 @@
 {
     public class OrderCreateModel
     {
-        public DateTime RentalTime { get; set; }
+        public int RentalTime { get; set; }
 
         public Guid? PromotionId { get; set; }
 
@@ -11,6 +11,8 @@
         public float UnitPrice { get; set; }
 
         public float DeliveryFee { get; set; }
+
+        public float DeliveryDistance{ get; set; }
 
         public float Deposit { get; set; }
 

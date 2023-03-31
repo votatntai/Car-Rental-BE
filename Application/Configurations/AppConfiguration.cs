@@ -24,6 +24,7 @@ namespace Application.Configurations
             services.AddScoped<IModelService, ModelService>();
             services.AddScoped<IWalletService, WalletService>();
             services.AddScoped<IPromotionService, PromotionService>();
+            services.AddScoped<IFeedBackService, FeedBackService>();
 
             services.AddTransient<IUnitOfWork, UnitOfWork>();
         }

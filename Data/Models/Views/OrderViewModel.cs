@@ -8,13 +8,15 @@
 
         public ICollection<OrderDetailViewModel> OrderDetails { get; set; } = null!;
 
-        public DateTime RentalTime { get; set; }
+        public int RentalTime { get; set; }
 
         public double Amount { get; set; }
 
         public double UnitPrice { get; set; }
 
         public double DeliveryFee { get; set; }
+
+        public double DeliveryDistance { get; set; }
 
         public double Deposit { get; set; }
 
@@ -27,6 +29,5 @@
         public DateTime CreateAt{ get; set; }
 
         public PromotionViewModel Promotion { get; set; } = null!;
-
     }
 }

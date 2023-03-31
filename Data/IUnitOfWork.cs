@@ -23,6 +23,7 @@ namespace Data
         public IProductionCompanyRepository ProductionCompany { get; }
         public IModelRepository Model { get; }
         public IPromotionRepository Promotion { get; }
+        public IFeedBackRepository FeedBack { get; }
 
         Task<int> SaveChanges();
         IDbContextTransaction Transaction();

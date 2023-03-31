@@ -17,5 +17,7 @@ public partial class AdditionalCharge
 
     public double AdditionalTime { get; set; }
 
+    public virtual ICollection<CarRegistration> CarRegistrations { get; } = new List<CarRegistration>();
+
     public virtual ICollection<Car> Cars { get; } = new List<Car>();
 }

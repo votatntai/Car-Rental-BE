@@ -32,6 +32,8 @@
 
         public CarOwnerViewModel CarOwner { get; set; } = null!;
 
+        public AdditionalChargeViewModel AdditionalCharge { get; set; } = null!;
+
         public ICollection<ImageViewModel> Images { get; set; } = null!;
 
         public ICollection<CarRegistrationCalendarViewModel> Calendars { get; set; } = null!;

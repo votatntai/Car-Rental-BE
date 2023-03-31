@@ -74,6 +74,8 @@ namespace Data.Mapping
             CreateMap<Feature, FeatureViewModel>();
 
             CreateMap<CarFeature, CarFeatureViewModel>();
+
+            CreateMap<FeedBack, FeedBackViewModel>();
         }
     }
 }

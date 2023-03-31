@@ -1,5 +1,4 @@
 using Application.Configurations;
-using AutoMapper;
 using Data.Entities;
 using Data.Mapping;
 using Microsoft.EntityFrameworkCore;

@@ -182,7 +182,9 @@ Create Table CarRegistration(
 	Location nvarchar(256) not null,
 	CreateAt datetime not null default getdate(),
 	CarOwnerId uniqueidentifier foreign key references CarOwner(Id) not null,
+	AdditionalChargeId uniqueidentifier foreign key references AdditionalCharge(Id),
 	Description nvarchar(max),
+	Status bit not null default 0
 )
 Go
 Create Table Calendar(
@@ -249,9 +251,10 @@ Go
 Create Table [Order](
 	Id uniqueidentifier primary key,
 	CustomerId uniqueidentifier foreign key references Customer(Id) not null,
-	RentalTime datetime not null,
+	RentalTime int not null,
 	UnitPrice float not null,
 	DeliveryFee float,
+	DeliveryDistance float,
 	Deposit float not null,
 	Amount float not null,
 	PromotionId uniqueidentifier foreign key references Promotion(Id),
@@ -298,6 +301,10 @@ INSERT [dbo].[Calendar] ([Id], [Weekday], [StartTime], [EndTime]) VALUES (N'd1cb
 INSERT [dbo].[Calendar] ([Id], [Weekday], [StartTime], [EndTime]) VALUES (N'37634c75-f48b-4256-b8cc-49fd7581d3a0', N'Thursday', CAST(N'08:00:00' AS Time), CAST(N'20:00:00' AS Time))
 GO
 INSERT [dbo].[Location] ([Id], [Longitude], [Latitude]) VALUES (N'9afa2d11-b5c2-4988-8b80-0daedcf6bafd', 106.84312159786212, 10.848212845384804)
+INSERT [dbo].[Location] ([Id], [Longitude], [Latitude]) VALUES (N'676fe34b-b092-4f33-b5a5-554311151dbb', 0, 0)
+INSERT [dbo].[Location] ([Id], [Longitude], [Latitude]) VALUES (N'24a6c020-5032-4cce-adc2-6215c20b03b4', 0, 0)
+INSERT [dbo].[Location] ([Id], [Longitude], [Latitude]) VALUES (N'd032f86c-0291-4540-927e-86878028fb70', 0, 0)
+INSERT [dbo].[Location] ([Id], [Longitude], [Latitude]) VALUES (N'2b697e8c-bafb-4a9c-b1f3-bf4c6a96f3f3', 0, 0)
 GO
 INSERT [dbo].[Account] ([Id], [Username], [Password], [Status]) VALUES (N'f6c89e0e-7261-45d1-ad58-23122b5567c8', N'carowner', N'carowner', 1)
 INSERT [dbo].[Account] ([Id], [Username], [Password], [Status]) VALUES (N'd13fb3f2-6240-4304-b272-35595262f2f3', N'admin', N'admin', 1)
@@ -331,13 +338,14 @@ INSERT [dbo].[Wallet] ([Id], [Balance], [Status]) VALUES (N'74668d25-18f4-48d1-8
 GO
 INSERT [dbo].[CarOwner] ([Id], [Name], [Address], [Phone], [Gender], [AvatarUrl], [BankAccountNumber], [BankName], [AccountId], [WalletId]) VALUES (N'9cd0ad8b-040b-4e1d-af92-580191e70b85', N'Car Owner', N'Car owner address', N'0345464757', N'Nam', NULL, NULL, NULL, N'f6c89e0e-7261-45d1-ad58-23122b5567c8', N'b5aab94d-f4df-4a46-80a9-030ce93fa20a')
 GO
-INSERT [dbo].[Driver] ([Id], [Name], [Address], [Phone], [Gender], [AvatarUrl], [Star], [BankAccountNumber], [BankName], [AccountId], [WalletId], [LocationId], [Status]) VALUES (N'e88ac41c-cf83-4996-814f-4552311a8142', N'Driver', N'Driver address', N'0345667887', N'Nam', NULL, NULL, NULL, NULL, N'2eab62fb-8898-4f7c-9c99-4ce43bd88996', N'38be23d3-7cbf-484f-9171-4d598289e40a', NULL, N'Idle')
+INSERT [dbo].[Driver] ([Id], [Name], [Address], [Phone], [Gender], [AvatarUrl], [Star], [BankAccountNumber], [BankName], [AccountId], [WalletId], [LocationId], [Status]) VALUES (N'e88ac41c-cf83-4996-814f-4552311a8142', N'Lê Lâm Nhất Linh', N'Driver address', N'0345667887', N'Nam', NULL, NULL, NULL, NULL, N'2eab62fb-8898-4f7c-9c99-4ce43bd88996', N'38be23d3-7cbf-484f-9171-4d598289e40a', NULL, N'Idle')
 GO
 INSERT [dbo].[ProductionCompany] ([Id], [Name], [Description]) VALUES (N'1a91dd16-48ec-447f-ad9a-50b0d03c294d', N'Audi', NULL)
 GO
-INSERT [dbo].[Model] ([Id], [Name], [CeilingPrice], [FloorPrice], [Seater], [Chassis], [YearOfManufacture], [TransmissionType], [FuelType], [FuelConsumption], [ProductionCompanyId]) VALUES (N'9b9505c0-6db3-4cfb-9ca4-97c0d5218dbb', N'I8', 100000, 200000, 8, N'Thấp', 2019, N'2 cầu', N'Xăng', N'Cao', N'1a91dd16-48ec-447f-ad9a-50b0d03c294d')
+INSERT [dbo].[Model] ([Id], [Name], [CeilingPrice], [FloorPrice], [Seater], [Chassis], [YearOfManufacture], [TransmissionType], [FuelType], [FuelConsumption], [ProductionCompanyId]) VALUES (N'9b9505c0-6db3-4cfb-9ca4-97c0d5218dbb', N'Audi A8L', 100000, 200000, 8, N'Cao', 2019, N'2 cầu', N'Xăng', N'Nhiều', N'1a91dd16-48ec-447f-ad9a-50b0d03c294d')
+INSERT [dbo].[Model] ([Id], [Name], [CeilingPrice], [FloorPrice], [Seater], [Chassis], [YearOfManufacture], [TransmissionType], [FuelType], [FuelConsumption], [ProductionCompanyId]) VALUES (N'293a52a0-97cf-471c-977c-ef240678bffb', N'Audi RS7', 100000, 299999, 7, N'Thấp', 2018, N'1 cầu', N'Xăng', N'Trung Bình', N'1a91dd16-48ec-447f-ad9a-50b0d03c294d')
 GO
-INSERT [dbo].[AdditionalCharge] ([Id], [MaximumDistance], [DistanceSurcharge], [TimeSurcharge], [AdditionalDistance], [AdditionalTime]) VALUES (N'f99b6242-0b31-4790-a654-504b828bbc19', 100, 200000, 72, 50, 24)
+INSERT [dbo].[AdditionalCharge] ([Id], [MaximumDistance], [DistanceSurcharge], [TimeSurcharge], [AdditionalDistance], [AdditionalTime]) VALUES (N'f99b6242-0b31-4790-a654-504b828bbc19', 100, 200000, 200000, 50, 24)
 GO
 INSERT [dbo].[Car] ([Id], [Name], [LicensePlate], [Price], [CreateAt], [Description], [ModelId], [LocationId], [AdditionalChargeId], [DriverId], [CarOwnerId], [ShowroomId], [Rented], [ReceiveStartTime], [ReceiveEndTime], [ReturnStartTime], [ReturnEndTime], [Star], [Status]) VALUES (N'089b2727-efef-4858-8932-8ad868428201', N'BMW I8', N'71H3.14567', 500000, CAST(N'2023-03-27T20:13:41.360' AS DateTime), NULL, N'9b9505c0-6db3-4cfb-9ca4-97c0d5218dbb', N'9afa2d11-b5c2-4988-8b80-0daedcf6bafd', N'f99b6242-0b31-4790-a654-504b828bbc19', N'e88ac41c-cf83-4996-814f-4552311a8142', N'9cd0ad8b-040b-4e1d-af92-580191e70b85', NULL, 12, CAST(N'06:00:00' AS Time), CAST(N'06:00:00' AS Time), CAST(N'22:00:00' AS Time), CAST(N'22:00:00' AS Time), NULL, N'Idle')
 GO
@@ -346,7 +354,13 @@ GO
 INSERT [dbo].[CarRegistrationCalendar] ([CalendarId], [CarRegistrationId], [Description]) VALUES (N'd1cbac81-dd01-4449-b723-406361c3c540', N'83df34d5-a23b-478a-a588-b8f595228c4f', NULL)
 GO
 INSERT [dbo].[Customer] ([Id], [Name], [Address], [Phone], [Gender], [AvatarUrl], [BankAccountNumber], [BankName], [AccountId], [WalletId]) VALUES (N'e9a0d281-b6a9-49f4-bd34-7634c900bc75', N'Customer', N'Customer Address', N'0348040506', N'Nam', NULL, NULL, NULL, N'8ad9b7c4-290b-484d-9217-6f5b9b736bd3', N'74668d25-18f4-48d1-8f48-f6a3c4a8b3d5')
-INSERT [dbo].[Customer] ([Id], [Name], [Address], [Phone], [Gender], [AvatarUrl], [BankAccountNumber], [BankName], [AccountId], [WalletId]) VALUES (N'35946c4f-6460-43b1-8445-7e7c7f0a5f43', N'string', N'string', N'string', N'string', NULL, NULL, NULL, N'a5dbf34d-8524-449b-bd65-c09ebebc2292', N'306bcdfe-ac14-4a0a-adec-40dbcb64b850')
+INSERT [dbo].[Customer] ([Id], [Name], [Address], [Phone], [Gender], [AvatarUrl], [BankAccountNumber], [BankName], [AccountId], [WalletId]) VALUES (N'35946c4f-6460-43b1-8445-7e7c7f0a5f43', N'Võ Văn Thế Tri', N'string', N'string', N'string', NULL, NULL, NULL, N'a5dbf34d-8524-449b-bd65-c09ebebc2292', N'306bcdfe-ac14-4a0a-adec-40dbcb64b850')
+GO
+INSERT [dbo].[Order] ([Id], [CustomerId], [RentalTime], [UnitPrice], [DeliveryFee], [DeliveryDistance], [Deposit], [Amount], [PromotionId], [IsPaid], [Status], [Description], [CreateAt]) VALUES (N'4b2dca8f-7f7c-4cc4-9035-05742316cc8b', N'35946c4f-6460-43b1-8445-7e7c7f0a5f43', 4, 1000000, 20000, 12, 30000, 100000, NULL, 1, N'Pending', NULL, CAST(N'2023-03-30T03:19:51.970' AS DateTime))
+INSERT [dbo].[Order] ([Id], [CustomerId], [RentalTime], [UnitPrice], [DeliveryFee], [DeliveryDistance], [Deposit], [Amount], [PromotionId], [IsPaid], [Status], [Description], [CreateAt]) VALUES (N'e46e30d6-cca9-4db4-b027-1fbe49b1ca32', N'35946c4f-6460-43b1-8445-7e7c7f0a5f43', 4, 2000000, 30000, 14, 40000, 200000, NULL, 1, N'Pending', NULL, CAST(N'2023-03-30T03:18:47.607' AS DateTime))
+GO
+INSERT [dbo].[OrderDetail] ([Id], [OrderId], [CarId], [StartTime], [EndTime], [DeliveryLocationId], [PickUpLocationId], [DeliveryTime], [PickUpTime], [DriverId]) VALUES (N'b9ee4110-a5b9-4aae-9215-33a8a50b2f05', N'4b2dca8f-7f7c-4cc4-9035-05742316cc8b', N'089b2727-efef-4858-8932-8ad868428201', CAST(N'2023-03-30T03:19:26.780' AS DateTime), CAST(N'2023-03-30T03:19:26.780' AS DateTime), N'24a6c020-5032-4cce-adc2-6215c20b03b4', N'676fe34b-b092-4f33-b5a5-554311151dbb', CAST(N'2023-03-30T03:19:26.780' AS DateTime), CAST(N'2023-03-30T03:19:26.780' AS DateTime), N'e88ac41c-cf83-4996-814f-4552311a8142')
+INSERT [dbo].[OrderDetail] ([Id], [OrderId], [CarId], [StartTime], [EndTime], [DeliveryLocationId], [PickUpLocationId], [DeliveryTime], [PickUpTime], [DriverId]) VALUES (N'a1195db7-ccd4-436c-b414-6d53cceb5976', N'e46e30d6-cca9-4db4-b027-1fbe49b1ca32', N'089b2727-efef-4858-8932-8ad868428201', CAST(N'2023-03-30T03:16:41.413' AS DateTime), CAST(N'2023-03-30T03:16:41.413' AS DateTime), N'2b697e8c-bafb-4a9c-b1f3-bf4c6a96f3f3', N'd032f86c-0291-4540-927e-86878028fb70', CAST(N'2023-03-30T03:16:41.413' AS DateTime), CAST(N'2023-03-30T03:16:41.413' AS DateTime), NULL)
 GO
 INSERT [dbo].[User] ([Id], [Name], [Phone], [Gender], [AvatarUrl], [Role], [AccountId], [WalletId]) VALUES (N'efd56b2d-92d5-4088-b3c6-119293b69cbc', N'Administrator', N'0339040899', N'Nam', NULL, N'Admin', N'd13fb3f2-6240-4304-b272-35595262f2f3', N'e55e2b45-4033-44f4-b721-448ceeb632ac')
 INSERT [dbo].[User] ([Id], [Name], [Phone], [Gender], [AvatarUrl], [Role], [AccountId], [WalletId]) VALUES (N'9a20601b-8a32-4765-8f78-60004b1d90e5', N'Trung', N'0346557558', N'Khác', NULL, N'Manager', N'28c1235a-3bdf-41ae-9c17-74162e7257b7', N'9cc08fcc-361c-44a8-9432-132ebfe67dbd')

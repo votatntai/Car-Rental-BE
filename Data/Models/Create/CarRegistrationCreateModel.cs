@@ -27,5 +27,7 @@
         public string Type { get; set; } = null!;
 
         public string? Description { get; set; }
+
+        public AdditionalChargeCreateModel AdditionalCharge { get; set; } = null!;
     }
 }

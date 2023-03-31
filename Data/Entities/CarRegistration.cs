@@ -33,7 +33,13 @@ public partial class CarRegistration
 
     public Guid CarOwnerId { get; set; }
 
+    public Guid? AdditionalChargeId { get; set; }
+
     public string? Description { get; set; }
+
+    public bool Status { get; set; }
+
+    public virtual AdditionalCharge? AdditionalCharge { get; set; }
 
     public virtual CarOwner CarOwner { get; set; } = null!;
 

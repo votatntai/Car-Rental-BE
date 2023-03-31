@@ -19,14 +19,14 @@ namespace Service.Implementations
     {
         private readonly ICarRepository _carRepository;
         private readonly ILocationRepository _locationRepository;
-        private readonly IAdditionalChargeRepository _AdditionalChargeRepository;
+        private readonly IAdditionalChargeRepository _additionalChargeRepository;
         private new readonly IMapper _mapper;
 
         public CarService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
         {
             _carRepository = unitOfWork.Car;
             _locationRepository = unitOfWork.Location;
-            _AdditionalChargeRepository = unitOfWork.AdditionalCharge;
+            _additionalChargeRepository = unitOfWork.AdditionalCharge;
             _mapper = mapper;
         }
 
@@ -204,9 +204,11 @@ namespace Service.Implementations
                 Id = id,
                 DistanceSurcharge = model.DistanceSurcharge,
                 MaximumDistance = model.MaximumDistance,
-                TimeSurcharge = model.TimeSurcharge
+                TimeSurcharge = model.TimeSurcharge,
+                AdditionalDistance = model.AdditionalDistance,
+                AdditionalTime = model.AdditionalTime,
             };
-            _AdditionalChargeRepository.Add(AdditionalCharge);
+            _additionalChargeRepository.Add(AdditionalCharge);
             var result = await _unitOfWork.SaveChanges();
             return result > 0 ? id : Guid.Empty;
         }

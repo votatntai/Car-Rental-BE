@@ -70,6 +70,11 @@ namespace Service.Implementations
                 PromotionId = model.PromotionId,
                 RentalTime = model.RentalTime,
                 Status = OrderStatus.Pending.ToString(),
+                Deposit = model.Deposit,
+                CreateAt = DateTime.UtcNow,
+                UnitPrice = model.UnitPrice,
+                DeliveryFee = model.DeliveryFee,
+                DeliveryDistance = model.DeliveryDistance,
             };
             _orderRepository.Add(order);
             foreach (var orderDetail in model.OrderDetails)

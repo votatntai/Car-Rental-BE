@@ -9,11 +9,13 @@ public partial class Order
 
     public Guid CustomerId { get; set; }
 
-    public DateTime RentalTime { get; set; }
+    public int RentalTime { get; set; }
 
     public double UnitPrice { get; set; }
 
     public double? DeliveryFee { get; set; }
+
+    public double? DeliveryDistance { get; set; }
 
     public double Deposit { get; set; }
 
