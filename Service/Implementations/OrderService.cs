@@ -10,18 +10,23 @@ using Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
 using Utility.Enums;
+using Extensions.MyExtentions;
 
 namespace Service.Implementations
 {
     public class OrderService : BaseService, IOrderService
     {
         private readonly IOrderRepository _orderRepository;
+        private readonly IDriverRepository _driverRepository;
+        private readonly INotificationService _notificationService;
         private readonly IOrderDetailRepository _orderDetailRepository;
         private readonly ILocationRepository _locationRepository;
         private new readonly IMapper _mapper;
-        public OrderService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
+        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, INotificationService notificationService) : base(unitOfWork, mapper)
         {
             _orderRepository = unitOfWork.Order;
+            _driverRepository = unitOfWork.Driver;
+            _notificationService = notificationService;
             _orderDetailRepository = unitOfWork.OrderDetail;
             _locationRepository = unitOfWork.Location;
             _mapper = mapper;
@@ -91,9 +96,37 @@ namespace Service.Implementations
                     DeliveryLocationId = await CreateLocation(orderDetail?.DeliveryLocation!),
                     PickUpLocationId = await CreateLocation(orderDetail?.PickUpLocation!),
                 };
+                if (orderDetail != null && orderDetail.HasDriver)
+                {
+                    var driver = await _driverRepository.GetAll()
+                        .DriverDistanceFilter(orderDetail.PickUpLocation!.Latitude, orderDetail.PickUpLocation!.Longitude, 100)
+                        .FirstOrDefaultAsync();
+                    if (driver != null)
+                    {
+                        od.DriverId = driver.AccountId;
+                    }
+                }
                 _orderDetailRepository.Add(od);
             }
-            return await _unitOfWork.SaveChanges() > 0 ? await GetOrder(order.Id) : null!;
+            var result = await _unitOfWork.SaveChanges();
+            if (result > 0)
+            {
+                var message = new NotificationCreateModel
+                {
+                    Title = result.ToString(),
+                    Body = result.ToString(),
+                    Data = new NotificationDataViewModel
+                    {
+                        CreateAt = DateTime.Now,
+                        Type = NotificationType.Order.ToString(),
+                        IsRead = false,
+                        Link = order.Id.ToString(),
+                    }
+                };
+                await _notificationService.SendNotification(Guid.Parse("d13fb3f2-6240-4304-b272-35595262f2f3"), message);
+                return await GetOrder(order.Id);
+            }
+            return null!;
         }
 
         public async Task<OrderViewModel> UpdateOrder(Guid id, OrderUpdateModel model)

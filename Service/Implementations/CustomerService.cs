@@ -55,7 +55,7 @@ namespace Service.Implementations
 
         public async Task<CustomerViewModel> GetCustomer(Guid id)
         {
-            return await _customerRepository.GetMany(customer => customer.Id.Equals(id))
+            return await _customerRepository.GetMany(customer => customer.AccountId.Equals(id))
                 .Include(customer => customer.Account)
                 .ProjectTo<CustomerViewModel>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync() ?? null!;
@@ -64,17 +64,16 @@ namespace Service.Implementations
         public async Task<CustomerViewModel> CreateCustomer(CustomerCreateModel model)
         {
             var result = 0;
-            var id = Guid.NewGuid();
+            var accountId = Guid.Empty;
             using (var transaction = _unitOfWork.Transaction())
             {
                 try
                 {
-                    var accountId = await CreateAccount(model.Username, model.Password);
+                    accountId = await CreateAccount(model.Username, model.Password);
                     var walletId = await CreateWallet();
 
                     var customer = new Customer
                     {
-                        Id = id,
                         Address = model.Address,
                         Gender = model.Gender,
                         Name = model.Name,
@@ -92,12 +91,12 @@ namespace Service.Implementations
                     throw;
                 }
             };
-            return result > 0 ? await GetCustomer(id) : null!;
+            return result > 0 ? await GetCustomer(accountId) : null!;
         }
 
         public async Task<CustomerViewModel> UpdateCustomer(Guid id, CustomerUpdateModel model)
         {
-            var customer = await _customerRepository.GetMany(customer => customer.Id.Equals(id))
+            var customer = await _customerRepository.GetMany(customer => customer.AccountId.Equals(id))
                 .Include(customer => customer.Account)
                 .FirstOrDefaultAsync();
             if (customer != null)

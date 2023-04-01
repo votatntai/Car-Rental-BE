@@ -4,6 +4,8 @@
     {
         public Guid CarId { get; set; }
 
+        public bool HasDriver { get; set; }
+
         public LocationCreateModel? DeliveryLocation { get; set; }
 
         public LocationCreateModel? PickUpLocation { get; set; }

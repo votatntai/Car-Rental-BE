@@ -1,4 +1,5 @@
-﻿using Data.Models.Create;
+﻿using Application.Configurations.Middleware;
+using Data.Models.Create;
 using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
@@ -24,6 +25,18 @@ namespace Application.Controllers
         public async Task<ActionResult<ListViewModel<CarViewModel>>> GetCars([FromQuery] CarFilterModel filter, [FromQuery] PaginationRequestModel pagination)
         {
             var car = await _carService.GetCars(filter, pagination);
+            return car != null ? Ok(car) : BadRequest();
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("is-not-tracking")]
+        [ProducesResponseType(typeof(ListViewModel<CarViewModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ListViewModel<CarViewModel>>> GetCarsIsNotTracking([FromQuery] PaginationRequestModel pagination)
+        {
+            var auth = (AuthViewModel?)HttpContext.Items["User"];
+            var car = await _carService.GetCarsIsNotTracking(auth!.Id, pagination);
             return car != null ? Ok(car) : BadRequest();
         }
 
@@ -62,6 +75,40 @@ namespace Application.Controllers
             try
             {
                 var car = await _carService.UpdateCar(id, model);
+                return CreatedAtAction(nameof(GetCar), new { id = car.Id }, car);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, e.InnerException != null ? e.InnerException.Message : e.Message);
+            }
+        }
+
+        [HttpPut]
+        [Route("tracking/{id}")]
+        [ProducesResponseType(typeof(CarViewModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<CarViewModel>> TrackingACar([FromRoute] Guid id)
+        {
+            try
+            {
+                var car = await _carService.TrackingACar(id);
+                return CreatedAtAction(nameof(GetCar), new { id = car.Id }, car);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, e.InnerException != null ? e.InnerException.Message : e.Message);
+            }
+        }
+
+        [HttpPut]
+        [Route("cancel-tracking/{id}")]
+        [ProducesResponseType(typeof(CarViewModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<CarViewModel>> CancelTrackingACar([FromRoute] Guid id)
+        {
+            try
+            {
+                var car = await _carService.CancelTrackingACar(id);
                 return CreatedAtAction(nameof(GetCar), new { id = car.Id }, car);
             }
             catch (Exception e)

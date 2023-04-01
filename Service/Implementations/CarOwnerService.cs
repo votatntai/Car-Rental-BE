@@ -9,6 +9,7 @@ using Data.Models.Views;
 using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using Service.Interfaces;
 using Utility.Enums;
 
@@ -56,7 +57,7 @@ namespace Service.Implementations
 
         public async Task<CarOwnerViewModel> GetCarOwner(Guid id)
         {
-            return await _carOwnerRepository.GetMany(carOwner => carOwner.Id.Equals(id))
+            return await _carOwnerRepository.GetMany(carOwner => carOwner.AccountId.Equals(id))
                 .Include(carOwner => carOwner.Account)
                 .ProjectTo<CarOwnerViewModel>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync() ?? null!;
@@ -65,22 +66,21 @@ namespace Service.Implementations
         public async Task<CarOwnerViewModel> CreateCarOwner(CarOwnerCreateModel model)
         {
             var result = 0;
-            var id = Guid.NewGuid();
+            var accountId = Guid.Empty;
             using (var transaction = _unitOfWork.Transaction())
             {
                 try
                 {
-                    var accountId = await CreateAccount(model.Username, model.Password);
+                    accountId = await CreateAccount(model.Username, model.Password);
                     var walletId = await CreateWallet();
 
                     var carOwner = new CarOwner
                     {
-                        Id = id,
+                        AccountId = accountId,
                         Address = model.Address,
                         Gender = model.Gender,
                         Name = model.Name,
                         Phone = model.Phone,
-                        AccountId = accountId,
                         WalletId = walletId,
                     };
                     _carOwnerRepository.Add(carOwner);
@@ -93,12 +93,12 @@ namespace Service.Implementations
                     throw;
                 }
             };
-            return result > 0 ? await GetCarOwner(id) : null!;
+                return result > 0 ? await GetCarOwner(accountId) : null!;
         }
 
         public async Task<CarOwnerViewModel> UpdateCarOwner(Guid id, CarOwnerUpdateModel model)
         {
-            var carOwner = await _carOwnerRepository.GetMany(carOwner => carOwner.Id.Equals(id))
+            var carOwner = await _carOwnerRepository.GetMany(carOwner => carOwner.AccountId.Equals(id))
                 .Include(carOwner => carOwner.Account)
                 .FirstOrDefaultAsync();
             if (carOwner != null)

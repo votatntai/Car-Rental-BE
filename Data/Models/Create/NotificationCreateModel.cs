@@ -1,8 +1,10 @@
-﻿namespace Data.Models.Views
+﻿using Data.Models.Views;
+
+namespace Data.Models.Create
 {
-    public class NotificationViewModel
+    public class NotificationCreateModel
     {
-        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
 
         public string Title { get; set; } = null!;
 

@@ -25,6 +25,7 @@ namespace Application.Configurations
             services.AddScoped<IWalletService, WalletService>();
             services.AddScoped<IPromotionService, PromotionService>();
             services.AddScoped<IFeedBackService, FeedBackService>();
+            services.AddScoped<IDeviceTokenService, DeviceTokenService>();
 
             services.AddTransient<IUnitOfWork, UnitOfWork>();
         }

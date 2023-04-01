@@ -22,10 +22,10 @@ namespace Service.Implementations
         public async Task<WalletViewModel> GetWallet(Guid userId)
         {
             return await _walletRepository.GetMany(wallet =>
-                wallet.Customer != null ? wallet.Customer.Id.Equals(userId) :
-                wallet.CarOwner != null ? wallet.CarOwner.Id.Equals(userId) :
-                wallet.Driver != null ? wallet.Driver.Id.Equals(userId) :
-                wallet.User != null ? wallet.User.Id.Equals(userId) :
+                wallet.Customer != null ? wallet.Customer.AccountId.Equals(userId) :
+                wallet.CarOwner != null ? wallet.CarOwner.AccountId.Equals(userId) :
+                wallet.Driver != null ? wallet.Driver.AccountId.Equals(userId) :
+                wallet.User != null ? wallet.User.AccountId.Equals(userId) :
                 false).ProjectTo<WalletViewModel>(_mapper.ConfigurationProvider).FirstOrDefaultAsync() ?? null!;
         }
     }

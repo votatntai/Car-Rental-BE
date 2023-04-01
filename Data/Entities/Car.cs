@@ -41,6 +41,8 @@ public partial class Car
 
     public double? Star { get; set; }
 
+    public bool IsTracking { get; set; }
+
     public string Status { get; set; } = null!;
 
     public virtual AdditionalCharge? AdditionalCharge { get; set; }

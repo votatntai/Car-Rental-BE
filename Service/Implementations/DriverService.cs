@@ -52,24 +52,23 @@ namespace Service.Implementations
 
         public async Task<DriverViewModel> GetDriver(Guid id)
         {
-            return await _driverRepository.GetMany(driver => driver.Id.Equals(id))
+            return await _driverRepository.GetMany(driver => driver.AccountId.Equals(id))
                 .ProjectTo<DriverViewModel>(_mapper.ConfigurationProvider).FirstOrDefaultAsync() ?? null!;
         }
 
         public async Task<DriverViewModel> CreateDriver(DriverCreateModel model)
         {
             var result = 0;
-            var id = Guid.NewGuid();
+            var accountId = Guid.Empty;
             using (var transaction = _unitOfWork.Transaction())
             {
                 try
                 {
-                    var accountId = await CreateAccount(model.Username, model.Password);
+                    accountId = await CreateAccount(model.Username, model.Password);
                     var walletId = await CreateWallet();
 
                     var driver = new Driver
                     {
-                        Id = id,
                         Address = model.Address,
                         Gender = model.Gender,
                         Name = model.Name,
@@ -90,12 +89,12 @@ namespace Service.Implementations
                     throw;
                 }
             };
-            return result > 0 ? await GetDriver(id) : null!;
+            return result > 0 ? await GetDriver(accountId) : null!;
         }
 
         public async Task<DriverViewModel> UpdateDriver(Guid id, DriverUpdateModel model)
         {
-            var driver = await _driverRepository.GetMany(driver => driver.Id.Equals(id))
+            var driver = await _driverRepository.GetMany(driver => driver.AccountId.Equals(id))
                 .Include(driver => driver.Account)
                 .FirstOrDefaultAsync();
             if (driver != null)
@@ -107,7 +106,7 @@ namespace Service.Implementations
                 if (model.BankAccountNumber != null) driver.BankAccountNumber = model.BankAccountNumber;
                 if (model.Phone != null) driver.Phone = model.Phone;
                 if (model.Password != null) driver.Account.Password = model.Password;
-                if (model.Status != null) driver.Status= model.Status;
+                if (model.Status != null) driver.Status = model.Status;
                 if (model.AccountStatus != null) driver.Account.Status = (bool)model.AccountStatus;
                 _driverRepository.Update(driver);
                 var result = await _unitOfWork.SaveChanges();

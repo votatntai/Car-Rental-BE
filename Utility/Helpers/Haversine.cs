@@ -4,7 +4,6 @@ namespace Utility.Helpers
 {
     public static class Haversine
     {
-        [DbFunction("HaversineDistance", "dbo")]
         public static double Distance(double lat1, double lon1, double lat2, double lon2, char unit)
         {
             double theta = lon1 - lon2;

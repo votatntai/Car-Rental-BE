@@ -11,6 +11,8 @@ public partial class Notification
 
     public string Body { get; set; } = null!;
 
+    public string? Type { get; set; }
+
     public string? Link { get; set; }
 
     public Guid AccountId { get; set; }

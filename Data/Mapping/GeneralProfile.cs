@@ -44,16 +44,20 @@ namespace Data.Mapping
             CreateMap<ProductionCompany, ProductionCompanyViewModel>();
 
             CreateMap<User, UserViewModel>()
-                .ForMember(userVM => userVM.Status, config => config.MapFrom(user => user.Account.Status));
+                .ForMember(userVM => userVM.Status, config => config.MapFrom(user => user.Account.Status))
+                .ForMember(userVM => userVM.Id, config => config.MapFrom(user => user.AccountId));
 
             CreateMap<Customer, CustomerViewModel>()
-                .ForMember(customerVM => customerVM.Status, config => config.MapFrom(customer => customer.Account.Status));
+                .ForMember(customerVM => customerVM.Status, config => config.MapFrom(customer => customer.Account.Status))
+                .ForMember(customerVM => customerVM.Id, config => config.MapFrom(customer => customer.AccountId));
 
             CreateMap<Driver, DriverViewModel>()
-                .ForMember(DriverVM => DriverVM.AccountStatus, config => config.MapFrom(Driver => Driver.Account.Status));
+                .ForMember(driverVM => driverVM.AccountStatus, config => config.MapFrom(driver => driver.Account.Status))
+                .ForMember(driverVM => driverVM.Id, config => config.MapFrom(driver => driver.AccountId));
 
             CreateMap<CarOwner, CarOwnerViewModel>()
-                .ForMember(carOwnerVM => carOwnerVM.Status, config => config.MapFrom(carOwner => carOwner.Account.Status));
+                .ForMember(carOwnerVM => carOwnerVM.Status, config => config.MapFrom(carOwner => carOwner.Account.Status))
+                .ForMember(carOwnerVM => carOwnerVM.Id, config => config.MapFrom(carOwner => carOwner.AccountId));
 
             CreateMap<Wallet, WalletViewModel>();
 

@@ -11,5 +11,8 @@ namespace Service.Interfaces
         Task<CarViewModel> GetCar(Guid id);
         Task<CarViewModel> CreateCar(CarCreateModel model);
         Task<CarViewModel> UpdateCar(Guid id, CarUpdateModel model);
+        Task<ICollection<CarViewModel>> GetCarsIsNotTracking(Guid carOwnerId, PaginationRequestModel pagination);
+        Task<CarViewModel> TrackingACar(Guid carId);
+        Task<CarViewModel> CancelTrackingACar(Guid carId);
     }
 }

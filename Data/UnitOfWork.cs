@@ -27,6 +27,7 @@ namespace Data
         private IModelRepository _model = null!;
         private IPromotionRepository _promotion = null!;
         private IFeedBackRepository _feedBack = null!;
+        private IDeviceTokenRepository _deviceToken= null!;
 
         public UnitOfWork(CarRentalContext context)
         {
@@ -116,6 +117,11 @@ namespace Data
         public IFeedBackRepository FeedBack
         {
             get { return _feedBack ??= new FeedBackRepository(_context); }
+        }
+
+        public IDeviceTokenRepository DeviceToken
+        {
+            get { return _deviceToken ??= new DeviceTokenRepository (_context); }
         }
 
         public async Task<int> SaveChanges()

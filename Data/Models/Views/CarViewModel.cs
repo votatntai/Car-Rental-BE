@@ -1,6 +1,4 @@
-﻿using Data.Entities;
-
-namespace Data.Models.Views
+﻿namespace Data.Models.Views
 {
     public class CarViewModel
     {
@@ -51,6 +49,8 @@ namespace Data.Models.Views
         public AdditionalChargeViewModel AdditionalCharge { get; set; } = null!;
 
         public double Star { get; set; }
+
+        public bool IsTracking { get; set; }
 
         public string Status { get; set; } = null!;
 

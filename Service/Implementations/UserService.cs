@@ -36,9 +36,9 @@ namespace Service.Implementations
             && user.Role.Equals(UserRole.Manager.ToString()))
                 .Include(user => user.Account)
                 .ProjectTo<UserViewModel>(_mapper.ConfigurationProvider);
-            var order = filter.Order != null && filter.Order.Equals(OrderBy.Asc.ToString().ToLower()) ? query.OrderBy(user => user.Name) : query.OrderByDescending(user => user.Name);
-            var users = await order.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
-            var totalRow = await query.AsNoTracking().CountAsync();
+        var order = filter.Order != null && filter.Order.Equals(OrderBy.Asc.ToString().ToLower()) ? query.OrderBy(user => user.Name) : query.OrderByDescending(user => user.Name);
+        var users = await order.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
+        var totalRow = await query.AsNoTracking().CountAsync();
             if (users != null || users != null && users.Any())
             {
                 return new ListViewModel<UserViewModel>
@@ -48,57 +48,56 @@ namespace Service.Implementations
                         PageNumber = pagination.PageNumber,
                         PageSize = pagination.PageSize,
                         TotalRow = totalRow
-                    },
+    },
                     Data = users
-                };
+};
             }
             return null!;
         }
 
         public async Task<UserViewModel> GetUser(Guid id)
-        {
-            return await _userRepository.GetMany(user => user.Id.Equals(id))
-                .Include(user => user.Account)
-                .ProjectTo<UserViewModel>(_mapper.ConfigurationProvider).FirstOrDefaultAsync() ?? null!;
-        }
+{
+    return await _userRepository.GetMany(user => user.AccountId.Equals(id))
+        .Include(user => user.Account)
+        .ProjectTo<UserViewModel>(_mapper.ConfigurationProvider).FirstOrDefaultAsync() ?? null!;
+}
 
-        public async Task<UserViewModel> CreateManager(UserCreateModel model)
+public async Task<UserViewModel> CreateManager(UserCreateModel model)
+{
+    var result = 0;
+    var accountId = Guid.Empty;
+    using (var transaction = _unitOfWork.Transaction())
+    {
+        try
         {
-            var result = 0;
-            var id = Guid.NewGuid();
-            using (var transaction = _unitOfWork.Transaction())
+            accountId = await CreateAccount(model.Username, model.Password);
+            var walletId = await CreateWallet();
+
+            var user = new User
             {
-                try
-                {
-                    var accountId = await CreateAccount(model.Username, model.Password);
-                    var walletId = await CreateWallet();
-
-                    var user = new User
-                    {
-                        Id = id,
-                        Gender = model.Gender,
-                        Name = model.Name,
-                        Phone = model.Phone,
-                        AccountId = accountId,
-                        WalletId = walletId,
-                        Role = UserRole.Manager.ToString()
-                    };
-                    _userRepository.Add(user);
-                    result = await _unitOfWork.SaveChanges();
-                    transaction.Commit();
-                }
-                catch (Exception)
-                {
-                    transaction.Rollback();
-                    throw;
-                }
+                Gender = model.Gender,
+                Name = model.Name,
+                Phone = model.Phone,
+                AccountId = accountId,
+                WalletId = walletId,
+                Role = UserRole.Manager.ToString()
             };
-            return result > 0 ? await GetUser(id) : null!;
+            _userRepository.Add(user);
+            result = await _unitOfWork.SaveChanges();
+            transaction.Commit();
         }
-
-        public async Task<UserViewModel> UpdateUser(Guid id, UserUpdateModel model)
+        catch (Exception)
         {
-            var user = await _userRepository.GetMany(user => user.Id.Equals(id)).Include(user => user.Account).FirstOrDefaultAsync();
+            transaction.Rollback();
+            throw;
+        }
+    };
+    return result > 0 ? await GetUser(accountId) : null!;
+}
+
+public async Task<UserViewModel> UpdateUser(Guid id, UserUpdateModel model)
+        {
+            var user = await _userRepository.GetMany(user => user.AccountId.Equals(id)).Include(user => user.Account).FirstOrDefaultAsync();
             if (user != null)
             {
                 if (model.Name != null) user.Name = model.Name;

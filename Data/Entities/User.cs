@@ -5,7 +5,7 @@ namespace Data.Entities;
 
 public partial class User
 {
-    public Guid Id { get; set; }
+    public Guid AccountId { get; set; }
 
     public string Name { get; set; } = null!;
 
@@ -16,8 +16,6 @@ public partial class User
     public string? AvatarUrl { get; set; }
 
     public string Role { get; set; } = null!;
-
-    public Guid AccountId { get; set; }
 
     public Guid WalletId { get; set; }
 

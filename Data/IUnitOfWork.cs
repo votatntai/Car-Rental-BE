@@ -24,6 +24,7 @@ namespace Data
         public IModelRepository Model { get; }
         public IPromotionRepository Promotion { get; }
         public IFeedBackRepository FeedBack { get; }
+        public IDeviceTokenRepository DeviceToken { get; }
 
         Task<int> SaveChanges();
         IDbContextTransaction Transaction();

@@ -5,7 +5,7 @@ namespace Data.Entities;
 
 public partial class Driver
 {
-    public Guid Id { get; set; }
+    public Guid AccountId { get; set; }
 
     public string Name { get; set; } = null!;
 
@@ -22,8 +22,6 @@ public partial class Driver
     public string? BankAccountNumber { get; set; }
 
     public string? BankName { get; set; }
-
-    public Guid AccountId { get; set; }
 
     public Guid WalletId { get; set; }
 

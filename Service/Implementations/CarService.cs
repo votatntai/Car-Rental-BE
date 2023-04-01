@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using Azure.Core;
 using Data;
 using Data.Entities;
 using Data.Models.Create;
@@ -138,7 +137,7 @@ namespace Service.Implementations
                 throw;
             }
         }
-         
+
         public async Task<CarViewModel> UpdateCar(Guid id, CarUpdateModel model)
         {
             var car = await _carRepository.GetMany(c => c.Id.Equals(id))
@@ -178,6 +177,38 @@ namespace Service.Implementations
             _carRepository.Update(car);
             await _unitOfWork.SaveChanges();
             return await GetCar(id);
+        }
+
+        public async Task<ICollection<CarViewModel>> GetCarsIsNotTracking(Guid carOwnerId, PaginationRequestModel pagination)
+        {
+            return await _carRepository.GetMany(car => car.CarOwnerId.Equals(carOwnerId) && !car.IsTracking)
+                .ProjectTo<CarViewModel>(_mapper.ConfigurationProvider)
+                .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize)
+                .ToListAsync();
+        }
+
+        public async Task<CarViewModel> TrackingACar(Guid carId)
+        {
+            var car = await _carRepository.GetMany(car => car.Id.Equals(carId)).FirstOrDefaultAsync();
+            if (car != null)
+            {
+                car.IsTracking = true;
+                _carRepository.Update(car);
+                return await _unitOfWork.SaveChanges() > 0 ? await GetCar(carId) : null!;
+            }
+            return null!;
+        }
+
+        public async Task<CarViewModel> CancelTrackingACar(Guid carId)
+        {
+            var car = await _carRepository.GetMany(car => car.Id.Equals(carId)).FirstOrDefaultAsync();
+            if (car != null)
+            {
+                car.IsTracking = false;
+                _carRepository.Update(car);
+                return await _unitOfWork.SaveChanges() > 0 ? await GetCar(carId) : null!;
+            }
+            return null!;
         }
 
         // PRIVATE METHODS

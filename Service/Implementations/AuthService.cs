@@ -44,7 +44,7 @@ namespace Service.Implementations
             {
                 var token = GenerateJwtToken(new AuthViewModel
                 {
-                    Id = user.Id,
+                    Id = user.AccountId,
                     Role = user.Role,
                     Status = user.Account.Status,
                 });
@@ -65,7 +65,7 @@ namespace Service.Implementations
             {
                 var token = GenerateJwtToken(new AuthViewModel
                 {
-                    Id = user.Id,
+                    Id = user.AccountId,
                     Role = UserRole.Customer.ToString(),
                     Status = user.Account.Status
                 });
@@ -86,7 +86,7 @@ namespace Service.Implementations
             {
                 var token = GenerateJwtToken(new AuthViewModel
                 {
-                    Id = user.Id,
+                    Id = user.AccountId,
                     Role = UserRole.Driver.ToString(),
                     Status = user.Account.Status
                 });
@@ -107,7 +107,7 @@ namespace Service.Implementations
             {
                 var token = GenerateJwtToken(new AuthViewModel
                 {
-                    Id = user.Id,
+                    Id = user.AccountId,
                     Role = UserRole.Driver.ToString(),
                     Status = user.Account.Status
                 });
@@ -121,7 +121,7 @@ namespace Service.Implementations
 
         public async Task<UserViewModel> GetUserById(Guid id)
         {
-            var user = await _userRepository.GetMany(user => user.Id.Equals(id))
+            var user = await _userRepository.GetMany(user => user.AccountId.Equals(id))
                 .Include(user => user.Account)
                 .Include(user => user.Wallet)
                 .ProjectTo<UserViewModel>(_mapper.ConfigurationProvider)
@@ -131,16 +131,17 @@ namespace Service.Implementations
 
         public async Task<CustomerViewModel> GetCustomerById(Guid id)
         {
-            var customer = await _customerRepository.GetMany(customer => customer.Id.Equals(id))
+            var customer = await _customerRepository.GetMany(customer => customer.AccountId.Equals(id))
                 .Include(customer => customer.Account)
                 .Include(customer => customer.Wallet)
                 .ProjectTo<CustomerViewModel>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();
             return customer != null ? customer : null!;
         }
+
         public async Task<DriverViewModel> GetDriverById(Guid id)
         {
-            var driver = await _driverRepository.GetMany(driver => driver.Id.Equals(id))
+            var driver = await _driverRepository.GetMany(driver => driver.AccountId.Equals(id))
                 .Include(driver => driver.Account)
                 .Include(driver => driver.Wallet)
                 .ProjectTo<DriverViewModel>(_mapper.ConfigurationProvider)
@@ -150,7 +151,7 @@ namespace Service.Implementations
 
         public async Task<CarOwnerViewModel> GetCarOwnerById(Guid id)
         {
-            var carOwner = await _carOwnerRepository.GetMany(carOwner => carOwner.Id.Equals(id))
+            var carOwner = await _carOwnerRepository.GetMany(carOwner => carOwner.AccountId.Equals(id))
                 .Include(carOwner => carOwner.Account)
                 .Include(carOwner => carOwner.Wallet)
                 .ProjectTo<CarOwnerViewModel>(_mapper.ConfigurationProvider)
@@ -158,40 +159,40 @@ namespace Service.Implementations
             return carOwner != null ? carOwner : null!;
         }
 
-        public async Task<AuthViewModel>AuthById(Guid id)
+        public async Task<AuthViewModel> AuthById(Guid id)
         {
-            if(_customerRepository.Any(customer => customer.Id.Equals(id)))
+            if (_customerRepository.Any(customer => customer.AccountId.Equals(id)))
             {
-                return await _customerRepository.GetMany(customer => customer.Id.Equals(id)).Select(customer => new AuthViewModel
+                return await _customerRepository.GetMany(customer => customer.AccountId.Equals(id)).Select(customer => new AuthViewModel
                 {
-                    Id = customer.Id,
+                    Id = customer.AccountId,
                     Role = UserRole.Customer.ToString(),
                     Status = customer.Account.Status
                 }).FirstOrDefaultAsync() ?? null!;
             }
-            if (_driverRepository.Any(driver => driver.Id.Equals(id)))
+            if (_driverRepository.Any(driver => driver.AccountId.Equals(id)))
             {
-                return await _driverRepository.GetMany(driver => driver.Id.Equals(id)).Select(driver => new AuthViewModel
+                return await _driverRepository.GetMany(driver => driver.AccountId.Equals(id)).Select(driver => new AuthViewModel
                 {
-                    Id = driver.Id,
+                    Id = driver.AccountId,
                     Role = UserRole.Customer.ToString(),
                     Status = driver.Account.Status
                 }).FirstOrDefaultAsync() ?? null!;
             }
-            if (_carOwnerRepository.Any(carOwner => carOwner.Id.Equals(id)))
+            if (_carOwnerRepository.Any(carOwner => carOwner.AccountId.Equals(id)))
             {
-                return await _carOwnerRepository.GetMany(carOwner => carOwner.Id.Equals(id)).Select(carOwner => new AuthViewModel
+                return await _carOwnerRepository.GetMany(carOwner => carOwner.AccountId.Equals(id)).Select(carOwner => new AuthViewModel
                 {
-                    Id = carOwner.Id,
+                    Id = carOwner.AccountId,
                     Role = UserRole.Customer.ToString(),
                     Status = carOwner.Account.Status
                 }).FirstOrDefaultAsync() ?? null!;
             }
-            if (_userRepository.Any(user => user.Id.Equals(id)))
+            if (_userRepository.Any(user => user.AccountId.Equals(id)))
             {
-                return await _userRepository.GetMany(user => user.Id.Equals(id)).Select(user => new AuthViewModel
+                return await _userRepository.GetMany(user => user.AccountId.Equals(id)).Select(user => new AuthViewModel
                 {
-                    Id = user.Id,
+                    Id = user.AccountId,
                     Role = UserRole.Customer.ToString(),
                     Status = user.Account.Status
                 }).FirstOrDefaultAsync() ?? null!;

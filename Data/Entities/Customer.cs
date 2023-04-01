@@ -5,7 +5,7 @@ namespace Data.Entities;
 
 public partial class Customer
 {
-    public Guid Id { get; set; }
+    public Guid AccountId { get; set; }
 
     public string Name { get; set; } = null!;
 
@@ -20,8 +20,6 @@ public partial class Customer
     public string? BankAccountNumber { get; set; }
 
     public string? BankName { get; set; }
-
-    public Guid AccountId { get; set; }
 
     public Guid WalletId { get; set; }
 

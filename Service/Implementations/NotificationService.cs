@@ -1,34 +1,38 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Data;
-using Data.Entities;
 using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
-using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
+using FirebaseAdmin.Messaging;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
+using Data.Models.Create;
 
 namespace Service.Implementations
 {
     public class NotificationService : BaseService, INotificationService
     {
         private readonly INotificationRepository _notificationRepository;
+        private readonly IDeviceTokenRepository _deviceTokenRepository;
         private new readonly IMapper _mapper;
         public NotificationService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
         {
             _notificationRepository = unitOfWork.Notification;
+            _deviceTokenRepository = unitOfWork.DeviceToken;
             _mapper = mapper;
         }
 
         public async Task<ListViewModel<NotificationViewModel>> GetNotifications(Guid userId, PaginationRequestModel pagination)
         {
             var query = _notificationRepository.GetMany(notification =>
-                    notification.Account.Customer != null ? notification.Account.Customer.Id.Equals(userId) :
-                    notification.Account.CarOwner != null ? notification.Account.CarOwner.Id.Equals(userId) :
-                    notification.Account.Driver != null ? notification.Account.Driver.Id.Equals(userId) :
-                    notification.Account.User != null ? notification.Account.User.Id.Equals(userId) :
+                    notification.Account.Customer != null ? notification.Account.Customer.AccountId.Equals(userId) :
+                    notification.Account.CarOwner != null ? notification.Account.CarOwner.AccountId.Equals(userId) :
+                    notification.Account.Driver != null ? notification.Account.Driver.AccountId.Equals(userId) :
+                    notification.Account.User != null ? notification.Account.User.AccountId.Equals(userId) :
                     false);
             var notifications = await query
                 .ProjectTo<NotificationViewModel>(_mapper.ConfigurationProvider)
@@ -75,12 +79,7 @@ namespace Service.Implementations
 
         public async Task<bool> MakeAsRead(Guid userId)
         {
-            var notifications = await _notificationRepository.GetMany(notification =>
-                notification.Account.Customer != null ? notification.Account.Customer.Id.Equals(userId) :
-                notification.Account.CarOwner != null ? notification.Account.CarOwner.Id.Equals(userId) :
-                notification.Account.Driver != null ? notification.Account.Driver.Id.Equals(userId) :
-                notification.Account.User != null ? notification.Account.User.Id.Equals(userId) :
-                false).ToListAsync();
+            var notifications = await _notificationRepository.GetMany(notification => notification.AccountId.Equals(userId)).ToListAsync();
             foreach (var notification in notifications)
             {
                 notification.IsRead = true;
@@ -88,6 +87,47 @@ namespace Service.Implementations
             _notificationRepository.UpdateRange(notifications);
             var result = await _unitOfWork.SaveChanges();
             return result > 0;
+        }
+
+        public async Task<bool> SendNotification(Guid userId, NotificationCreateModel model)
+        {
+            var deviceTokens = await _deviceTokenRepository.GetMany(dvt => dvt.AccountId.Equals(userId))
+                .Select(dvt => dvt.Token).ToListAsync();
+            if (deviceTokens.Any())
+            {
+                var notification = new Data.Entities.Notification
+                {
+                    Id = Guid.NewGuid(),
+                    AccountId = userId,
+                    CreateAt = DateTime.Now,
+                    Body = model.Body,
+                    IsRead = false,
+                    Type = model.Data.Type,
+                    Link = model.Data.Link,
+                    Title = model.Title,
+                };
+                _notificationRepository.Add(notification);
+                var result = await _unitOfWork.SaveChanges();
+                if (result > 0)
+                {
+                    var message = new MulticastMessage()
+                    {
+                        Notification = new FirebaseAdmin.Messaging.Notification
+                        {
+                            Title = model.Title,
+                            Body = model.Body,
+                        },
+                        Tokens = deviceTokens
+                    };
+                    FirebaseApp app = FirebaseApp.Create(new AppOptions() 
+                    {
+                        Credential = GoogleCredential.FromFile("car-rental-236aa-firebase-adminsdk-ym9hq-92d6de1164.json")
+                    });
+                    FirebaseMessaging messaging = FirebaseMessaging.GetMessaging(app);
+                    await messaging.SendMulticastAsync(message);
+                }
+            }
+            return true;
         }
 
         public async Task<bool> DeleteNotification(Guid id)
