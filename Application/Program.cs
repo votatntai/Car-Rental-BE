@@ -1,5 +1,6 @@
 using Application.Configurations;
 using Data.Entities;
+using Data.Hubs;
 using Data.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Converters;
@@ -22,6 +23,7 @@ builder.Services.AddControllersWithViews()
     }
 );
 builder.Services.AddSwaggerGenNewtonsoftSupport();
+builder.Services.AddSignalR();
 builder.Services.AddCors();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -46,7 +48,15 @@ app.UseJwt();
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
+
 app.UseAuthorization();
+
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHub<LocationHub>("/locationHub");
+});
 
 app.MapControllers();
 
