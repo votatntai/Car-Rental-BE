@@ -119,10 +119,14 @@ namespace Service.Implementations
                         },
                         Tokens = deviceTokens
                     };
-                    FirebaseApp app = FirebaseApp.Create(new AppOptions() 
+                    var app = FirebaseApp.DefaultInstance;
+                    if (FirebaseApp.DefaultInstance == null)
                     {
-                        Credential = GoogleCredential.FromFile("car-rental-236aa-firebase-adminsdk-ym9hq-92d6de1164.json")
-                    });
+                        app = FirebaseApp.Create(new AppOptions()
+                        {
+                            Credential = GoogleCredential.FromFile("car-rental-236aa-firebase-adminsdk-ym9hq-92d6de1164.json")
+                        });
+                    }
                     FirebaseMessaging messaging = FirebaseMessaging.GetMessaging(app);
                     await messaging.SendMulticastAsync(message);
                 }
