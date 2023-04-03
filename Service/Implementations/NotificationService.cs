@@ -89,27 +89,33 @@ namespace Service.Implementations
             return result > 0;
         }
 
-        public async Task<bool> SendNotification(Guid userId, NotificationCreateModel model)
+        public async Task<bool> SendNotification(ICollection<Guid> userIds, NotificationCreateModel model)
         {
-            var deviceTokens = await _deviceTokenRepository.GetMany(dvt => dvt.AccountId.Equals(userId))
+            var deviceTokens = await _deviceTokenRepository.GetMany(dvt => userIds.Contains(dvt.AccountId))
                 .Select(dvt => dvt.Token).ToListAsync();
             if (deviceTokens.Any())
             {
-                var notification = new Data.Entities.Notification
-                {
-                    Id = Guid.NewGuid(),
-                    AccountId = userId,
-                    CreateAt = DateTime.Now,
-                    Body = model.Body,
-                    IsRead = false,
-                    Type = model.Data.Type,
-                    Link = model.Data.Link,
-                    Title = model.Title,
-                };
-                _notificationRepository.Add(notification);
+                foreach (var userId in userIds) {
+                    var notification = new Data.Entities.Notification
+                    {
+                        Id = Guid.NewGuid(),
+                        AccountId = userId,
+                        CreateAt = DateTime.Now,
+                        Body = model.Body,
+                        IsRead = false,
+                        Type = model.Data.Type,
+                        Link = model.Data.Link,
+                        Title = model.Title,
+                    };
+                    _notificationRepository.Add(notification);
+                }
                 var result = await _unitOfWork.SaveChanges();
                 if (result > 0)
                 {
+                    var messageData = new Dictionary<string, string>{
+                            { "type", model.Data.Type ?? "" },
+                            { "link", model.Data.Link ?? "" }
+                        };
                     var message = new MulticastMessage()
                     {
                         Notification = new FirebaseAdmin.Messaging.Notification
@@ -117,6 +123,7 @@ namespace Service.Implementations
                             Title = model.Title,
                             Body = model.Body,
                         },
+                        Data = messageData,
                         Tokens = deviceTokens
                     };
                     var app = FirebaseApp.DefaultInstance;

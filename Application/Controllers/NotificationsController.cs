@@ -46,7 +46,7 @@ namespace Application.Controllers
         {
             try
             {
-                var result = await  _notificationService.SendNotification(model.UserId, model);
+                var result = await  _notificationService.SendNotification(model.UserIds, model);
                 return Ok(result);
             }
             catch (Exception e)

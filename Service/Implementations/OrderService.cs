@@ -18,6 +18,7 @@ namespace Service.Implementations
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IDriverRepository _driverRepository;
+        private readonly IUserRepository _userRepository;
         private readonly INotificationService _notificationService;
         private readonly IOrderDetailRepository _orderDetailRepository;
         private readonly ILocationRepository _locationRepository;
@@ -26,6 +27,7 @@ namespace Service.Implementations
         {
             _orderRepository = unitOfWork.Order;
             _driverRepository = unitOfWork.Driver;
+            _userRepository = unitOfWork.User;
             _notificationService = notificationService;
             _orderDetailRepository = unitOfWork.OrderDetail;
             _locationRepository = unitOfWork.Location;
@@ -123,7 +125,9 @@ namespace Service.Implementations
                         Link = order.Id.ToString(),
                     }
                 };
-                await _notificationService.SendNotification(Guid.Parse("d13fb3f2-6240-4304-b272-35595262f2f3"), message);
+                var managers = await _userRepository.GetMany(user => user.Role.Equals(UserRole.Manager.ToString()))
+                    .Select(manager => manager.AccountId).ToListAsync();
+                await _notificationService.SendNotification(managers, message);
                 return await GetOrder(order.Id);
             }
             return null!;

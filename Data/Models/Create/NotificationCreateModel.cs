@@ -4,7 +4,7 @@ namespace Data.Models.Create
 {
     public class NotificationCreateModel
     {
-        public Guid UserId { get; set; }
+        public ICollection<Guid> UserIds { get; set; } = null!;
 
         public string Title { get; set; } = null!;
 
