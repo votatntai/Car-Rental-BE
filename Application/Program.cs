@@ -23,8 +23,8 @@ builder.Services.AddControllersWithViews()
     }
 );
 builder.Services.AddSwaggerGenNewtonsoftSupport();
-builder.Services.AddSignalR();
 builder.Services.AddCors();
+builder.Services.AddSignalR();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger();
@@ -51,7 +51,6 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthorization();
-
 
 app.UseEndpoints(endpoints =>
 {

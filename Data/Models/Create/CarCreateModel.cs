@@ -12,13 +12,15 @@
 
         public Guid ModelId { get; set; }
 
-        public TimeSpan ReceiveStartTime { get; set; }
+        public Guid CarOwnerId { get; set; }
 
-        public TimeSpan ReceiveEndTime { get; set; }
+        public TimeSpan? ReceiveStartTime { get; set; }
 
-        public TimeSpan ReturnStartTime { get; set; }
+        public TimeSpan? ReceiveEndTime { get; set; }
 
-        public TimeSpan ReturnEndTime { get; set; }
+        public TimeSpan? ReturnStartTime { get; set; }
+
+        public TimeSpan? ReturnEndTime { get; set; }
 
         public LocationCreateModel Location { get; set; } = null!;
 

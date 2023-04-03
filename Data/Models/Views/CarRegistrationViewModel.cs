@@ -26,9 +26,13 @@
 
         public string Model { get; set; } = null!;
 
+        public string Chassis { get; set; } = null!;
+
         public DateTime CreateAt { get; set; }
 
         public string? Description { get; set; }
+
+        public bool Status { get; set; }
 
         public CarOwnerViewModel CarOwner { get; set; } = null!;
 

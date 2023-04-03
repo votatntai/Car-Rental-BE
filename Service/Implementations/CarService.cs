@@ -31,7 +31,8 @@ namespace Service.Implementations
 
         public async Task<ListViewModel<CarViewModel>> GetCars(CarFilterModel filter, PaginationRequestModel pagination)
         {
-            var query = _carRepository.GetMany(car => car.Name != null && filter.Name != null ? car.Name.Contains(filter.Name) : true);
+            var query = _carRepository.GetMany(car => car.Name != null && filter.Name != null ? (car.Name.Contains(filter.Name) ||
+            car.Model.ProductionCompany.Name.Contains(filter.Name)) : true);
             if (filter.Location != null)
             {
                 query = query.AsQueryable().DistanceFilter(filter.Location.Latitude, filter.Location.Longitude);
@@ -63,7 +64,6 @@ namespace Service.Implementations
                 query = query.AsQueryable().Where(car => car.ReceiveStartTime <= startTime && car.ReceiveEndTime >= endTime);
             }
             var cars = await query
-            .Include(car => car.Model).ThenInclude(model => model.ProductionCompany)
             .OrderByDescending(car => car.Star)
             .ThenByDescending(car => car.Rented)
             .ProjectTo<CarViewModel>(_mapper.ConfigurationProvider)
@@ -113,10 +113,7 @@ namespace Service.Implementations
                     Price = model.Price,
                     Status = CarStatus.Idle.ToString(),
                     ModelId = model.ModelId,
-                    ReceiveStartTime = model.ReceiveStartTime,
-                    ReceiveEndTime = model.ReceiveEndTime,
-                    ReturnStartTime = model.ReturnStartTime,
-                    ReturnEndTime = model.ReturnEndTime,
+                    CarOwnerId = model.CarOwnerId,
                     Rented = 0,
                     CreateAt = DateTime.Now
                 };
@@ -163,8 +160,8 @@ namespace Service.Implementations
 
             if (model.Location != null)
             {
-                car.Location!.Longitude = model.Location.Longitude;
                 car.Location!.Latitude = model.Location.Latitude;
+                car.Location!.Longitude = model.Location.Longitude;
             }
 
             if (model.AdditionalCharge != null)

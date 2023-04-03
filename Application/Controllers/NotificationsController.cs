@@ -39,22 +39,21 @@ namespace Application.Controllers
             return notification != null ? Ok(notification) : NotFound();
         }
 
-        [HttpPost]
-        [ProducesResponseType(typeof(bool), StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<NotificationViewModel>> SendNotification(NotificationCreateModel model)
-        {
-            try
-            {
-                var result = await _notificationService.SendNotification(model.UserId, model);
-                return Ok(result);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status400BadRequest, e.InnerException != null ? e.InnerException.Message : e.Message);
-            }
-
-        }
+        //[HttpPost]
+        //[ProducesResponseType(typeof(bool), StatusCodes.Status204NoContent)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //public async Task<ActionResult<NotificationViewModel>> SendNotification(NotificationCreateModel model)
+        //{
+        //    try
+        //    {
+        //        var result = await _notificationService.SendNotification(model.UserId, model);
+        //        return Ok(result);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return StatusCode(StatusCodes.Status400BadRequest, e.InnerException != null ? e.InnerException.Message : e.Message);
+        //    }
+        //}
 
         [HttpPut]
         [Route("{id}")]

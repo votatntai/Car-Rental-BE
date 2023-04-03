@@ -1,7 +1,10 @@
-﻿using Data.Models.Create;
+﻿using Application.Configurations.Middleware;
+using Data.Models.Create;
 using Data.Models.Get;
+using Data.Models.Update;
 using Data.Models.Views;
 using Microsoft.AspNetCore.Mvc;
+using Service.Implementations;
 using Service.Interfaces;
 
 namespace Application.Controllers
@@ -37,14 +40,33 @@ namespace Application.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(typeof(CarRegistrationViewModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<CarRegistrationViewModel>> CreateCarRegistration([FromBody] CarRegistrationCreateModel model)
         {
             try
             {
-                var carRegistration = await _carRegistrationService.CreateCarRegistration(model);
+                var auth = (AuthViewModel?)HttpContext.Items["User"];
+                var carRegistration = await _carRegistrationService.CreateCarRegistration(auth!.Id, model);
                 return CreatedAtAction(nameof(GetCarRegistration), new { id = carRegistration.Id }, carRegistration);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, e.InnerException != null ? e.InnerException.Message : e.Message);
+            }
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        [ProducesResponseType(typeof(CarRegistrationViewModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<CarRegistrationViewModel>> UpdateCar([FromRoute] Guid id, [FromBody] CarRegistrationUpdateModel model)
+        {
+            try
+            {
+                var car = await _carRegistrationService.UpdateCar(id, model);
+                return CreatedAtAction(nameof(GetCarRegistration), new { id = car.Id }, car);
             }
             catch (Exception e)
             {

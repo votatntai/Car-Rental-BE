@@ -4,12 +4,11 @@ using Data;
 using Data.Entities;
 using Data.Models.Create;
 using Data.Models.Get;
+using Data.Models.Update;
 using Data.Models.Views;
-using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
-using Utility.Enums;
 
 namespace Service.Implementations
 {
@@ -58,7 +57,7 @@ namespace Service.Implementations
                 .FirstOrDefaultAsync() ?? null!;
         }
 
-        public async Task<CarRegistrationViewModel> CreateCarRegistration(CarRegistrationCreateModel model)
+        public async Task<CarRegistrationViewModel> CreateCarRegistration(Guid carOwnerId, CarRegistrationCreateModel model)
         {
             using var transaction = _unitOfWork.Transaction();
             try
@@ -81,6 +80,7 @@ namespace Service.Implementations
                     Model = model.Model,
                     CreateAt = DateTime.Now,
                     AdditionalChargeId = additionalChargeId,
+                    CarOwnerId = carOwnerId,
                 };
                 _carRegistrationRepository.Add(carRegistration);
 
@@ -98,6 +98,17 @@ namespace Service.Implementations
                 transaction.Rollback();
                 throw;
             }
+        }
+
+        public async Task<CarRegistrationViewModel> UpdateCar(Guid id, CarRegistrationUpdateModel model)
+        {
+            var carRegistration = await _carRegistrationRepository.GetMany(c => c.Id.Equals(id))
+                .FirstOrDefaultAsync();
+            if (carRegistration == null) return null!;
+            carRegistration.Status = model.IsApproved ?? carRegistration.Status;
+            _carRegistrationRepository.Update(carRegistration);
+            await _unitOfWork.SaveChanges();
+            return await GetCarRegistration(id);
         }
 
         public async Task<bool> DeleteCarRegistration(Guid id)

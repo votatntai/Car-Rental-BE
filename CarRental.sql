@@ -176,6 +176,7 @@ Create Table CarRegistration(
 	YearOfManufacture int not null,
 	ProductionCompany nvarchar(256) not null,
 	Model varchar(256) not null,
+	Chassis varchar(256) not null,
 	Location nvarchar(256) not null,
 	CreateAt datetime not null default getdate(),
 	CarOwnerId uniqueidentifier foreign key references CarOwner(AccountId) not null,
