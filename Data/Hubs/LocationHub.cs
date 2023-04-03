@@ -38,12 +38,7 @@ namespace Data.Hubs
             ConnectedClients[clientConnectionId] = tracking;
 
             // Gửi thông báo về tọa độ vị trí mới cho các máy khách khác
-            Console.WriteLine("=============================================================");
-            Console.WriteLine("Nhan data thanh cong");
-
             await Clients.All.SendAsync("ReceiveLocation", clientConnectionId, tracking);
-            Console.WriteLine("=============================================================");
-            Console.WriteLine("Gui data thanh cong");
         }
     }
 }

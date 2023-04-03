@@ -27,6 +27,8 @@ public partial class CarRegistration
 
     public string Model { get; set; } = null!;
 
+    public string Chassis { get; set; } = null!;
+
     public string Location { get; set; } = null!;
 
     public DateTime CreateAt { get; set; }
