@@ -8,7 +8,7 @@ namespace Data.Models.Views
 {
     public class DriverViewModel
     {
-        public Guid AccountId { get; set; }
+        public Guid Id { get; set; }
 
         public string Name { get; set; } = null!;
 

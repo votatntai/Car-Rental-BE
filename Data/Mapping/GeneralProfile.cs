@@ -52,8 +52,8 @@ namespace Data.Mapping
                 .ForMember(customerVM => customerVM.Id, config => config.MapFrom(customer => customer.AccountId));
 
             CreateMap<Driver, DriverViewModel>()
-                .ForMember(driverVM => driverVM.AccountStatus, config => config.MapFrom(driver => driver.Account.Status))
-                .ForMember(driverVM => driverVM.Id, config => config.MapFrom(driver => driver.AccountId));
+                .ForMember(driverVM => driverVM.Id, config => config.MapFrom(driver => driver.Account.Id))
+                .ForMember(driverVM => driverVM.AccountStatus, config => config.MapFrom(driver => driver.Account.Status));
 
             CreateMap<CarOwner, CarOwnerViewModel>()
                 .ForMember(carOwnerVM => carOwnerVM.Status, config => config.MapFrom(carOwner => carOwner.Account.Status))
