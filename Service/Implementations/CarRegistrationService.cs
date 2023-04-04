@@ -75,12 +75,14 @@ namespace Service.Implementations
                     Price = model.Price,
                     ProductionCompany = model.ProductionCompany,
                     Seater = model.Seater,
+                    Chassis = model.Chassis,
                     TransmissionType = model.TransmissionType,
                     YearOfManufacture = model.YearOfManufacture,
                     Model = model.Model,
                     CreateAt = DateTime.Now,
                     AdditionalChargeId = additionalChargeId,
                     CarOwnerId = carOwnerId,
+                    Status = false,
                 };
                 _carRegistrationRepository.Add(carRegistration);
 

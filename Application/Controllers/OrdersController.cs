@@ -32,6 +32,32 @@ namespace Application.Controllers
         }
 
         [HttpGet]
+        [Authorize]
+        [Route("for-car-owners")]
+        [ProducesResponseType(typeof(ListViewModel<OrderViewModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ListViewModel<OrderViewModel>>> GetOrdersForCarOwner([FromQuery] PaginationRequestModel pagination)
+        {
+            var auth = (AuthViewModel?)HttpContext.Items["User"];
+            var order = await _orderService.GetOrdersForCarOwner(auth!.Id, pagination);
+            return order != null ? Ok(order) : BadRequest();
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("for-drivers")]
+        [ProducesResponseType(typeof(ListViewModel<OrderViewModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ListViewModel<OrderViewModel>>> GetOrdersForDriver([FromQuery] PaginationRequestModel pagination)
+        {
+            var auth = (AuthViewModel?)HttpContext.Items["User"];
+            var order = await _orderService.GetOrdersForDriver(auth!.Id, pagination);
+            return order != null ? Ok(order) : BadRequest();
+        }
+
+        [HttpGet]
         [Route("{id}")]
         [ProducesResponseType(typeof(OrderViewModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

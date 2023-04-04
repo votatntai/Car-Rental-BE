@@ -24,6 +24,8 @@
 
         public LocationCreateModel Location { get; set; } = null!;
 
+        public ICollection<CarCalendarCreateModel>? Calendars { get; set; } = null!;
+
         public AdditionalChargeCreateModel AdditionalCharge { get; set; } = null!;
     }
 }

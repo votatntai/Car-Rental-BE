@@ -28,6 +28,8 @@ namespace Data
         private IPromotionRepository _promotion = null!;
         private IFeedBackRepository _feedBack = null!;
         private IDeviceTokenRepository _deviceToken= null!;
+        private ICalendarRepository _calendar= null!;
+        private ICarCalendarRepository _carCalendar= null!;
 
         public UnitOfWork(CarRentalContext context)
         {
@@ -122,6 +124,15 @@ namespace Data
         public IDeviceTokenRepository DeviceToken
         {
             get { return _deviceToken ??= new DeviceTokenRepository (_context); }
+        }
+
+        public ICalendarRepository Calendar
+        {
+            get { return _calendar ??= new CalendarRepository(_context); }
+        }
+        public ICarCalendarRepository CarCalendar
+        {
+            get { return _carCalendar ??= new CarCalendarRepository(_context); }
         }
 
         public async Task<int> SaveChanges()

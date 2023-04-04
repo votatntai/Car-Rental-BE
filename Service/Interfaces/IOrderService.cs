@@ -9,6 +9,8 @@ namespace Service.Interfaces
     {
         Task<ListViewModel<OrderViewModel>> GetOrders(Guid customerId, OrderFilterModel filter, PaginationRequestModel pagination);
         Task<OrderViewModel> GetOrder(Guid id);
+        Task<ListViewModel<OrderViewModel>> GetOrdersForDriver(Guid userId, PaginationRequestModel pagination);
+        Task<ListViewModel<OrderViewModel>> GetOrdersForCarOwner(Guid userId, PaginationRequestModel pagination);
         Task<OrderViewModel> CreateOrder(Guid customerId, OrderCreateModel model);
         Task<OrderViewModel> UpdateOrder(Guid id, OrderUpdateModel model);
     }

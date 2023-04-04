@@ -18,6 +18,8 @@
 
         public string FuelConsumption { get; set; } = null!;
 
+        public string Chassis { get; set; } = null!;
+
         public int YearOfManufacture { get; set; }
 
         public string ProductionCompany { get; set; } = null!;

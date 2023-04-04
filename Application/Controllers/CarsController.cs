@@ -5,6 +5,7 @@ using Data.Models.Update;
 using Data.Models.Views;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
+using Utility.Enums;
 
 namespace Application.Controllers
 {
@@ -25,6 +26,18 @@ namespace Application.Controllers
         public async Task<ActionResult<ListViewModel<CarViewModel>>> GetCars([FromQuery] CarFilterModel filter, [FromQuery] PaginationRequestModel pagination)
         {
             var car = await _carService.GetCars(filter, pagination);
+            return car != null ? Ok(car) : BadRequest();
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("for-car-owners")]
+        [ProducesResponseType(typeof(ListViewModel<CarViewModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ListViewModel<CarViewModel>>> GetCarsForCarOwner([FromQuery] CarStatus status, [FromQuery] PaginationRequestModel pagination)
+        {
+            var auth = (AuthViewModel?)HttpContext.Items["User"];
+            var car = await _carService.GetCarsByCarOwnerId(auth!.Id, status, pagination);
             return car != null ? Ok(car) : BadRequest();
         }
 

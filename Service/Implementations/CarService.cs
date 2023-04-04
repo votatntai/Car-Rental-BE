@@ -16,8 +16,11 @@ namespace Service.Implementations
 {
     public class CarService : BaseService, ICarService
     {
+
         private readonly ICarRepository _carRepository;
         private readonly ILocationRepository _locationRepository;
+        private readonly ICalendarRepository _calendarRepository;
+        private readonly ICarCalendarRepository _carCalendarRepository;
         private readonly IAdditionalChargeRepository _additionalChargeRepository;
         private new readonly IMapper _mapper;
 
@@ -25,6 +28,8 @@ namespace Service.Implementations
         {
             _carRepository = unitOfWork.Car;
             _locationRepository = unitOfWork.Location;
+            _calendarRepository = unitOfWork.Calendar;
+            _carCalendarRepository = unitOfWork.CarCalendar;
             _additionalChargeRepository = unitOfWork.AdditionalCharge;
             _mapper = mapper;
         }
@@ -97,6 +102,7 @@ namespace Service.Implementations
         public async Task<CarViewModel> CreateCar(CarCreateModel model)
         {
             using var transaction = _unitOfWork.Transaction();
+
             try
             {
                 var locationId = await CreateLocation(model.Location);
@@ -117,6 +123,36 @@ namespace Service.Implementations
                     Rented = 0,
                     CreateAt = DateTime.Now
                 };
+
+                foreach (var weekday in Enum.GetValues(typeof(Weekday)))
+                {
+                    var calendar = new Calendar
+                    {
+                        Id = Guid.NewGuid(),
+                        StartTime = TimeSpan.Parse("08:00:00"),
+                        EndTime = TimeSpan.Parse("20:00:00"),
+                        Weekday = weekday.ToString() ?? null!,
+                    };
+
+                    if (model.Calendars != null)
+                    {
+                        var item = model.Calendars.FirstOrDefault(c => c.Calendar.Weekday.Equals(weekday.ToString()));
+                        if (item != null)
+                        {
+                            calendar.StartTime = item.Calendar.StartTime;
+                            calendar.EndTime = item.Calendar.EndTime;
+                        }
+                    }
+
+                    _calendarRepository.Add(calendar);
+                    var carCalendar = new CarCalendar
+                    {
+                        CalendarId = calendar.Id,
+                        CarId = car.Id,
+                    };
+                    _carCalendarRepository.Add(carCalendar);
+                }
+
                 _carRepository.Add(car);
 
                 if (await _unitOfWork.SaveChanges() > 0)
@@ -124,15 +160,15 @@ namespace Service.Implementations
                     transaction.Commit();
                     return await GetCar(car.Id) ?? throw new InvalidOperationException("Failed to retrieve car.");
                 }
-
-                transaction.Rollback();
-                return null!;
             }
             catch
             {
                 transaction.Rollback();
                 throw;
             }
+
+            transaction.Rollback();
+            return null!;
         }
 
         public async Task<CarViewModel> UpdateCar(Guid id, CarUpdateModel model)
@@ -171,9 +207,35 @@ namespace Service.Implementations
                 car.AdditionalCharge!.DistanceSurcharge = model.AdditionalCharge.DistanceSurcharge;
             }
 
+            if (model.CarCalendars != null)
+            {
+                foreach (var item in car.CarCalendars)
+                {
+                    var updateItem = model.CarCalendars.FirstOrDefault(x => x.Calendar.Id == item.Calendar.Id);
+                    if (updateItem != null && updateItem.Calendar.Id.Equals(item.Calendar.Id))
+                    {
+                        var calendar = await _calendarRepository.GetMany(calendar => calendar.Id.Equals(updateItem.Calendar.Id)).FirstOrDefaultAsync();
+                        if (calendar != null)
+                        {
+                            calendar.StartTime = updateItem.Calendar.StartTime ?? calendar.StartTime;
+                            calendar.EndTime = updateItem.Calendar.EndTime ?? calendar.EndTime;
+                            _calendarRepository.Update(calendar);
+                        }
+                    }
+                }
+            }
+
             _carRepository.Update(car);
             await _unitOfWork.SaveChanges();
             return await GetCar(id);
+        }
+
+        public async Task<ICollection<CarViewModel>> GetCarsByCarOwnerId(Guid carOwnerId, CarStatus? status, PaginationRequestModel pagination)
+        {
+            return await _carRepository.GetMany(car => car.CarOwnerId.Equals(carOwnerId) && (status != null ? car.Status.Equals(status.ToString()) : false))
+                .ProjectTo<CarViewModel>(_mapper.ConfigurationProvider)
+                .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize)
+                .ToListAsync();
         }
 
         public async Task<ICollection<CarViewModel>> GetCarsIsNotTracking(Guid carOwnerId, PaginationRequestModel pagination)

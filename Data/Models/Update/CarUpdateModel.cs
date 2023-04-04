@@ -24,6 +24,8 @@
 
         public LocationUpdateModel? Location { get; set; }
 
+        public ICollection<CarCalendarUpdateModel>? CarCalendars { get; set; }
+
         public AdditionalChargeUpdateModel? AdditionalCharge { get; set; }
 
         public string? Status { get; set; } = null!;

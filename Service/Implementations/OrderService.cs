@@ -34,10 +34,65 @@ namespace Service.Implementations
             _mapper = mapper;
         }
 
-        public async Task<ListViewModel<OrderViewModel>> GetOrders(Guid customerId, OrderFilterModel filter, PaginationRequestModel pagination)
+        public async Task<ListViewModel<OrderViewModel>> GetOrders(Guid userId, OrderFilterModel filter, PaginationRequestModel pagination)
         {
-            var query = _orderRepository.GetMany(order => order.CustomerId.Equals(customerId)
-            && filter.Status != null ? order.Status.Equals(filter.Status) : true)
+            var query = _orderRepository.GetMany(order =>
+                order.Customer != null ? order.Customer.AccountId.Equals(userId) :
+                order.OrderDetails.Any(detail => detail.Car != null && detail.Car.CarOwner != null && detail.Car.CarOwner.AccountId.Equals(userId)) ||
+                order.OrderDetails.Any(detail => detail.Car != null && detail.Driver != null && detail.Driver.AccountId.Equals(userId))
+                && filter.Status != null ? order.Status.Equals(filter.Status) : true)
+                .ProjectTo<OrderViewModel>(_mapper.ConfigurationProvider);
+            var orders = await query.OrderBy(order => order.CreateAt)
+                .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
+            var totalRow = await query.AsNoTracking().CountAsync();
+            if (orders != null || orders != null && orders.Any())
+            {
+                return new ListViewModel<OrderViewModel>
+                {
+                    Pagination = new PaginationViewModel
+                    {
+                        PageNumber = pagination.PageNumber,
+                        PageSize = pagination.PageSize,
+                        TotalRow = totalRow
+                    },
+                    Data = orders
+                };
+            }
+            return null!;
+        }
+
+        public async Task<ListViewModel<OrderViewModel>> GetOrdersForCarOwner(Guid userId, PaginationRequestModel pagination)
+        {
+            var query = _orderRepository.GetMany(order =>
+                order.OrderDetails.Any(detail => detail.Car != null && detail.Car.CarOwner != null && detail.Car.CarOwner.AccountId.Equals(userId))
+                && order.Status.Equals(OrderStatus.Pending.ToString()) || order.Status.Equals(OrderStatus.ManagerConfirmed.ToString()))
+                .ProjectTo<OrderViewModel>(_mapper.ConfigurationProvider);
+            var orders = await query.OrderBy(order => order.CreateAt)
+                .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
+            var totalRow = await query.AsNoTracking().CountAsync();
+            if (orders != null || orders != null && orders.Any())
+            {
+                return new ListViewModel<OrderViewModel>
+                {
+                    Pagination = new PaginationViewModel
+                    {
+                        PageNumber = pagination.PageNumber,
+                        PageSize = pagination.PageSize,
+                        TotalRow = totalRow
+                    },
+                    Data = orders
+                };
+            }
+            return null!;
+        }
+
+        public async Task<ListViewModel<OrderViewModel>> GetOrdersForDriver(Guid userId, PaginationRequestModel pagination)
+        {
+            var query = _orderRepository.GetMany(order =>
+                order.OrderDetails.Any(detail => detail.Car != null && detail.Car.CarOwner != null && detail.Car.CarOwner.AccountId.Equals(userId)) &&
+                order.Status.Equals(OrderStatus.CarOwnerApproved.ToString()) || order.Status.Equals(OrderStatus.Ongoing.ToString()) ||
+                order.Status.Equals(OrderStatus.ArrivedAtPickUpPoint.ToString()) || order.Status.Equals(OrderStatus.ReceivedGuests.ToString()) ||
+                order.Status.Equals(OrderStatus.ReceivedTheCar.ToString()))
                 .ProjectTo<OrderViewModel>(_mapper.ConfigurationProvider);
             var orders = await query.OrderBy(order => order.CreateAt)
                 .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
