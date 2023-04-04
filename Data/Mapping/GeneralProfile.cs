@@ -63,7 +63,14 @@ namespace Data.Mapping
 
             CreateMap<Transaction, TransactionViewModel>();
 
-            CreateMap<Notification, NotificationViewModel>();
+            CreateMap<Notification, NotificationViewModel>()
+                .ForMember(notificationVM => notificationVM.Data, config => config.MapFrom(notification => new NotificationDataViewModel
+                {
+                    CreateAt = notification.CreateAt,
+                    IsRead = notification.IsRead,
+                    Link = notification.Link,
+                    Type = notification.Type
+                }));
 
             CreateMap<Order, OrderViewModel>();
 

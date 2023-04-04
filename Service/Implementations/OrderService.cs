@@ -34,15 +34,31 @@ namespace Service.Implementations
             _mapper = mapper;
         }
 
-        public async Task<ListViewModel<OrderViewModel>> GetOrders(Guid userId, OrderFilterModel filter, PaginationRequestModel pagination)
+        public async Task<ListViewModel<OrderViewModel>> GetOrders(Guid? userId, OrderFilterModel filter, PaginationRequestModel pagination)
         {
-            var query = _orderRepository.GetMany(order =>
-                order.Customer != null ? order.Customer.AccountId.Equals(userId) :
-                order.OrderDetails.Any(detail => detail.Car != null && detail.Car.CarOwner != null && detail.Car.CarOwner.AccountId.Equals(userId)) ||
-                order.OrderDetails.Any(detail => detail.Car != null && detail.Driver != null && detail.Driver.AccountId.Equals(userId))
-                && filter.Status != null ? order.Status.Equals(filter.Status) : true)
-                .ProjectTo<OrderViewModel>(_mapper.ConfigurationProvider);
+
+            var query = _orderRepository.GetAll();
+            if (userId != null)
+            {
+                if (_orderRepository.Any(order => order.Customer.AccountId.Equals(userId)))
+                {
+                    query = query.AsQueryable().Where(order => order.Customer.AccountId.Equals(userId));
+                }
+                if (_orderRepository.Any(order => order.OrderDetails.Any(od => od.DriverId.Equals(userId))))
+                {
+                    query = query.AsQueryable().Where(order => order.OrderDetails.Any(od => od.DriverId.Equals(userId)));
+                }
+                if (_orderRepository.Any(order => order.OrderDetails.Any(od => od.Car != null ? od.Car.CarOwner.AccountId.Equals(userId) : false)))
+                {
+                    query = query.AsQueryable().Where(order => order.OrderDetails.Any(od => od.Car != null ? od.Car.CarOwner.AccountId.Equals(userId) : false));
+                }
+            }
+            if (filter.Status != null)
+            {
+                query = query.AsQueryable().Where(order => order.Status.Equals(filter.Status.ToString()));
+            }
             var orders = await query.OrderBy(order => order.CreateAt)
+                .ProjectTo<OrderViewModel>(_mapper.ConfigurationProvider)
                 .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
             var totalRow = await query.AsNoTracking().CountAsync();
             if (orders != null || orders != null && orders.Any())
@@ -64,7 +80,7 @@ namespace Service.Implementations
         public async Task<ListViewModel<OrderViewModel>> GetOrdersForCarOwner(Guid userId, PaginationRequestModel pagination)
         {
             var query = _orderRepository.GetMany(order =>
-                order.OrderDetails.Any(detail => detail.Car != null && detail.Car.CarOwner != null && detail.Car.CarOwner.AccountId.Equals(userId))
+                order.OrderDetails.Any(od => od.Car != null ? od.Car.CarOwner.AccountId.Equals(userId) : false)
                 && order.Status.Equals(OrderStatus.Pending.ToString()) || order.Status.Equals(OrderStatus.ManagerConfirmed.ToString()))
                 .ProjectTo<OrderViewModel>(_mapper.ConfigurationProvider);
             var orders = await query.OrderBy(order => order.CreateAt)
@@ -88,8 +104,7 @@ namespace Service.Implementations
 
         public async Task<ListViewModel<OrderViewModel>> GetOrdersForDriver(Guid userId, PaginationRequestModel pagination)
         {
-            var query = _orderRepository.GetMany(order =>
-                order.OrderDetails.Any(detail => detail.Car != null && detail.Car.CarOwner != null && detail.Car.CarOwner.AccountId.Equals(userId)) &&
+            var query = _orderRepository.GetMany(order => order.OrderDetails.Any(od => od.DriverId.Equals(userId)) &&
                 order.Status.Equals(OrderStatus.CarOwnerApproved.ToString()) || order.Status.Equals(OrderStatus.Ongoing.ToString()) ||
                 order.Status.Equals(OrderStatus.ArrivedAtPickUpPoint.ToString()) || order.Status.Equals(OrderStatus.ReceivedGuests.ToString()) ||
                 order.Status.Equals(OrderStatus.ReceivedTheCar.ToString()))
@@ -170,8 +185,8 @@ namespace Service.Implementations
             {
                 var message = new NotificationCreateModel
                 {
-                    Title = result.ToString(),
-                    Body = result.ToString(),
+                    Title = "Đơn hàng mới",
+                    Body = "Bạn có đơn hàng mới cần xác nhận",
                     Data = new NotificationDataViewModel
                     {
                         CreateAt = DateTime.Now,

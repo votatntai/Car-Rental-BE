@@ -7,7 +7,7 @@ namespace Service.Interfaces
 {
     public interface IOrderService
     {
-        Task<ListViewModel<OrderViewModel>> GetOrders(Guid customerId, OrderFilterModel filter, PaginationRequestModel pagination);
+        Task<ListViewModel<OrderViewModel>> GetOrders(Guid? userId, OrderFilterModel filter, PaginationRequestModel pagination);
         Task<OrderViewModel> GetOrder(Guid id);
         Task<ListViewModel<OrderViewModel>> GetOrdersForDriver(Guid userId, PaginationRequestModel pagination);
         Task<ListViewModel<OrderViewModel>> GetOrdersForCarOwner(Guid userId, PaginationRequestModel pagination);

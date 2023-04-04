@@ -20,14 +20,13 @@ namespace Application.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         [ProducesResponseType(typeof(ListViewModel<OrderViewModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ListViewModel<OrderViewModel>>> GetOrders([FromQuery] OrderFilterModel filter, [FromQuery] PaginationRequestModel pagination)
         {
             var auth = (AuthViewModel?)HttpContext.Items["User"];
-            var order = await _orderService.GetOrders(auth!.Id, filter, pagination);
+            var order = await _orderService.GetOrders(auth != null ? auth.Id : null!, filter, pagination);
             return order != null ? Ok(order) : BadRequest();
         }
 

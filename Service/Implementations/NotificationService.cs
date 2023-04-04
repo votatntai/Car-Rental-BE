@@ -35,6 +35,7 @@ namespace Service.Implementations
                     notification.Account.User != null ? notification.Account.User.AccountId.Equals(userId) :
                     false);
             var notifications = await query
+                .OrderByDescending(notification => notification.CreateAt)
                 .ProjectTo<NotificationViewModel>(_mapper.ConfigurationProvider)
                 .Skip(pagination.PageNumber * pagination.PageSize)
                 .Take(pagination.PageSize)
@@ -95,12 +96,13 @@ namespace Service.Implementations
                 .Select(dvt => dvt.Token).ToListAsync();
             if (deviceTokens.Any())
             {
+                var now = DateTime.Now;
                 foreach (var userId in userIds) {
                     var notification = new Data.Entities.Notification
                     {
                         Id = Guid.NewGuid(),
                         AccountId = userId,
-                        CreateAt = DateTime.Now,
+                        CreateAt = now,
                         Body = model.Body,
                         IsRead = false,
                         Type = model.Data.Type,
@@ -114,7 +116,8 @@ namespace Service.Implementations
                 {
                     var messageData = new Dictionary<string, string>{
                             { "type", model.Data.Type ?? "" },
-                            { "link", model.Data.Link ?? "" }
+                            { "link", model.Data.Link ?? "" },
+                            { "createAt", now.ToString() },
                         };
                     var message = new MulticastMessage()
                     {
