@@ -71,8 +71,6 @@ namespace Data.Mapping
 
             CreateMap<Location, LocationViewModel>();
 
-            CreateMap<Driver, DriverViewModel>();
-
             CreateMap<Promotion, PromotionViewModel>();
 
             CreateMap<Feature, FeatureViewModel>();

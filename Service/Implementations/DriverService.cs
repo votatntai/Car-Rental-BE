@@ -52,6 +52,9 @@ namespace Service.Implementations
 
         public async Task<DriverViewModel> GetDriver(Guid id)
         {
+            var driver = await _driverRepository.GetMany(driver => driver.AccountId.Equals(id)).FirstOrDefaultAsync();
+            Console.WriteLine("=========================================================");
+            Console.WriteLine(driver.AccountId);
             return await _driverRepository.GetMany(driver => driver.AccountId.Equals(id))
                 .ProjectTo<DriverViewModel>(_mapper.ConfigurationProvider).FirstOrDefaultAsync() ?? null!;
         }
