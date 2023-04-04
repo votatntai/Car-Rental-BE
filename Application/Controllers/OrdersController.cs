@@ -89,11 +89,11 @@ namespace Application.Controllers
         [Route("status/{id}")]
         [ProducesResponseType(typeof(OrderViewModel), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<OrderViewModel>> UpdateOrderStatus([FromRoute] Guid id, string? description, OrderStatus status)
+        public async Task<ActionResult<OrderViewModel>> UpdateOrderStatus([FromRoute] Guid id, [FromBody] OrderUpdateModel model)
         {
             try
             {
-                var order = await _orderService.UpdateOrderStatus(id, description, status);
+                var order = await _orderService.UpdateOrderStatus(id, model);
                 return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
             }
             catch (Exception e)

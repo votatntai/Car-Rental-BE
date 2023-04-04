@@ -128,7 +128,7 @@ namespace Service.Implementations
             return null!;
         }
 
-        public async Task<OrderViewModel> UpdateOrderStatus(Guid id, string? description, OrderStatus status)
+        public async Task<OrderViewModel> UpdateOrderStatus(Guid id, OrderUpdateModel model)
         {
             var result = 0;
             var order = await _orderRepository.GetMany(order => order.Id.Equals(id))
@@ -136,11 +136,11 @@ namespace Service.Implementations
                 .FirstOrDefaultAsync();
             if (order != null)
             {
-                order.Status = status.ToString();
-                order.Description = description;
+                order.Status = model.Status.ToString();
+                order.Description = model.Description;
                 _orderRepository.Update(order);
                 result = await _unitOfWork.SaveChanges();
-                if (status.Equals(OrderStatus.ManagerConfirmed))
+                if (model.Status.Equals(OrderStatus.ManagerConfirmed))
                 {
                     var message = new NotificationCreateModel
                     {
@@ -157,7 +157,7 @@ namespace Service.Implementations
                     var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwnerId : Guid.Empty).ToList();
                     await _notificationService.SendNotification(carOwner, message);
                 }
-                if (status.Equals(OrderStatus.CarOwnerApproved))
+                if (model.Status.Equals(OrderStatus.CarOwnerApproved))
                 {
                     var message = new NotificationCreateModel
                     {
@@ -173,7 +173,7 @@ namespace Service.Implementations
                     };
                     await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
                 }
-                if (status.Equals(OrderStatus.Canceled))
+                if (model.Status.Equals(OrderStatus.Canceled))
                 {
                     var message = new NotificationCreateModel
                     {
@@ -189,7 +189,7 @@ namespace Service.Implementations
                     };
                     await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
                 }
-                if (status.Equals(OrderStatus.Ongoing))
+                if (model.Status.Equals(OrderStatus.Ongoing))
                 {
                     var message = new NotificationCreateModel
                     {
@@ -209,7 +209,7 @@ namespace Service.Implementations
                     userIds.AddRange(order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwnerId : Guid.Empty).ToList());
                     await _notificationService.SendNotification(userIds, message);
                 }
-                if (status.Equals(OrderStatus.ArrivedAtPickUpPoint))
+                if (model.Status.Equals(OrderStatus.ArrivedAtPickUpPoint))
                 {
                     var message = new NotificationCreateModel
                     {

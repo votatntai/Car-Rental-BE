@@ -4,6 +4,7 @@ namespace Data.Models.Update
 {
     public class OrderUpdateModel
     {
-        public OrderStatus? Status { get; set; }
+        public string? Description { get; set; }
+        public OrderStatus Status { get; set; }
     }
 }
