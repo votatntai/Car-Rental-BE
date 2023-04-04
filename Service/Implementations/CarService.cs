@@ -56,7 +56,7 @@ namespace Service.Implementations
             }
             if (filter.HasDriver != null)
             {
-                query.AsQueryable().Where(car => car.DriverId != null);
+                query = query.AsQueryable().Where(car => filter.HasDriver.Value ? car.DriverId != null : car.DriverId == null);
             }
             if (filter.TransmissionType != null)
             {

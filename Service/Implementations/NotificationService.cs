@@ -94,25 +94,26 @@ namespace Service.Implementations
         {
             var deviceTokens = await _deviceTokenRepository.GetMany(dvt => userIds.Contains(dvt.AccountId))
                 .Select(dvt => dvt.Token).ToListAsync();
-            if (deviceTokens.Any())
+            var now = DateTime.Now;
+            foreach (var userId in userIds)
             {
-                var now = DateTime.Now;
-                foreach (var userId in userIds) {
-                    var notification = new Data.Entities.Notification
-                    {
-                        Id = Guid.NewGuid(),
-                        AccountId = userId,
-                        CreateAt = now,
-                        Body = model.Body,
-                        IsRead = false,
-                        Type = model.Data.Type,
-                        Link = model.Data.Link,
-                        Title = model.Title,
-                    };
-                    _notificationRepository.Add(notification);
-                }
-                var result = await _unitOfWork.SaveChanges();
-                if (result > 0)
+                var notification = new Data.Entities.Notification
+                {
+                    Id = Guid.NewGuid(),
+                    AccountId = userId,
+                    CreateAt = now,
+                    Body = model.Body,
+                    IsRead = false,
+                    Type = model.Data.Type,
+                    Link = model.Data.Link,
+                    Title = model.Title,
+                };
+                _notificationRepository.Add(notification);
+            }
+            var result = await _unitOfWork.SaveChanges();
+            if (result > 0)
+            {
+                if (deviceTokens.Any())
                 {
                     var messageData = new Dictionary<string, string>{
                             { "type", model.Data.Type ?? "" },

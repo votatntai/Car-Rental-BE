@@ -2,6 +2,7 @@
 using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
+using Utility.Enums;
 
 namespace Service.Interfaces
 {
@@ -12,6 +13,6 @@ namespace Service.Interfaces
         Task<ListViewModel<OrderViewModel>> GetOrdersForDriver(Guid userId, PaginationRequestModel pagination);
         Task<ListViewModel<OrderViewModel>> GetOrdersForCarOwner(Guid userId, PaginationRequestModel pagination);
         Task<OrderViewModel> CreateOrder(Guid customerId, OrderCreateModel model);
-        Task<OrderViewModel> UpdateOrder(Guid id, OrderUpdateModel model);
+        Task<OrderViewModel> UpdateOrderStatus(Guid id, string? description, OrderStatus status);
     }
 }

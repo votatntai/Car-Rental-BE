@@ -4,8 +4,8 @@ using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
 using Microsoft.AspNetCore.Mvc;
-using Service.Implementations;
 using Service.Interfaces;
+using Utility.Enums;
 
 namespace Application.Controllers
 {
@@ -86,14 +86,14 @@ namespace Application.Controllers
         }
 
         [HttpPut]
-        [Route("{id}")]
-        [ProducesResponseType(typeof(OrderViewModel), StatusCodes.Status200OK)]
+        [Route("status/{id}")]
+        [ProducesResponseType(typeof(OrderViewModel), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<OrderViewModel>> UpdateOrder([FromRoute] Guid id, [FromBody] OrderUpdateModel model)
+        public async Task<ActionResult<OrderViewModel>> UpdateOrderStatus([FromRoute] Guid id, string? description, OrderStatus status)
         {
             try
             {
-                var order = await _orderService.UpdateOrder(id, model);
+                var order = await _orderService.UpdateOrderStatus(id, description, status);
                 return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
             }
             catch (Exception e)
