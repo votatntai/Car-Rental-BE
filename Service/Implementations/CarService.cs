@@ -121,7 +121,7 @@ namespace Service.Implementations
                     ModelId = model.ModelId,
                     CarOwnerId = model.CarOwnerId,
                     Rented = 0,
-                    CreateAt = DateTime.Now
+                    CreateAt = DateTime.UtcNow.AddHours(7)
                 };
 
                 foreach (var weekday in Enum.GetValues(typeof(Weekday)))

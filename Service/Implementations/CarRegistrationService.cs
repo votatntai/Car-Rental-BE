@@ -79,7 +79,7 @@ namespace Service.Implementations
                     TransmissionType = model.TransmissionType,
                     YearOfManufacture = model.YearOfManufacture,
                     Model = model.Model,
-                    CreateAt = DateTime.Now,
+                    CreateAt = DateTime.UtcNow.AddHours(7),
                     AdditionalChargeId = additionalChargeId,
                     CarOwnerId = carOwnerId,
                     Status = false,

@@ -56,7 +56,7 @@ namespace Service.Implementations
                 DriverId = model.DriverId,
                 Content = model.Content,
                 Star = model.Star,
-                CreateAt = DateTime.Now,
+                CreateAt = DateTime.UtcNow.AddHours(7),
                 CustomerId = customerId,
                 OrderId = model.OrderId,
             };

@@ -214,7 +214,7 @@ namespace Service.Implementations
                     new Claim("role", model.Role),
                     new Claim("status", model.Status.ToString()),
                 }),
-                Expires = DateTime.Now.AddDays(7),
+                Expires = DateTime.UtcNow.AddHours(7).AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);

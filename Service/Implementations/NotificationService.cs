@@ -94,7 +94,7 @@ namespace Service.Implementations
         {
             var deviceTokens = await _deviceTokenRepository.GetMany(dvt => userIds.Contains(dvt.AccountId))
                 .Select(dvt => dvt.Token).ToListAsync();
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow.AddHours(7);
             foreach (var userId in userIds)
             {
                 var notification = new Data.Entities.Notification

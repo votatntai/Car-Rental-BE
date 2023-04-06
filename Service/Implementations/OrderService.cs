@@ -148,7 +148,7 @@ namespace Service.Implementations
                         Body = "Bạn có đơn hàng mới cần xác nhận",
                         Data = new NotificationDataViewModel
                         {
-                            CreateAt = DateTime.Now,
+                            CreateAt = DateTime.UtcNow.AddHours(7),
                             Type = NotificationType.Order.ToString(),
                             IsRead = false, 
                             Link = order.Id.ToString(),
@@ -165,7 +165,7 @@ namespace Service.Implementations
                         Body = "Đơn đặt hàng của bạn đã được chủ xe chấp nhận",
                         Data = new NotificationDataViewModel
                         {
-                            CreateAt = DateTime.Now,
+                            CreateAt = DateTime.UtcNow.AddHours(7),
                             Type = NotificationType.Order.ToString(),
                             IsRead = false,
                             Link = order.Id.ToString(),
@@ -181,7 +181,7 @@ namespace Service.Implementations
                         Body = "Đơn đặt hàng của bạn đã bị từ chối bởi bộ phận quản lý",
                         Data = new NotificationDataViewModel
                         {
-                            CreateAt = DateTime.Now,
+                            CreateAt = DateTime.UtcNow.AddHours(7),
                             Type = NotificationType.Order.ToString(),
                             IsRead = false,
                             Link = order.Id.ToString(),
@@ -197,7 +197,7 @@ namespace Service.Implementations
                         Body = "Đơn hàng của bạn đang được thực hiện",
                         Data = new NotificationDataViewModel
                         {
-                            CreateAt = DateTime.Now,
+                            CreateAt = DateTime.UtcNow.AddHours(7),
                             Type = NotificationType.Order.ToString(),
                             IsRead = false,
                             Link = order.Id.ToString(),
@@ -217,7 +217,7 @@ namespace Service.Implementations
                         Body = "Tài xế của bạn đã đến điểm đón",
                         Data = new NotificationDataViewModel
                         {
-                            CreateAt = DateTime.Now,
+                            CreateAt = DateTime.UtcNow.AddHours(7),
                             Type = NotificationType.Order.ToString(),
                             IsRead = false,
                             Link = order.Id.ToString(),
@@ -290,7 +290,7 @@ namespace Service.Implementations
                     Body = "Bạn có đơn hàng mới cần xác nhận",
                     Data = new NotificationDataViewModel
                     {
-                        CreateAt = DateTime.Now,
+                        CreateAt = DateTime.UtcNow.AddHours(7),
                         Type = NotificationType.Order.ToString(),
                         IsRead = false,
                         Link = order.Id.ToString(),

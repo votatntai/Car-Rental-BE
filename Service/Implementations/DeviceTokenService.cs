@@ -30,7 +30,7 @@ namespace Service.Implementations
             {
                 Id = Guid.NewGuid(),
                 AccountId = userId,
-                CreateAt = DateTime.Now,
+                CreateAt = DateTime.UtcNow.AddHours(7),
                 Token = model.DeviceToken,
             };
 

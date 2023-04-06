@@ -1,8 +1,4 @@
-﻿Use master
-Go
-Create Database CarRental
-Go
-Use CarRental
+﻿Use CarRental
 Go
 Create Table Account(
 	Id uniqueidentifier primary key,
