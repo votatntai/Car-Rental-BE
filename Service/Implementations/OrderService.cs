@@ -271,7 +271,7 @@ namespace Service.Implementations
                     DeliveryLocationId = await CreateLocation(orderDetail?.DeliveryLocation!),
                     PickUpLocationId = await CreateLocation(orderDetail?.PickUpLocation!),
                 };
-                if (orderDetail != null)
+                if (orderDetail != null && orderDetail.HasDriver)
                 {
                     var car = await _carRepository.GetMany(car => car.Id.Equals(orderDetail.CarId)).FirstOrDefaultAsync();
                     if (car != null)
