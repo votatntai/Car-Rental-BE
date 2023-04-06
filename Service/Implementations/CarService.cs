@@ -54,10 +54,10 @@ namespace Service.Implementations
             {
                 query = query.AsQueryable().Where(car => car.Price >= filter.Price.MinPrice && car.Price <= filter.Price.MaxPrice);
             }
-            if (filter.HasDriver != null)
-            {
-                query = query.AsQueryable().Where(car => filter.HasDriver.Value ? car.DriverId != null : car.DriverId == null);
-            }
+            //if (filter.HasDriver != null)
+            //{
+            //    query = query.AsQueryable().Where(car => filter.HasDriver.Value ? car.DriverId != null : car.DriverId == null);
+            //}
             if (filter.TransmissionType != null)
             {
                 query = query.AsQueryable().Where(car => car.Model.TransmissionType.Equals(filter.TransmissionType.ToString()));

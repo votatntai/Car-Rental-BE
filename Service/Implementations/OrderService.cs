@@ -18,6 +18,7 @@ namespace Service.Implementations
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IDriverRepository _driverRepository;
+        private readonly ICarRepository _carRepository;
         private readonly IUserRepository _userRepository;
         private readonly INotificationService _notificationService;
         private readonly IOrderDetailRepository _orderDetailRepository;
@@ -27,6 +28,7 @@ namespace Service.Implementations
         {
             _orderRepository = unitOfWork.Order;
             _driverRepository = unitOfWork.Driver;
+            _carRepository = unitOfWork.Car;
             _userRepository = unitOfWork.User;
             _notificationService = notificationService;
             _orderDetailRepository = unitOfWork.OrderDetail;
@@ -150,7 +152,7 @@ namespace Service.Implementations
                         {
                             CreateAt = DateTime.UtcNow.AddHours(7),
                             Type = NotificationType.Order.ToString(),
-                            IsRead = false, 
+                            IsRead = false,
                             Link = order.Id.ToString(),
                         }
                     };
@@ -271,12 +273,23 @@ namespace Service.Implementations
                 };
                 if (orderDetail != null && orderDetail.HasDriver)
                 {
-                    var driver = await _driverRepository.GetAll()
-                        .DriverDistanceFilter(orderDetail.PickUpLocation!.Latitude, orderDetail.PickUpLocation!.Longitude, 100)
-                        .FirstOrDefaultAsync();
-                    if (driver != null)
+                    var car = await _carRepository.GetMany(car => car.Id.Equals(orderDetail.CarId)).FirstOrDefaultAsync();
+                    if (car != null)
                     {
-                        od.DriverId = driver.AccountId;
+                        if (car.Driver == null)
+                        {
+                            var driver = await _driverRepository.GetAll()
+                            .DriverDistanceFilter(orderDetail.PickUpLocation!.Latitude, orderDetail.PickUpLocation!.Longitude, 100)
+                            .FirstOrDefaultAsync();
+                            if (driver != null)
+                            {
+                                od.DriverId = driver.AccountId;
+                            }
+                        }
+                        else
+                        {
+                            od.DriverId = car.Driver.AccountId;
+                        }
                     }
                 }
                 _orderDetailRepository.Add(od);
