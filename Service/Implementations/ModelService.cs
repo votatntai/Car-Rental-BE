@@ -24,7 +24,8 @@ namespace Service.Implementations
 
         public async Task<ListViewModel<CarModelViewModel>> GetModels(ModelFilterModel filter, PaginationRequestModel pagination)
         {
-            var query = _modelRepository.GetMany(pc => filter.Name != null ? pc.Name.Contains(filter.Name) : true &&
+            var query = _modelRepository.GetMany(pc => filter.Name != null ? pc.Name.Contains(filter.Name) ||
+                pc.ProductionCompany.Name.Contains(filter.Name) : true &&
                 filter.ProductionCompanyId != null ? pc.ProductionCompanyId.Equals(filter.ProductionCompanyId) : true)
             .ProjectTo<CarModelViewModel>(_mapper.ConfigurationProvider);
             var models = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();

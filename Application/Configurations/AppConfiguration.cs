@@ -26,6 +26,7 @@ namespace Application.Configurations
             services.AddScoped<IPromotionService, PromotionService>();
             services.AddScoped<IFeedBackService, FeedBackService>();
             services.AddScoped<IDeviceTokenService, DeviceTokenService>();
+            services.AddScoped<ICloudStorageService, CloudStorageService>();
 
             services.AddTransient<IUnitOfWork, UnitOfWork>();
         }

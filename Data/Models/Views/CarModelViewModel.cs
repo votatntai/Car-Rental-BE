@@ -3,6 +3,7 @@
     public class CarModelViewModel
     {
         public string Id { get; set; } = null!;
+
         public string Name { get; set; } = null!;
 
         public string TransmissionType { get; set; } = null!;
@@ -16,5 +17,7 @@
         public int YearOfManufacture { get; set; }
 
         public string FuelConsumption { get; set; } = null!;
+
+        public ProductionCompanyViewModel ProductionCompany { get; set; } = null!;
     }
 }

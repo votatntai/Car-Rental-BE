@@ -8,7 +8,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="EntityFramework" Version="6.4.4" />
-		<PackageReference Include="FirebaseAdmin" Version="2.0.0" />
+		<PackageReference Include="FirebaseAdmin" Version="2.3.0" />
+		<PackageReference Include="Google.Apis.Auth" Version="1.60.0" />
+		<PackageReference Include="Google.Cloud.Storage.V1" Version="4.4.0" />
 	</ItemGroup>
 
 	<ItemGroup>

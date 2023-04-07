@@ -5,12 +5,12 @@ using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
 using Data.Repositories.Interfaces;
-using FirebaseAdmin.Messaging;
-using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
 using Data.Models.Create;
+using FirebaseAdmin;
+using FirebaseAdmin.Messaging;
 
 namespace Service.Implementations
 {
@@ -135,7 +135,7 @@ namespace Service.Implementations
                     {
                         app = FirebaseApp.Create(new AppOptions()
                         {
-                            Credential = GoogleCredential.FromFile("car-rental-236aa-firebase-adminsdk-ym9hq-92d6de1164.json")
+                            Credential = GoogleCredential.FromFile("cloud-storage.json")
                         });
                     }
                     FirebaseMessaging messaging = FirebaseMessaging.GetMessaging(app);
