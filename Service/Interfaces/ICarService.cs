@@ -10,6 +10,7 @@ namespace Service.Interfaces
     {
         Task<ListViewModel<CarViewModel>> GetCars(CarFilterModel filter, PaginationRequestModel pagination);
         Task<CarViewModel> GetCar(Guid id);
+        Task<ICollection<CarCalendarViewModel>> GetCarCalendar(Guid id);
         Task<CarViewModel> CreateCar(CarCreateModel model);
         Task<CarViewModel> UpdateCar(Guid id, CarUpdateModel model);
         Task<ICollection<CarViewModel>> GetCarsByCarOwnerId(Guid carOwnerId, CarStatus? status, PaginationRequestModel pagination);

@@ -54,10 +54,6 @@ namespace Service.Implementations
             {
                 query = query.AsQueryable().Where(car => car.Price >= filter.Price.MinPrice && car.Price <= filter.Price.MaxPrice);
             }
-            //if (filter.HasDriver != null)
-            //{
-            //    query = query.AsQueryable().Where(car => filter.HasDriver.Value ? car.DriverId != null : car.DriverId == null);
-            //}
             if (filter.TransmissionType != null)
             {
                 query = query.AsQueryable().Where(car => car.Model.TransmissionType.Equals(filter.TransmissionType.ToString()));
@@ -73,6 +69,7 @@ namespace Service.Implementations
             .ThenByDescending(car => car.Rented)
             .ProjectTo<CarViewModel>(_mapper.ConfigurationProvider)
             .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize)
+            .AsNoTracking()
             .ToListAsync();
             var totalRow = await query.CountAsync();
             if (cars != null || cars != null && cars.Any())
@@ -94,9 +91,15 @@ namespace Service.Implementations
         public async Task<CarViewModel> GetCar(Guid id)
         {
             return await _carRepository.GetMany(car => car.Id.Equals(id))
-                .Include(car => car.Model).ThenInclude(model => model.ProductionCompany)
                 .ProjectTo<CarViewModel>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync() ?? null!;
+        }
+
+        public async Task<ICollection<CarCalendarViewModel>> GetCarCalendar(Guid id)
+        {
+            return await _carCalendarRepository.GetMany(cld => cld.CarId.Equals(id))
+                .ProjectTo<CarCalendarViewModel>(_mapper.ConfigurationProvider)
+                .ToListAsync() ?? null!;
         }
 
         public async Task<CarViewModel> CreateCar(CarCreateModel model)

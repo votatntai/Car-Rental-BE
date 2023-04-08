@@ -63,6 +63,16 @@ namespace Application.Controllers
             return car != null ? Ok(car) : NotFound();
         }
 
+        [Route("calendars/{id}")]
+        [HttpGet]
+        [ProducesResponseType(typeof(CarCalendarViewModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<CarCalendarViewModel>> GetCarCalendar([FromRoute] Guid id)
+        {
+            var carCld = await _carService.GetCarCalendar(id);
+            return carCld != null ? Ok(carCld) : NotFound();
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(CarViewModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
