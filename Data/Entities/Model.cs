@@ -9,7 +9,7 @@ public partial class Model
 
     public string Name { get; set; } = null!;
 
-    public double CeilingPrice { get; set; }
+    public double CellingPrice { get; set; }
 
     public double FloorPrice { get; set; }
 

@@ -55,7 +55,7 @@ namespace Service.Implementations
             {
                 Id = Guid.NewGuid(),
                 Name = model.Name,
-                CeilingPrice = model.CeilingPrice,
+                CellingPrice = model.CellingPrice,
                 FloorPrice = model.FloorPrice,
                 FuelConsumption = model.FuelConsumption,
                 FuelType = model.FuelType,
@@ -83,7 +83,7 @@ namespace Service.Implementations
             carModel.YearOfManufacture = model.YearOfManufacture ?? carModel.YearOfManufacture;
             carModel.ProductionCompanyId = model.ProductionCompanyId ?? carModel.ProductionCompanyId;
             carModel.Chassis = model.Chassis ?? carModel.Chassis;
-            carModel.CeilingPrice = model.CeilingPrice ?? carModel.CeilingPrice;
+            carModel.CellingPrice = model.CellingPrice ?? carModel.CellingPrice;
             carModel.FuelConsumption = model.FuelConsumption ?? carModel.FuelConsumption;
             carModel.FuelType = model.FuelType ?? carModel.FuelType;
             carModel.TransmissionType = model.TransmissionType ?? carModel.TransmissionType;

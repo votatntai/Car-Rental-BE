@@ -91,7 +91,7 @@ Go
 Create Table Model(
 	Id uniqueidentifier primary key,
 	Name nvarchar(256) not null,
-	CeilingPrice float not null,
+	CellingPrice float not null,
 	FloorPrice float not null,
 	Seater int not null,
 	Chassis nvarchar(256) not null,

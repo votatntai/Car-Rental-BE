@@ -41,6 +41,11 @@ namespace Service.Implementations
         {
             var query = _orderRepository.GetAll().AsQueryable();
 
+            if (filter.Name != null)
+            {
+                query = query.Where(order => filter.Name != null ? order.Customer.Name.Contains(filter.Name) : false).AsQueryable();
+            }
+
             if (userId != null && !_userRepository.Any(user => user.AccountId.Equals(userId)))
             {
                 query = query.Where(order => order.Customer.AccountId == userId ||
@@ -220,6 +225,32 @@ namespace Service.Implementations
                     };
                     await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
                 }
+                if (model.Status.Equals(OrderStatus.Finished))
+                {
+                    //var message = new NotificationCreateModel
+                    //{
+                    //    Title = "Tài xế đã đến điểm đón",
+                    //    Body = "Tài xế của bạn đã đến điểm đón",
+                    //    Data = new NotificationDataViewModel
+                    //    {
+                    //        CreateAt = DateTime.UtcNow.AddHours(7),
+                    //        Type = NotificationType.Order.ToString(),
+                    //        IsRead = false,
+                    //        Link = order.Id.ToString(),
+                    //    }
+                    //};
+                    //await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
+                    foreach (var item in order.OrderDetails)
+                    {
+                        var car = await _carRepository.GetMany(car => car.Id.Equals(item.Car!.Id)).FirstOrDefaultAsync();
+                        if (car != null)
+                        {
+                            car.Status = CarStatus.Idle.ToString();
+                            _carRepository.Update(car);
+                            await _unitOfWork.SaveChanges();
+                        }
+                    }
+                }
             }
             return result > 0 ? await GetOrder(id) : null!;
         }
@@ -269,6 +300,8 @@ namespace Service.Implementations
                     var car = await _carRepository.GetMany(car => car.Id.Equals(orderDetail.CarId)).FirstOrDefaultAsync();
                     if (car != null)
                     {
+                        car.Status = CarStatus.Ongoing.ToString();
+                        _carRepository.Update(car);
                         if (car.Driver == null)
                         {
                             var driver = await _driverRepository.GetAll()

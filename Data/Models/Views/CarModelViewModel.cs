@@ -18,6 +18,10 @@
 
         public string FuelConsumption { get; set; } = null!;
 
+        public double CellingPrice { get; set; }
+
+        public double FloorPrice { get; set; }
+
         public ProductionCompanyViewModel ProductionCompany { get; set; } = null!;
     }
 }
