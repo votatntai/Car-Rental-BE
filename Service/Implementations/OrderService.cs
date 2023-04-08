@@ -41,7 +41,7 @@ namespace Service.Implementations
         {
             var query = _orderRepository.GetAll().AsQueryable();
 
-            if (userId != null)
+            if (userId != null && !_userRepository.Any(user => user.AccountId.Equals(userId)))
             {
                 query = query.Where(order => order.Customer.AccountId == userId ||
                                                  order.OrderDetails.Any(od => od.DriverId == userId) ||
