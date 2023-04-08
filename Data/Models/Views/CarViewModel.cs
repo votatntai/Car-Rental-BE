@@ -28,8 +28,6 @@
 
         public virtual ICollection<FeedBackViewModel> FeedBacks { get; set; } = null!;
 
-        public virtual ICollection<CarCalendarViewModel> CarCalendars { get; set; } = null!;
-
         public virtual ICollection<CarFeatureViewModel> CarFeatures { get; set; } = null!;
 
         public virtual ICollection<CarTypeViewModel> CarTypes { get; set; } = null!;

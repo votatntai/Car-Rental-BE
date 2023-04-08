@@ -54,17 +54,11 @@ namespace Service.Implementations
             }
 
             var totalRow = await query.CountAsync();
-            var orders = query
-                .Include(x => x.Customer)
-                .Include(x => x.Promotion)
-                .Include(x => x.OrderDetails).ThenInclude(a => a.Driver)
-                .Include(x => x.OrderDetails).ThenInclude(a => a.Car)
-                .Include(x => x.OrderDetails).ThenInclude(a => a.DeliveryLocation)
-                .Include(x => x.OrderDetails).ThenInclude(a => a.PickUpLocation)
+            var orders = await query
                 .OrderBy(order => order.CreateAt)
                 .Skip(pagination.PageNumber * pagination.PageSize)
                 .Take(pagination.PageSize)
-                .Select(_mapper.Map<OrderViewModel>).ToList();
+                .ProjectTo<OrderViewModel>(_mapper.ConfigurationProvider).ToListAsync();
 
             return orders != null || orders != null && orders.Any() ? new ListViewModel<OrderViewModel>
             {

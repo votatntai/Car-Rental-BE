@@ -17,7 +17,5 @@
         public int YearOfManufacture { get; set; }
 
         public string FuelConsumption { get; set; } = null!;
-
-        public ProductionCompanyViewModel ProductionCompany { get; set; } = null!;
     }
 }
