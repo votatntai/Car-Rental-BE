@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
 using Utility.Enums;
 using Extensions.MyExtentions;
+using System.Text.Json.Nodes;
 
 namespace Service.Implementations
 {
@@ -38,45 +39,43 @@ namespace Service.Implementations
 
         public async Task<ListViewModel<OrderViewModel>> GetOrders(Guid? userId, OrderFilterModel filter, PaginationRequestModel pagination)
         {
+            var query = _orderRepository.GetAll().AsQueryable();
 
-            var query = _orderRepository.GetAll();
             if (userId != null)
             {
-                if (_orderRepository.Any(order => order.Customer.AccountId.Equals(userId)))
-                {
-                    query = query.AsQueryable().Where(order => order.Customer.AccountId.Equals(userId));
-                }
-                if (_orderRepository.Any(order => order.OrderDetails.Any(od => od.DriverId.Equals(userId))))
-                {
-                    query = query.AsQueryable().Where(order => order.OrderDetails.Any(od => od.DriverId.Equals(userId)));
-                }
-                if (_orderRepository.Any(order => order.OrderDetails.Any(od => od.Car != null ? od.Car.CarOwner.AccountId.Equals(userId) : false)))
-                {
-                    query = query.AsQueryable().Where(order => order.OrderDetails.Any(od => od.Car != null ? od.Car.CarOwner.AccountId.Equals(userId) : false));
-                }
+                query = query.Where(order => order.Customer.AccountId == userId ||
+                                                 order.OrderDetails.Any(od => od.DriverId == userId) ||
+                                                 (order.OrderDetails.Any(od => od.Car != null && od.Car.CarOwner.AccountId == userId)));
             }
+
             if (filter.Status != null)
             {
-                query = query.AsQueryable().Where(order => order.Status.Equals(filter.Status.ToString()));
+                query = query.AsQueryable().Where(order => order.Status == filter.Status.ToString());
             }
-            var orders = await query.OrderBy(order => order.CreateAt)
-                .ProjectTo<OrderViewModel>(_mapper.ConfigurationProvider)
-                .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
-            var totalRow = await query.AsNoTracking().CountAsync();
-            if (orders != null || orders != null && orders.Any())
+
+            var totalRow = await query.CountAsync();
+            var orders = query
+                .Include(x => x.Customer)
+                .Include(x => x.Promotion)
+                .Include(x => x.OrderDetails).ThenInclude(a => a.Driver)
+                .Include(x => x.OrderDetails).ThenInclude(a => a.Car)
+                .Include(x => x.OrderDetails).ThenInclude(a => a.DeliveryLocation)
+                .Include(x => x.OrderDetails).ThenInclude(a => a.PickUpLocation)
+                .OrderBy(order => order.CreateAt)
+                .Skip(pagination.PageNumber * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .Select(_mapper.Map<OrderViewModel>).ToList();
+
+            return orders != null || orders != null && orders.Any() ? new ListViewModel<OrderViewModel>
             {
-                return new ListViewModel<OrderViewModel>
+                Pagination = new PaginationViewModel
                 {
-                    Pagination = new PaginationViewModel
-                    {
-                        PageNumber = pagination.PageNumber,
-                        PageSize = pagination.PageSize,
-                        TotalRow = totalRow
-                    },
-                    Data = orders
-                };
-            }
-            return null!;
+                    PageNumber = pagination.PageNumber,
+                    PageSize = pagination.PageSize,
+                    TotalRow = totalRow
+                },
+                Data = orders
+            } : null!;
         }
 
         public async Task<ListViewModel<OrderViewModel>> GetOrdersForCarOwner(Guid userId, PaginationRequestModel pagination)

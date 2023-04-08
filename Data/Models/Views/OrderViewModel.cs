@@ -14,9 +14,9 @@
 
         public double UnitPrice { get; set; }
 
-        public double DeliveryFee { get; set; }
+        public double? DeliveryFee { get; set; }
 
-        public double DeliveryDistance { get; set; }
+        public double? DeliveryDistance { get; set; }
 
         public double Deposit { get; set; }
 
@@ -28,6 +28,6 @@
 
         public DateTime CreateAt{ get; set; }
 
-        public PromotionViewModel Promotion { get; set; } = null!;
+        public PromotionViewModel? Promotion { get; set; }
     }
 }

@@ -9,8 +9,6 @@ namespace Data.Mapping
     {
         public GeneralProfile()
         {
-            CreateMap<Car, CarViewModel>();
-
             CreateMap<Type, TypeViewModel>();
 
             CreateMap<Model, CarModelViewModel>();
