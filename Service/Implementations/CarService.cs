@@ -38,6 +38,10 @@ namespace Service.Implementations
         {
             var query = _carRepository.GetMany(car => car.Name != null && filter.Name != null ? (car.Name.Contains(filter.Name) ||
             car.Model.ProductionCompany.Name.Contains(filter.Name)) : true);
+            if (filter.Status != null)
+            {
+                query = query.AsQueryable().Where(car => car.Status.Equals(filter.Status.ToString()));
+            }
             if (filter.Location != null)
             {
                 query = query.AsQueryable().DistanceFilter(filter.Location.Latitude, filter.Location.Longitude);

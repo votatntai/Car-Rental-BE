@@ -5,6 +5,7 @@ namespace Data.Models.Get
     public class CarFilterModel
     {
         public string? Name { get; set; }
+        public CarStatus? Status { get; set; }
         public LocationReqeustModel? Location{ get; set; }
         public CarPriceRequestModel? Price { get; set; }
         public bool? HasDriver { get; set; }
