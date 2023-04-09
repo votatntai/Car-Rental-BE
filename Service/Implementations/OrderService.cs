@@ -7,11 +7,10 @@ using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
 using Data.Repositories.Interfaces;
+using Extensions.MyExtentions;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
 using Utility.Enums;
-using Extensions.MyExtentions;
-using System.Text.Json.Nodes;
 
 namespace Service.Implementations
 {

@@ -209,7 +209,7 @@ Create Table Calendar(
 	EndTime time not null default '22:00:00',
 )
 Go
---Lịch trong tuần cuya
+--Lịch trong tuần của xe
 Create Table CarCalendar(
 	CalendarId uniqueidentifier foreign key references Calendar(Id) not null,
 	CarId uniqueidentifier foreign key references Car(Id) not null,
@@ -217,6 +217,7 @@ Create Table CarCalendar(
 	Primary key (CalendarId, CarId)
 )
 Go
+--Lịch trong tuần của xe lúc tạo phiếu đăng ký
 Create Table CarRegistrationCalendar(
 	CalendarId uniqueidentifier foreign key references Calendar(Id) not null,
 	CarRegistrationId uniqueidentifier foreign key references CarRegistration(Id) not null,
@@ -224,6 +225,7 @@ Create Table CarRegistrationCalendar(
 	Primary key (CalendarId, CarRegistrationId)
 )
 Go
+--Lịch của tài xế (thường sẽ trùng với lịch của xe mà tài xế này lái)
 Create Table DriverCalendar(
 	CalendarId uniqueidentifier foreign key references Calendar(Id) not null,
 	CarId uniqueidentifier foreign key references Car(Id) not null,
@@ -232,6 +234,7 @@ Create Table DriverCalendar(
 	Primary key (CalendarId, DriverId, CarId)
 )
 Go
+--Bảng thông báo lưu lại những thông báo đã được gửi đi
 Create Table [Notification](
 	Id uniqueidentifier primary key,
 	Title nvarchar(256) not null,
@@ -243,6 +246,7 @@ Create Table [Notification](
 	CreateAt datetime not null default getdate(),
 )
 Go
+--Bảng lưu lại những giao dịch trong ứng dụng
 Create Table [Transaction](
 	Id uniqueidentifier primary key,
 	UserId uniqueidentifier foreign key references [User](AccountId),
@@ -256,6 +260,7 @@ Create Table [Transaction](
 	Status nvarchar(256)
 )
 Go
+--Bảng khuyến mãi (ưu đãi)
 Create Table Promotion(
 	Id uniqueidentifier primary key,
 	Name nvarchar(256) not null,
@@ -265,6 +270,7 @@ Create Table Promotion(
 	ExpiryAt datetime not null,
 )
 Go
+--Bảng đơn hàng
 Create Table [Order](
 	Id uniqueidentifier primary key,
 	CustomerId uniqueidentifier foreign key references Customer(AccountId) not null,
@@ -281,6 +287,7 @@ Create Table [Order](
 	CreateAt datetime not null default getDate()
 )
 Go
+--Bảng chi tiết đơn hàng
 Create Table OrderDetail(
 	Id uniqueidentifier primary key,
 	OrderId uniqueidentifier foreign key references [Order](Id),
@@ -294,6 +301,7 @@ Create Table OrderDetail(
 	DriverId uniqueidentifier foreign key references Driver(AccountId),
 )
 Go
+--Bảng feedback
 Create Table [FeedBack](
 	Id uniqueidentifier primary key,
 	OrderId uniqueidentifier foreign key references [Order](Id)  not null,
@@ -305,6 +313,7 @@ Create Table [FeedBack](
 	Content nvarchar(max)
 )
 Go
+--Bảng để lưu url của ảnh (dùng chung cho nhiều đối tượng và chia theo loại (Type))
 Create Table [Image](
 	Id uniqueidentifier primary key,
 	Url nvarchar(256) not null,
