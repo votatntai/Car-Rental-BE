@@ -6,7 +6,6 @@ using Data.Models.Create;
 using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
-using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -138,6 +137,8 @@ namespace Service.Implementations
                 };
                 images.Add(image);
             }
+            var oldImages = await _imageRepository.GetMany(image => image.CustomerId.Equals(id)).ToListAsync();
+            _imageRepository.RemoveRange(oldImages);
             _imageRepository.AddRange(images);
             return await _unitOfWork.SaveChanges() > 0 ? _mapper.Map<List<Image>, List<ImageViewModel>>(images) : null!;
         }

@@ -276,7 +276,26 @@ namespace Service.Implementations
                         }
                     }
                 }
-            _orderRepository.Update(order);
+                if (model.Status.Equals(OrderStatus.Paid))
+                {
+                    var cusMessage = new NotificationCreateModel
+                    {
+                        Title = "Thanh toán thành công",
+                        Body = "Bạn đã hoàn tất thanh toán cho đơn hàng",
+                        Data = new NotificationDataViewModel
+                        {
+                            CreateAt = DateTime.UtcNow.AddHours(7),
+                            Type = NotificationType.Order.ToString(),
+                            IsRead = false,
+                            Link = order.Id.ToString(),
+                        }
+                    };
+                    var userIds = (new List<Guid> {
+                        order.CustomerId,
+                    });
+                    await _notificationService.SendNotification(userIds, cusMessage);
+                }
+                _orderRepository.Update(order);
             result = await _unitOfWork.SaveChanges();
             }
             return result > 0 ? await GetOrder(id) : null!;
