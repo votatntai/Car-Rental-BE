@@ -137,7 +137,8 @@ namespace Service.Implementations
                 };
                 images.Add(image);
             }
-            var oldImages = await _imageRepository.GetMany(image => image.CustomerId.Equals(id)).ToListAsync();
+            var oldImages = await _imageRepository
+                .GetMany(image => image.CustomerId.Equals(id) && image.Type.Equals(ImageType.License.ToString())).ToListAsync();
             _imageRepository.RemoveRange(oldImages);
             _imageRepository.AddRange(images);
             return await _unitOfWork.SaveChanges() > 0 ? _mapper.Map<List<Image>, List<ImageViewModel>>(images) : null!;

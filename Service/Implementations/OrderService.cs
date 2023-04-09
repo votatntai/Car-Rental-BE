@@ -24,6 +24,8 @@ namespace Service.Implementations
         private readonly INotificationService _notificationService;
         private readonly IOrderDetailRepository _orderDetailRepository;
         private readonly ILocationRepository _locationRepository;
+        private readonly IWalletRepository _walletRepository;
+        private readonly ICustomerRepository _customerRepository;
         private new readonly IMapper _mapper;
         public OrderService(IUnitOfWork unitOfWork, IMapper mapper, INotificationService notificationService) : base(unitOfWork, mapper)
         {
@@ -34,6 +36,8 @@ namespace Service.Implementations
             _notificationService = notificationService;
             _orderDetailRepository = unitOfWork.OrderDetail;
             _locationRepository = unitOfWork.Location;
+            _walletRepository = unitOfWork.Wallet;
+            _customerRepository = unitOfWork.Customer;
             _mapper = mapper;
         }
 
@@ -278,25 +282,65 @@ namespace Service.Implementations
                 }
                 if (model.Status.Equals(OrderStatus.Paid))
                 {
-                    var cusMessage = new NotificationCreateModel
+                    var cusWallet = await _walletRepository
+                        .GetMany(wallet => wallet.Customer != null ? wallet.Customer.AccountId.Equals(order.CustomerId) : false).FirstOrDefaultAsync();
+                    if (cusWallet != null && cusWallet.Balance > order.Amount)
                     {
-                        Title = "Thanh toán thành công",
-                        Body = "Bạn đã hoàn tất thanh toán cho đơn hàng",
-                        Data = new NotificationDataViewModel
+                        var amout = cusWallet.Balance - (order.Amount * 70 / 100);
+                        cusWallet.Balance = amout;
+                        _walletRepository.Update(cusWallet);
+                        if (await _unitOfWork.SaveChanges() > 0)
                         {
-                            CreateAt = DateTime.UtcNow.AddHours(7),
-                            Type = NotificationType.Order.ToString(),
-                            IsRead = false,
-                            Link = order.Id.ToString(),
-                        }
-                    };
-                    var userIds = (new List<Guid> {
-                        order.CustomerId,
-                    });
-                    await _notificationService.SendNotification(userIds, cusMessage);
+                            var cusMessage = new NotificationCreateModel
+                            {
+                                Title = "Thanh toán thành công",
+                                Body = "Bạn đã hoàn tất thanh toán với số tiền " + (order.Amount * 70 / 100),
+                                Data = new NotificationDataViewModel
+                                {
+                                    CreateAt = DateTime.UtcNow.AddHours(7),
+                                    Type = NotificationType.Order.ToString(),
+                                    IsRead = false,
+                                    Link = order.Id.ToString(),
+                                }
+                            };
+                            var userIds = (new List<Guid> { order.CustomerId, });
+                            await _notificationService.SendNotification(userIds, cusMessage);
+                            var carOwnerIds = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwnerId : Guid.Empty).ToList();
+                            var carOwnerWallet = await _walletRepository
+                                .GetMany(wallet => wallet.CarOwner != null ? wallet.CarOwner.AccountId.Equals(carOwnerIds.FirstOrDefault()) : false).FirstOrDefaultAsync();
+                            if (carOwnerWallet != null)
+                            {
+                                if (await _unitOfWork.SaveChanges() > 0)
+                                {
+                                    carOwnerWallet.Balance = carOwnerWallet.Balance + (order.Amount * 70 / 100);
+                                    _walletRepository.Update(carOwnerWallet);
+                                    var carOwnerMessage = new NotificationCreateModel
+                                    {
+                                        Title = "Đơn hàng của bạn đã được thanh toán",
+                                        Body = "Đã được cộng " + (order.Amount * 70 / 100) + " vào tài khoản",
+                                        Data = new NotificationDataViewModel
+                                        {
+                                            CreateAt = DateTime.UtcNow.AddHours(7),
+                                            Type = NotificationType.Order.ToString(),
+                                            IsRead = false,
+                                            Link = order.Id.ToString(),
+                                        }
+                                    };
+                                    await _notificationService.SendNotification(carOwnerIds, cusMessage);
+                                } else
+                                {
+                                    return null!;
+                                }
+                            }
+                        };
+                    }
+                    else
+                    {
+                        return null!;
+                    }
                 }
                 _orderRepository.Update(order);
-            result = await _unitOfWork.SaveChanges();
+                result = await _unitOfWork.SaveChanges();
             }
             return result > 0 ? await GetOrder(id) : null!;
         }
@@ -314,7 +358,7 @@ namespace Service.Implementations
             {
                 Id = Guid.NewGuid(),
                 CustomerId = customerId,
-                Amount = 0,
+                Amount = model.Amount,
                 IsPaid = model.IsPaid,
                 Description = model.Description,
                 PromotionId = model.PromotionId,

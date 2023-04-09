@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace Data.Models.Create
+﻿namespace Data.Models.Create
 {
     public class CarRegistrationCreateModel
     {

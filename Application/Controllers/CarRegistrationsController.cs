@@ -43,7 +43,7 @@ namespace Application.Controllers
         [ProducesResponseType(typeof(CarRegistrationViewModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<CarRegistrationViewModel>>
-            CreateCarRegistration(ICollection<IFormFile> images, ICollection<IFormFile> licenses, [FromQuery] CarRegistrationCreateModel model)
+            CreateCarRegistration(ICollection<IFormFile> images, ICollection<IFormFile> licenses,[FromQuery] CarRegistrationCreateModel model)
         {
             try
             {

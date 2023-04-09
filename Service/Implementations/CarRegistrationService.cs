@@ -91,11 +91,11 @@ namespace Service.Implementations
                     CarOwnerId = carOwnerId,
                     Status = false,
                 };
-                await CreateCarRegistrationImages(carRegistration.Id, images);
                 await CreateCarRegistrationLicenses(carRegistration.Id, licenses);
                 _carRegistrationRepository.Add(carRegistration);
                 if (await _unitOfWork.SaveChanges() > 0)
                 {
+                    await CreateCarRegistrationImages(carRegistration.Id, images);
                     transaction.Commit();
                     return await GetCarRegistration(carRegistration.Id) ?? throw new InvalidOperationException("Failed to retrieve car registration.");
                 }
