@@ -24,7 +24,9 @@
 
         public string Description { get; set; } = null!;
 
-        public ICollection<ImageViewModel> Images { get; set; } = null!;
+        public ICollection<ImageViewModel> Thumbnails { get; set; } = null!;
+
+        public ICollection<ImageViewModel> Licenses { get; set; } = null!;
 
         public virtual ICollection<FeedBackViewModel> FeedBacks { get; set; } = null!;
 
