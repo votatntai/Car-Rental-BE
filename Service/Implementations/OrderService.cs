@@ -310,10 +310,10 @@ namespace Service.Implementations
                                 .GetMany(wallet => wallet.CarOwner != null ? wallet.CarOwner.AccountId.Equals(carOwnerIds.FirstOrDefault()) : false).FirstOrDefaultAsync();
                             if (carOwnerWallet != null)
                             {
+                                carOwnerWallet.Balance = carOwnerWallet.Balance + (order.Amount * 70 / 100);
+                                _walletRepository.Update(carOwnerWallet);
                                 if (await _unitOfWork.SaveChanges() > 0)
                                 {
-                                    carOwnerWallet.Balance = carOwnerWallet.Balance + (order.Amount * 70 / 100);
-                                    _walletRepository.Update(carOwnerWallet);
                                     var carOwnerMessage = new NotificationCreateModel
                                     {
                                         Title = "Đơn hàng của bạn đã được thanh toán",
@@ -327,7 +327,8 @@ namespace Service.Implementations
                                         }
                                     };
                                     await _notificationService.SendNotification(carOwnerIds, cusMessage);
-                                } else
+                                }
+                                else
                                 {
                                     return null!;
                                 }

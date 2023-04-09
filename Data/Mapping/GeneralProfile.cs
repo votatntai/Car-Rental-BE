@@ -22,11 +22,11 @@ namespace Data.Mapping
             CreateMap<FeedBack, FeedBackViewModel>();
 
             CreateMap<Car, CarViewModel>()
-                .ForMember(carVM => carVM.ProductionCompany, config => config.MapFrom(car => car.Model.ProductionCompany))
-                .ForMember(carVM => carVM.Licenses,
-                config => config.MapFrom(car => car.Images.Where(image => image.Type.Equals(ImageType.License.ToString()))))
-                .ForMember(carVM => carVM.Thumbnails,
-                config => config.MapFrom(car => car.Images.Where(image => image.Type.Equals(ImageType.Thumbnail.ToString()))));
+                .ForMember(carVM => carVM.ProductionCompany, config => config.MapFrom(car => car.Model.ProductionCompany));
+                //.ForMember(carVM => carVM.Licenses,
+                //config => config.MapFrom(car => car.Images.Where(image => image.Type.Equals(ImageType.License.ToString()))))
+                //.ForMember(carVM => carVM.Thumbnails,
+                //config => config.MapFrom(car => car.Images.Where(image => image.Type.Equals(ImageType.Thumbnail.ToString()))));
 
             CreateMap<CarRegistration, CarRegistrationViewModel>()
                 .ForMember(carRegistrationVM => carRegistrationVM.Calendars, config => config.MapFrom(carRegistration => carRegistration.CarRegistrationCalendars));
@@ -53,10 +53,7 @@ namespace Data.Mapping
 
             CreateMap<Customer, CustomerViewModel>()
                 .ForMember(customerVM => customerVM.Status, config => config.MapFrom(customer => customer.Account.Status))
-                .ForMember(customerVM => customerVM.Id, config => config.MapFrom(customer => customer.AccountId))
-                .ForMember(customerVM => customerVM.LicenseImages,
-                config => config.MapFrom(customer => customer.Images))
-                .ForMember(dest => dest.LicenseImages, opt => opt.Ignore()); ;
+                .ForMember(customerVM => customerVM.Id, config => config.MapFrom(customer => customer.AccountId));
 
             CreateMap<Driver, DriverViewModel>()
                 .ForMember(driverVM => driverVM.Id, config => config.MapFrom(driver => driver.Account.Id))

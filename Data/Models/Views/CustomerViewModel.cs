@@ -22,6 +22,6 @@
 
         public bool IsLicenseValid { get; set; }
 
-        public ICollection<ImageViewModel>? LicenseImages { get; set; }
+        public ICollection<ImageViewModel> Images { get; set; } = new List<ImageViewModel>();
     }
 }

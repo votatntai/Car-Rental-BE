@@ -1,5 +1,6 @@
 ﻿Use CarRental
 Go
+--Lưu trữ tài khoản của cả Manager, Admin, CarOwner, Customer
 Create Table Account(
 	Id uniqueidentifier primary key,
 	Username varchar(256) not null unique,
@@ -7,18 +8,21 @@ Create Table Account(
 	Status bit not null
 )
 Go
+--Ví của người dùng
 Create Table Wallet(
 	Id uniqueidentifier primary key,
 	Balance float not null default 0,
 	Status nvarchar(256) not null
 )
 Go
+--Thông tin vị trí
 Create Table [Location](
 	Id uniqueidentifier primary key,
 	Longitude float not null,
 	Latitude float not null
 )
 Go
+--Thông tin khách hàng
 Create Table Customer(
 	AccountId uniqueidentifier primary key references Account(Id) not null,
 	Name nvarchar(256) not null,
@@ -32,6 +36,7 @@ Create Table Customer(
 	WalletId uniqueidentifier foreign key references Wallet(Id) not null unique,
 )
 Go
+--Thông tin chủ xe
 Create Table CarOwner(
 	AccountId uniqueidentifier primary key references Account(Id) not null,
 	Name nvarchar(256) not null,
@@ -45,6 +50,7 @@ Create Table CarOwner(
 	WalletId uniqueidentifier foreign key references Wallet(Id) not null unique,
 )
 Go
+--Thông tin tài xế
 Create Table Driver(
 	AccountId uniqueidentifier primary key references Account(Id) not null,
 	Name nvarchar(256) not null,
@@ -60,6 +66,7 @@ Create Table Driver(
 	Status nvarchar(256) not null
 )
 Go
+--Thông tin nhân viên (Admin và Manager)
 Create Table [User](
 	AccountId uniqueidentifier primary key references Account(Id) not null,
 	Name nvarchar(256) not null,
@@ -70,6 +77,7 @@ Create Table [User](
 	WalletId uniqueidentifier foreign key references Wallet(Id) not null unique,
 )
 Go
+--Lưu token của thiết bị để gửi thông báo
 Create Table DeviceToken(
 	Id uniqueidentifier primary key,
 	AccountId uniqueidentifier foreign key references Account(Id) not null,
@@ -77,6 +85,7 @@ Create Table DeviceToken(
 	CreateAt datetime not null default getdate()
 )
 Go
+--Thông tin showroom
 Create Table Showroom(
 	Id uniqueidentifier primary key,
 	Name nvarchar(256) not null,
@@ -84,12 +93,14 @@ Create Table Showroom(
 	LocationId uniqueidentifier foreign key references [Location](Id),
 )
 Go
+--Thông tin hãng xe (một hãng xe có nhiều model)
 Create Table ProductionCompany(
 	Id uniqueidentifier primary key,
 	Name nvarchar(256) not null,
 	Description nvarchar(max),
 )
 Go
+--Thông tin model xe (một model xe thuộc về 1 hãng xe)
 Create Table Model(
 	Id uniqueidentifier primary key,
 	Name nvarchar(256) not null,
@@ -104,6 +115,7 @@ Create Table Model(
 	ProductionCompanyId uniqueidentifier foreign key references ProductionCompany(Id) not null,
 )
 Go
+--Thông tin chi phí phát sinh của xe
 Create Table AdditionalCharge(
 	Id uniqueidentifier primary key,
 	MaximumDistance int not null,
@@ -113,6 +125,7 @@ Create Table AdditionalCharge(
 	AdditionalTime float not null
 )
 Go
+--Thông tin xe
 Create Table Car(
 	Id uniqueidentifier primary key,
 	Name nvarchar(256),
@@ -136,12 +149,14 @@ Create Table Car(
 	Status nvarchar(256) not null,
 )
 Go
+--Tính năng xe có
 Create Table Feature(
 	Id uniqueidentifier primary key,
 	Name nvarchar(256) not null,
 	Description nvarchar(max),
 )
 Go
+--Mỗi xe có nhiều tính năng mỗi tính năng sẽ là 1 record trong bảng này
 Create Table CarFeature(
 	CarId uniqueidentifier foreign key references Car(Id),
 	FeatureId uniqueidentifier foreign key references Feature(Id),
@@ -149,12 +164,14 @@ Create Table CarFeature(
 	Primary key (CarId, FeatureId)
 )
 Go
+--Kiểu xe (xe bán tải, sedan, mini, 4 chỗ, 5 chỗ...)
 Create Table [Type](
 	Id uniqueidentifier primary key,
 	Name nvarchar(256) not null,
 	Description nvarchar(max),
 )
 Go
+--Xe có nhiều kiểu (vừa sedan nhưng lại 4 chỗ) sẽ lưu trong này
 Create Table CarType(
 	CarId uniqueidentifier foreign key references Car(Id),
 	TypeId uniqueidentifier foreign key references [Type](Id),
@@ -162,6 +179,7 @@ Create Table CarType(
 	Primary key (CarId, TypeId)
 )
 Go
+--Phiếu đăng ký xe
 Create Table CarRegistration(
 	Id uniqueidentifier primary key,
 	Name nvarchar(256),
@@ -183,6 +201,7 @@ Create Table CarRegistration(
 	Status bit not null default 0
 )
 Go
+--Lịch trong tuần
 Create Table Calendar(
 	Id uniqueidentifier primary key,
 	Weekday nvarchar(256) not null,
@@ -190,6 +209,7 @@ Create Table Calendar(
 	EndTime time not null default '22:00:00',
 )
 Go
+--Lịch trong tuần cuya
 Create Table CarCalendar(
 	CalendarId uniqueidentifier foreign key references Calendar(Id) not null,
 	CarId uniqueidentifier foreign key references Car(Id) not null,
