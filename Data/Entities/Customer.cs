@@ -23,9 +23,13 @@ public partial class Customer
 
     public Guid WalletId { get; set; }
 
+    public bool IsLicenseValid { get; set; }
+
     public virtual Account Account { get; set; } = null!;
 
     public virtual ICollection<FeedBack> FeedBacks { get; } = new List<FeedBack>();
+
+    public virtual ICollection<Image> Images { get; } = new List<Image>();
 
     public virtual ICollection<Order> Orders { get; } = new List<Order>();
 

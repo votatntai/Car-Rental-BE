@@ -24,5 +24,6 @@ namespace Data.Models.Update
 
         public bool? Status { get; set; }
 
+        public bool? IsAutoAcceptOrder { get; set; }
     }
 }

@@ -19,5 +19,7 @@
         public string? BankName { get; set; }
 
         public bool Status { get; set; }
+
+        public bool IsAutoAcceptOrder { get; set; }
     }
 }

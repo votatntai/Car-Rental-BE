@@ -138,24 +138,49 @@ namespace Service.Implementations
             {
                 order.Status = model.Status.ToString();
                 order.Description = model.Description;
-                _orderRepository.Update(order);
-                result = await _unitOfWork.SaveChanges();
+
                 if (model.Status.Equals(OrderStatus.ManagerConfirmed))
                 {
-                    var message = new NotificationCreateModel
+                    var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
+                    if (carOwner != null && !carOwner.IsAutoAcceptOrder)
                     {
-                        Title = "Đơn hàng mới",
-                        Body = "Bạn có đơn hàng mới cần xác nhận",
-                        Data = new NotificationDataViewModel
+                        var message = new NotificationCreateModel
                         {
-                            CreateAt = DateTime.UtcNow.AddHours(7),
-                            Type = NotificationType.Order.ToString(),
-                            IsRead = false,
-                            Link = order.Id.ToString(),
-                        }
-                    };
-                    var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwnerId : Guid.Empty).ToList();
-                    await _notificationService.SendNotification(carOwner, message);
+                            Title = "Đơn hàng mới",
+                            Body = "Bạn có đơn hàng mới cần xác nhận",
+                            Data = new NotificationDataViewModel
+                            {
+                                CreateAt = DateTime.UtcNow.AddHours(7),
+                                Type = NotificationType.Order.ToString(),
+                                IsRead = false,
+                                Link = order.Id.ToString(),
+                            }
+                        };
+                        await _notificationService.SendNotification(new List<Guid>
+                        {
+                            carOwner.AccountId
+                        }, message);
+                    }
+                    else if (carOwner != null && carOwner.IsAutoAcceptOrder)
+                    {
+                        order.Status = OrderStatus.CarOwnerApproved.ToString();
+                        var message = new NotificationCreateModel
+                        {
+                            Title = "Bạn có đơn đặt hàng mới",
+                            Body = "Đơn hàng của bạn đã được duyệt tư động",
+                            Data = new NotificationDataViewModel
+                            {
+                                CreateAt = DateTime.UtcNow.AddHours(7),
+                                Type = NotificationType.Order.ToString(),
+                                IsRead = false,
+                                Link = order.Id.ToString(),
+                            }
+                        };
+                        await _notificationService.SendNotification(new List<Guid>
+                        {
+                            carOwner.AccountId
+                        }, message);
+                    }
                 }
                 if (model.Status.Equals(OrderStatus.CarOwnerApproved))
                 {
@@ -251,6 +276,8 @@ namespace Service.Implementations
                         }
                     }
                 }
+            _orderRepository.Update(order);
+            result = await _unitOfWork.SaveChanges();
             }
             return result > 0 ? await GetOrder(id) : null!;
         }

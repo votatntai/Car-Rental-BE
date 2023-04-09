@@ -28,6 +28,7 @@ Create Table Customer(
 	AvatarUrl nvarchar(max),
 	BankAccountNumber nvarchar(256),
 	BankName nvarchar(256),
+	IsLicenseValid bit not null default 0,
 	WalletId uniqueidentifier foreign key references Wallet(Id) not null unique,
 )
 Go
@@ -40,6 +41,7 @@ Create Table CarOwner(
 	AvatarUrl nvarchar(max),
 	BankAccountNumber nvarchar(256),
 	BankName nvarchar(256),
+	IsAutoAcceptOrder bit not null default 0,
 	WalletId uniqueidentifier foreign key references Wallet(Id) not null unique,
 )
 Go
@@ -290,6 +292,8 @@ Create Table [Image](
 	ShowroomId uniqueidentifier foreign key references Showroom(Id),
 	CarId uniqueidentifier foreign key references Car(Id),
 	CarRegistrationId uniqueidentifier foreign key references CarRegistration(Id),
+	CustomerId uniqueidentifier foreign key references Customer(AccountId),
+	DriverId uniqueidentifier foreign key references Driver(AccountId),
 )
 GO
 INSERT [dbo].[Calendar] ([Id], [Weekday], [StartTime], [EndTime]) VALUES (N'dbd0e2c6-22dc-414d-89a7-180a881c1421', N'Tuesday', CAST(N'08:00:00' AS Time), CAST(N'20:00:00' AS Time))

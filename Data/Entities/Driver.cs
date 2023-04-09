@@ -37,6 +37,8 @@ public partial class Driver
 
     public virtual ICollection<FeedBack> FeedBacks { get; } = new List<FeedBack>();
 
+    public virtual ICollection<Image> Images { get; } = new List<Image>();
+
     public virtual Location? Location { get; set; }
 
     public virtual ICollection<OrderDetail> OrderDetails { get; } = new List<OrderDetail>();

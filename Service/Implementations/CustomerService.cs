@@ -6,7 +6,9 @@ using Data.Models.Create;
 using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
+using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
 using Utility.Enums;
@@ -18,13 +20,17 @@ namespace Service.Implementations
         private readonly ICustomerRepository _customerRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly IWalletRepository _walletRepository;
+        private readonly IImageRepository _imageRepository;
+        private readonly ICloudStorageService _cloudStorageService;
         private new readonly IMapper _mapper;
 
-        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
+        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper, ICloudStorageService cloudStorageService) : base(unitOfWork, mapper)
         {
             _customerRepository = unitOfWork.Customer;
             _accountRepository = unitOfWork.Account;
             _walletRepository = unitOfWork.Wallet;
+            _imageRepository = unitOfWork.Image;
+            _cloudStorageService = cloudStorageService;
             _mapper = mapper;
         }
 
@@ -109,6 +115,10 @@ namespace Service.Implementations
                 if (model.Phone != null) customer.Phone = model.Phone;
                 if (model.Password != null) customer.Account.Password = model.Password;
                 if (model.Status != null) customer.Account.Status = (bool)model.Status;
+                if (model.Licenses != null)
+                {
+                    await UpdateCustomerLicenses(id, model.Licenses);
+                };
                 _customerRepository.Update(customer);
                 var result = await _unitOfWork.SaveChanges();
                 return await GetCustomer(id);
@@ -117,6 +127,26 @@ namespace Service.Implementations
         }
 
         // PRIVATE METHODS
+
+        private async Task<ICollection<Image>> UpdateCustomerLicenses(Guid id, ICollection<IFormFile> files)
+        {
+            var images = new List<Image>();
+            foreach (IFormFile file in files)
+            {
+                var imageId = Guid.NewGuid();
+                var url = await _cloudStorageService.Upload(imageId, file.ContentType, file.OpenReadStream());
+                var image = new Image
+                {
+                    Id = imageId,
+                    CustomerId = id,
+                    Type = ImageType.License.ToString(),
+                    Url = url,
+                };
+                images.Add(image);
+            }
+            _imageRepository.AddRange(images);
+            return await _unitOfWork.SaveChanges() > 0 ? images : null!;
+        }
 
         private async Task<Guid> CreateWallet()
         {

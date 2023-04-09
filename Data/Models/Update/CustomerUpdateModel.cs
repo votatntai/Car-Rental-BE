@@ -1,4 +1,6 @@
-﻿namespace Data.Models.Update
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Data.Models.Update
 {
     public class CustomerUpdateModel
     {
@@ -17,5 +19,7 @@
         public string? Password { get; set; }
 
         public bool? Status { get; set; }
+
+        public ICollection<IFormFile>? Licenses { get; set; }
     }
 }

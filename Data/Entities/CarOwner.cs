@@ -23,6 +23,8 @@ public partial class CarOwner
 
     public Guid WalletId { get; set; }
 
+    public bool IsAutoAcceptOrder { get; set; }
+
     public virtual Account Account { get; set; } = null!;
 
     public virtual ICollection<CarRegistration> CarRegistrations { get; } = new List<CarRegistration>();

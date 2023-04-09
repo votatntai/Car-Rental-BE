@@ -111,6 +111,7 @@ namespace Service.Implementations
                 if (model.Phone != null) carOwner.Phone = model.Phone;
                 if (model.Password != null) carOwner.Account.Password = model.Password;
                 if (model.Status != null) carOwner.Account.Status = (bool)model.Status;
+                if (model.IsAutoAcceptOrder != null) carOwner.IsAutoAcceptOrder = (bool)model.IsAutoAcceptOrder;
                 _carOwnerRepository.Update(carOwner);
                 var result = await _unitOfWork.SaveChanges();
                 return await GetCarOwner(id);
