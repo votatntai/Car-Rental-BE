@@ -8,6 +8,7 @@ using Newtonsoft.Json.Serialization;
 using Utility.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 builder.Services.Configure<AppSetting>(builder.Configuration.GetSection("AppSetting"));
 // Add services to the container.
@@ -23,20 +24,26 @@ builder.Services.AddControllersWithViews()
     }
 );
 builder.Services.AddSwaggerGenNewtonsoftSupport();
-builder.Services.AddCors();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.AllowAnyHeader();
+                          policy.AllowAnyMethod();
+                          policy.WithOrigins("http://localhost:4200", "https://carrentalwebmanager.web.app");
+                      });
+});
 builder.Services.AddSignalR();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger();
 builder.Services.AddDependenceInjection();
-builder.Services.AddAutoMapper(typeof (GeneralProfile));
+builder.Services.AddAutoMapper(typeof(GeneralProfile));
 
 var app = builder.Build();
 
-app.UseCors(x => x
-                          .AllowAnyHeader()
-                          .AllowAnyMethod()
-                          .AllowAnyOrigin());
+app.UseCors(MyAllowSpecificOrigins);
 
 // Configure the HTTP request pipeline.
 
