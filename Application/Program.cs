@@ -32,6 +32,7 @@ builder.Services.AddCors(options =>
                           policy.AllowAnyHeader();
                           policy.AllowAnyMethod();
                           policy.WithOrigins("http://localhost:4200", "https://carrentalwebmanager.web.app");
+                          policy.AllowCredentials();
                       });
 });
 builder.Services.AddSignalR();
