@@ -7,8 +7,10 @@ using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
 using Data.Repositories.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
+using Utility.Enums;
 
 namespace Service.Implementations
 {
@@ -16,12 +18,16 @@ namespace Service.Implementations
     {
         private readonly ICarRegistrationRepository _carRegistrationRepository;
         private readonly IAdditionalChargeRepository _additionalChargeRepository;
+        private readonly IImageRepository _imageRepository;
+        private readonly ICloudStorageService _cloudStorageService;
         private new readonly IMapper _mapper;
-        public CarRegistrationService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
+        public CarRegistrationService(IUnitOfWork unitOfWork, IMapper mapper, ICloudStorageService cloudStorageService) : base(unitOfWork, mapper)
         {
             _carRegistrationRepository = unitOfWork.CarRegistration;
             _additionalChargeRepository = unitOfWork.AdditionalCharge;
+            _imageRepository = unitOfWork.Image;
             _mapper = mapper;
+            _cloudStorageService = cloudStorageService;
         }
 
         public async Task<ListViewModel<CarRegistrationViewModel>> GetCarRegistrations(CarRegistrationFilterModel filter, PaginationRequestModel pagination)
@@ -84,8 +90,9 @@ namespace Service.Implementations
                     CarOwnerId = carOwnerId,
                     Status = false,
                 };
+                await CreateCarRegistrationImages(carRegistration.Id, model.Images);
+                await CreateCarRegistrationLicenses(carRegistration.Id, model.Licenses);
                 _carRegistrationRepository.Add(carRegistration);
-
                 if (await _unitOfWork.SaveChanges() > 0)
                 {
                     transaction.Commit();
@@ -100,6 +107,46 @@ namespace Service.Implementations
                 transaction.Rollback();
                 throw;
             }
+        }
+
+        private async Task<ICollection<Image>> CreateCarRegistrationImages(Guid id, ICollection<IFormFile> files)
+        {
+            var images = new List<Image>();
+            foreach (IFormFile file in files)
+            {
+                var imageId = Guid.NewGuid();
+                var url = await _cloudStorageService.Upload(imageId, file.ContentType, file.OpenReadStream());
+                var image = new Image
+                {
+                    Id = imageId,
+                    CarRegistrationId = id,
+                    Type = ImageType.Thumbnail.ToString(),
+                    Url = url,
+                };
+                images.Add(image);
+            }
+            _imageRepository.AddRange(images);
+            return await _unitOfWork.SaveChanges() > 0 ? images : null!;
+        }
+
+        private async Task<ICollection<Image>> CreateCarRegistrationLicenses(Guid id, ICollection<IFormFile> files)
+        {
+            var images = new List<Image>();
+            foreach (IFormFile file in files)
+            {
+                var imageId = Guid.NewGuid();
+                var url = await _cloudStorageService.Upload(imageId, file.ContentType, file.OpenReadStream());
+                var image = new Image
+                {
+                    Id = imageId,
+                    CarRegistrationId = id,
+                    Type = ImageType.License.ToString(),
+                    Url = url,
+                };
+                images.Add(image);
+            }
+            _imageRepository.AddRange(images);
+            return await _unitOfWork.SaveChanges() > 0 ? images : null!;
         }
 
         public async Task<CarRegistrationViewModel> UpdateCar(Guid id, CarRegistrationUpdateModel model)

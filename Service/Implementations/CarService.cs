@@ -16,12 +16,12 @@ namespace Service.Implementations
 {
     public class CarService : BaseService, ICarService
     {
-
         private readonly ICarRepository _carRepository;
         private readonly ILocationRepository _locationRepository;
         private readonly ICalendarRepository _calendarRepository;
         private readonly ICarCalendarRepository _carCalendarRepository;
         private readonly IAdditionalChargeRepository _additionalChargeRepository;
+        private readonly IImageRepository _imageRepository;
         private new readonly IMapper _mapper;
 
         public CarService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
@@ -31,6 +31,7 @@ namespace Service.Implementations
             _calendarRepository = unitOfWork.Calendar;
             _carCalendarRepository = unitOfWork.CarCalendar;
             _additionalChargeRepository = unitOfWork.AdditionalCharge;
+            _imageRepository = unitOfWork.Image;
             _mapper = mapper;
         }
 

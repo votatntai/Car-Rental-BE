@@ -27,6 +27,7 @@ namespace Data
         public IDeviceTokenRepository DeviceToken { get; }
         public ICalendarRepository Calendar { get; }
         public ICarCalendarRepository CarCalendar { get; }
+        public IImageRepository Image { get; }
 
         Task<int> SaveChanges();
         IDbContextTransaction Transaction();

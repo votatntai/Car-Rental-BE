@@ -30,6 +30,7 @@ namespace Data
         private IDeviceTokenRepository _deviceToken= null!;
         private ICalendarRepository _calendar= null!;
         private ICarCalendarRepository _carCalendar= null!;
+        private IImageRepository _image = null!;
 
         public UnitOfWork(CarRentalContext context)
         {
@@ -40,6 +41,7 @@ namespace Data
         {
             get { return _account ??= new AccountRepository(_context); }
         }
+
         public IUserRepository User
         {
             get { return _user ??= new UserRepository(_context); }
@@ -53,10 +55,12 @@ namespace Data
         {
             get { return _carOwner ??= new CarOwnerRepository(_context); }
         }
+
         public IDriverRepository Driver
         {
             get { return _driver ??= new DriverRepository(_context); }
         }
+
         public ICustomerRepository Customer
         {
             get { return _customer ??= new CustomerRepository(_context); }
@@ -133,6 +137,11 @@ namespace Data
         public ICarCalendarRepository CarCalendar
         {
             get { return _carCalendar ??= new CarCalendarRepository(_context); }
+        }
+
+        public IImageRepository Image
+        {
+            get { return _image ??= new ImageRepository(_context); }
         }
 
         public async Task<int> SaveChanges()
