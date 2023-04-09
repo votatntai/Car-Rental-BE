@@ -63,7 +63,8 @@ namespace Service.Implementations
                 .FirstOrDefaultAsync() ?? null!;
         }
 
-        public async Task<CarRegistrationViewModel> CreateCarRegistration(Guid carOwnerId, CarRegistrationCreateModel model)
+        public async Task<CarRegistrationViewModel> CreateCarRegistration
+            (Guid carOwnerId, ICollection<IFormFile> images, ICollection<IFormFile> licenses, CarRegistrationCreateModel model)
         {
             using var transaction = _unitOfWork.Transaction();
             try
@@ -90,8 +91,8 @@ namespace Service.Implementations
                     CarOwnerId = carOwnerId,
                     Status = false,
                 };
-                await CreateCarRegistrationImages(carRegistration.Id, model.Images);
-                await CreateCarRegistrationLicenses(carRegistration.Id, model.Licenses);
+                await CreateCarRegistrationImages(carRegistration.Id, images);
+                await CreateCarRegistrationLicenses(carRegistration.Id, licenses);
                 _carRegistrationRepository.Add(carRegistration);
                 if (await _unitOfWork.SaveChanges() > 0)
                 {

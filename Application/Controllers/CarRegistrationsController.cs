@@ -4,7 +4,6 @@ using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
 using Microsoft.AspNetCore.Mvc;
-using Service.Implementations;
 using Service.Interfaces;
 
 namespace Application.Controllers
@@ -43,12 +42,13 @@ namespace Application.Controllers
         [Authorize]
         [ProducesResponseType(typeof(CarRegistrationViewModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<CarRegistrationViewModel>> CreateCarRegistration([FromBody] CarRegistrationCreateModel model)
+        public async Task<ActionResult<CarRegistrationViewModel>>
+            CreateCarRegistration(ICollection<IFormFile> images, ICollection<IFormFile> licenses, [FromQuery] CarRegistrationCreateModel model)
         {
             try
             {
                 var auth = (AuthViewModel?)HttpContext.Items["User"];
-                var carRegistration = await _carRegistrationService.CreateCarRegistration(auth!.Id, model);
+                var carRegistration = await _carRegistrationService.CreateCarRegistration(auth!.Id, images, licenses, model);
                 return CreatedAtAction(nameof(GetCarRegistration), new { id = carRegistration.Id }, carRegistration);
             }
             catch (Exception e)

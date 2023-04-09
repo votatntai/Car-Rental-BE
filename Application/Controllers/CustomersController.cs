@@ -75,7 +75,7 @@ namespace Application.Controllers
         [Route("licenses")]
         [ProducesResponseType(typeof(ImageViewModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ImageViewModel>> UpdateCustomerLicense(ICollection<IFormFile> files)
+        public async Task<ActionResult<ImageViewModel>> UpdateCustomerLicense([FromForm] ICollection<IFormFile> files)
         {
             try
             {

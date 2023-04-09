@@ -33,9 +33,5 @@ namespace Data.Models.Create
         public string? Description { get; set; }
 
         public AdditionalChargeCreateModel AdditionalCharge { get; set; } = null!;
-
-        public ICollection<IFormFile> Images { get; set; } = new List<IFormFile>();
-
-        public ICollection<IFormFile> Licenses { get; set; } = new List<IFormFile>();
     }
 }

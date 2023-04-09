@@ -10,7 +10,8 @@ namespace Service.Interfaces
     {
         Task<ListViewModel<CarRegistrationViewModel>> GetCarRegistrations(CarRegistrationFilterModel filter, PaginationRequestModel pagination);
         Task<CarRegistrationViewModel> GetCarRegistration(Guid id);
-        Task<CarRegistrationViewModel> CreateCarRegistration(Guid carOwnerId, CarRegistrationCreateModel model);
+        Task<CarRegistrationViewModel> CreateCarRegistration
+            (Guid carOwnerId, ICollection<IFormFile> images, ICollection<IFormFile> licenses, CarRegistrationCreateModel model);
         Task<CarRegistrationViewModel> UpdateCar(Guid id, CarRegistrationUpdateModel model);
         Task<bool> DeleteCarRegistration(Guid id);
     }
