@@ -1,4 +1,5 @@
-﻿using Data.Models.Create;
+﻿using Application.Configurations.Middleware;
+using Data.Models.Create;
 using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
@@ -62,6 +63,24 @@ namespace Application.Controllers
             {
                 var customer = await _customerService.UpdateCustomer(id, model);
                 return CreatedAtAction(nameof(GetCustomer), new { id = customer.Id }, customer);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, e.InnerException != null ? e.InnerException.Message : e.Message);
+            }
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("licenses")]
+        [ProducesResponseType(typeof(ImageViewModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ImageViewModel>> UpdateCustomerLicense(ICollection<IFormFile> files)
+        {
+            try
+            {
+                var auth = (AuthViewModel?)HttpContext.Items["User"];
+                return Ok(await _customerService.UpdateCustomerLicenses(auth!.Id, files));
             }
             catch (Exception e)
             {

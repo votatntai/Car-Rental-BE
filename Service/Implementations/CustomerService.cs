@@ -115,10 +115,6 @@ namespace Service.Implementations
                 if (model.Phone != null) customer.Phone = model.Phone;
                 if (model.Password != null) customer.Account.Password = model.Password;
                 if (model.Status != null) customer.Account.Status = (bool)model.Status;
-                if (model.Licenses != null)
-                {
-                    await UpdateCustomerLicenses(id, model.Licenses);
-                };
                 _customerRepository.Update(customer);
                 var result = await _unitOfWork.SaveChanges();
                 return await GetCustomer(id);
@@ -126,9 +122,7 @@ namespace Service.Implementations
             return null!;
         }
 
-        // PRIVATE METHODS
-
-        private async Task<ICollection<Image>> UpdateCustomerLicenses(Guid id, ICollection<IFormFile> files)
+        public async Task<ICollection<ImageViewModel>> UpdateCustomerLicenses(Guid id, ICollection<IFormFile> files)
         {
             var images = new List<Image>();
             foreach (IFormFile file in files)
@@ -145,9 +139,10 @@ namespace Service.Implementations
                 images.Add(image);
             }
             _imageRepository.AddRange(images);
-            return await _unitOfWork.SaveChanges() > 0 ? images : null!;
+            return await _unitOfWork.SaveChanges() > 0 ? _mapper.Map<List<Image>, List<ImageViewModel>>(images) : null!;
         }
 
+        // PRIVATE METHODS
         private async Task<Guid> CreateWallet()
         {
             var id = Guid.NewGuid();

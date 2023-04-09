@@ -51,8 +51,7 @@ namespace Data.Mapping
                 .ForMember(customerVM => customerVM.Status, config => config.MapFrom(customer => customer.Account.Status))
                 .ForMember(customerVM => customerVM.Id, config => config.MapFrom(customer => customer.AccountId))
                 .ForMember(customerVM => customerVM.Licenses,
-                config => config.MapFrom(customer => customer.Images
-                .Where(image => image.Type.Equals(ImageType.License.ToString())).Select(image => image.Url).ToList()));
+                config => config.MapFrom(customer => customer.Images));
 
             CreateMap<Driver, DriverViewModel>()
                 .ForMember(driverVM => driverVM.Id, config => config.MapFrom(driver => driver.Account.Id))

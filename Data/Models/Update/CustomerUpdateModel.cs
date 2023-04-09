@@ -19,7 +19,5 @@ namespace Data.Models.Update
         public string? Password { get; set; }
 
         public bool? Status { get; set; }
-
-        public ICollection<IFormFile>? Licenses { get; set; }
     }
 }
