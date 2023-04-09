@@ -165,6 +165,20 @@ namespace Service.Implementations
 
                 if (await _unitOfWork.SaveChanges() > 0)
                 {
+                    if (model.RegistrationId != null)
+                    {
+                        var images = await _imageRepository.GetMany(image => image.CarRegistrationId.Equals(model.RegistrationId)).ToListAsync();
+                        if (images != null)
+                        {
+                            foreach(var image in images)
+                            {
+                                image.CarRegistrationId = null;
+                                image.CarId = car.Id;
+                            }
+                            _imageRepository.UpdateRange(images);
+                            await _unitOfWork.SaveChanges();
+                        }
+                    }
                     transaction.Commit();
                     return await GetCar(car.Id) ?? throw new InvalidOperationException("Failed to retrieve car.");
                 }

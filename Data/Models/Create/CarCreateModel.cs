@@ -27,5 +27,7 @@
         public ICollection<CarCalendarCreateModel>? Calendars { get; set; } = null!;
 
         public AdditionalChargeCreateModel AdditionalCharge { get; set; } = null!;
+
+        public Guid? RegistrationId { get; set; } = null!;
     }
 }
