@@ -25,7 +25,7 @@ namespace Service.Implementations
         private readonly IOrderDetailRepository _orderDetailRepository;
         private readonly ILocationRepository _locationRepository;
         private readonly IWalletRepository _walletRepository;
-        private readonly ICustomerRepository _customerRepository;
+        private readonly ICarOwnerRepository _carOwnerRepository;
         private new readonly IMapper _mapper;
         public OrderService(IUnitOfWork unitOfWork, IMapper mapper, INotificationService notificationService) : base(unitOfWork, mapper)
         {
@@ -37,7 +37,7 @@ namespace Service.Implementations
             _orderDetailRepository = unitOfWork.OrderDetail;
             _locationRepository = unitOfWork.Location;
             _walletRepository = unitOfWork.Wallet;
-            _customerRepository = unitOfWork.Customer;
+            _carOwnerRepository = unitOfWork.CarOwner;
             _mapper = mapper;
         }
 
@@ -434,9 +434,37 @@ namespace Service.Implementations
                                 Link = order.Id.ToString(),
                             }
                         };
+                        var cusMessage = new NotificationCreateModel
+                        {
+                            Title = "Tạo đơn hàng thành công",
+                            Body = "Đã trừ " + (model.Amount * 30/100) + " tiền cọc cho đơn hàng",
+                            Data = new NotificationDataViewModel
+                            {
+                                CreateAt = DateTime.UtcNow.AddHours(7),
+                                Type = NotificationType.Order.ToString(),
+                                IsRead = false,
+                                Link = order.Id.ToString(),
+                            }
+                        };
+                        var carOwnerMessage = new NotificationCreateModel
+                        {
+                            Title = "Nhận tiền cọc đơn hàng",
+                            Body = "Đã nhận " + (model.Amount * 30 / 100) + " tiền cọc cho đơn mới",
+                            Data = new NotificationDataViewModel
+                            {
+                                CreateAt = DateTime.UtcNow.AddHours(7),
+                                Type = NotificationType.Order.ToString(),
+                                IsRead = false,
+                                Link = order.Id.ToString(),
+                            }
+                        };
                         var managers = await _userRepository.GetMany(user => user.Role.Equals(UserRole.Manager.ToString()))
                             .Select(manager => manager.AccountId).ToListAsync();
+                        var carId = model.OrderDetails.Select(od => od.CarId).FirstOrDefault();
+                        var carOwnerIds = await _carRepository.GetMany(con => con.Id.Equals(carId)).Select(car => car.CarOwnerId).ToListAsync();
+                        await _notificationService.SendNotification(new List<Guid> { customerId }, cusMessage);
                         await _notificationService.SendNotification(managers, message);
+                        await _notificationService.SendNotification(carOwnerIds, carOwnerMessage);
                         return await GetOrder(order.Id);
                     }
                 }
