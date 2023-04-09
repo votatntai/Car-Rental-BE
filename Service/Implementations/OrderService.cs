@@ -355,81 +355,91 @@ namespace Service.Implementations
 
         public async Task<OrderViewModel> CreateOrder(Guid customerId, OrderCreateModel model)
         {
-            var order = new Order
+            var cusWallet = await _walletRepository
+                        .GetMany(wallet => wallet.Customer != null ? wallet.Customer.AccountId.Equals(customerId) : false).FirstOrDefaultAsync();
+            if (cusWallet != null && cusWallet.Balance > model.Amount)
             {
-                Id = Guid.NewGuid(),
-                CustomerId = customerId,
-                Amount = model.Amount,
-                IsPaid = model.IsPaid,
-                Description = model.Description,
-                PromotionId = model.PromotionId,
-                RentalTime = model.RentalTime,
-                Status = OrderStatus.Pending.ToString(),
-                Deposit = model.Deposit,
-                CreateAt = DateTime.UtcNow,
-                UnitPrice = model.UnitPrice,
-                DeliveryFee = model.DeliveryFee,
-                DeliveryDistance = model.DeliveryDistance,
-            };
-            _orderRepository.Add(order);
-            foreach (var orderDetail in model.OrderDetails)
-            {
-                var od = new OrderDetail
+                var order = new Order
                 {
                     Id = Guid.NewGuid(),
-                    CarId = orderDetail.CarId,
-                    DeliveryTime = orderDetail.DeliveryTime,
-                    PickUpTime = orderDetail.PickUpTime,
-                    StartTime = orderDetail.StartTime,
-                    EndTime = orderDetail.EndTime,
-                    OrderId = order.Id,
-                    DeliveryLocationId = await CreateLocation(orderDetail?.DeliveryLocation!),
-                    PickUpLocationId = await CreateLocation(orderDetail?.PickUpLocation!),
+                    CustomerId = customerId,
+                    Amount = model.Amount,
+                    IsPaid = model.IsPaid,
+                    Description = model.Description,
+                    PromotionId = model.PromotionId,
+                    RentalTime = model.RentalTime,
+                    Status = OrderStatus.Pending.ToString(),
+                    Deposit = model.Deposit,
+                    CreateAt = DateTime.UtcNow,
+                    UnitPrice = model.UnitPrice,
+                    DeliveryFee = model.DeliveryFee,
+                    DeliveryDistance = model.DeliveryDistance,
                 };
-                if (orderDetail != null && orderDetail.HasDriver)
+                _orderRepository.Add(order);
+                foreach (var orderDetail in model.OrderDetails)
                 {
-                    var car = await _carRepository.GetMany(car => car.Id.Equals(orderDetail.CarId)).FirstOrDefaultAsync();
-                    if (car != null)
+                    var od = new OrderDetail
                     {
-                        car.Status = CarStatus.Ongoing.ToString();
-                        _carRepository.Update(car);
-                        if (car.Driver == null)
+                        Id = Guid.NewGuid(),
+                        CarId = orderDetail.CarId,
+                        DeliveryTime = orderDetail.DeliveryTime,
+                        PickUpTime = orderDetail.PickUpTime,
+                        StartTime = orderDetail.StartTime,
+                        EndTime = orderDetail.EndTime,
+                        OrderId = order.Id,
+                        DeliveryLocationId = await CreateLocation(orderDetail?.DeliveryLocation!),
+                        PickUpLocationId = await CreateLocation(orderDetail?.PickUpLocation!),
+                    };
+                    if (orderDetail != null && orderDetail.HasDriver)
+                    {
+                        var car = await _carRepository.GetMany(car => car.Id.Equals(orderDetail.CarId)).FirstOrDefaultAsync();
+                        if (car != null)
                         {
-                            var driver = await _driverRepository.GetAll()
-                            .DriverDistanceFilter(orderDetail.PickUpLocation!.Latitude, orderDetail.PickUpLocation!.Longitude, 100)
-                            .FirstOrDefaultAsync();
-                            if (driver != null)
+                            car.Status = CarStatus.Ongoing.ToString();
+                            _carRepository.Update(car);
+                            if (car.Driver == null)
                             {
-                                od.DriverId = driver.AccountId;
+                                var driver = await _driverRepository.GetAll()
+                                .DriverDistanceFilter(orderDetail.PickUpLocation!.Latitude, orderDetail.PickUpLocation!.Longitude, 100)
+                                .FirstOrDefaultAsync();
+                                if (driver != null)
+                                {
+                                    od.DriverId = driver.AccountId;
+                                }
+                            }
+                            else
+                            {
+                                od.DriverId = car.Driver.AccountId;
                             }
                         }
-                        else
+                    }
+                    _orderDetailRepository.Add(od);
+                }
+                var result = await _unitOfWork.SaveChanges();
+                if (result > 0)
+                {
+                    cusWallet.Balance = cusWallet.Balance - (model.Amount * 30 / 100);
+                    _walletRepository.Update(cusWallet);
+                    if (await _unitOfWork.SaveChanges() > 0)
+                    {
+                        var message = new NotificationCreateModel
                         {
-                            od.DriverId = car.Driver.AccountId;
-                        }
+                            Title = "Đơn hàng mới",
+                            Body = "Bạn có đơn hàng mới cần xác nhận",
+                            Data = new NotificationDataViewModel
+                            {
+                                CreateAt = DateTime.UtcNow.AddHours(7),
+                                Type = NotificationType.Order.ToString(),
+                                IsRead = false,
+                                Link = order.Id.ToString(),
+                            }
+                        };
+                        var managers = await _userRepository.GetMany(user => user.Role.Equals(UserRole.Manager.ToString()))
+                            .Select(manager => manager.AccountId).ToListAsync();
+                        await _notificationService.SendNotification(managers, message);
+                        return await GetOrder(order.Id);
                     }
                 }
-                _orderDetailRepository.Add(od);
-            }
-            var result = await _unitOfWork.SaveChanges();
-            if (result > 0)
-            {
-                var message = new NotificationCreateModel
-                {
-                    Title = "Đơn hàng mới",
-                    Body = "Bạn có đơn hàng mới cần xác nhận",
-                    Data = new NotificationDataViewModel
-                    {
-                        CreateAt = DateTime.UtcNow.AddHours(7),
-                        Type = NotificationType.Order.ToString(),
-                        IsRead = false,
-                        Link = order.Id.ToString(),
-                    }
-                };
-                var managers = await _userRepository.GetMany(user => user.Role.Equals(UserRole.Manager.ToString()))
-                    .Select(manager => manager.AccountId).ToListAsync();
-                await _notificationService.SendNotification(managers, message);
-                return await GetOrder(order.Id);
             }
             return null!;
         }
