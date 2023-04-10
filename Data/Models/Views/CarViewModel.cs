@@ -26,11 +26,11 @@
 
         public ICollection<ImageViewModel> Images { get; set; } = null!;
 
-        public virtual ICollection<FeedBackViewModel> FeedBacks { get; set; } = null!;
+        //public virtual ICollection<FeedBackViewModel> FeedBacks { get; set; } = null!;
 
-        public virtual ICollection<CarFeatureViewModel> CarFeatures { get; set; } = null!;
+        //public virtual ICollection<CarFeatureViewModel> CarFeatures { get; set; } = null!;
 
-        public virtual ICollection<CarTypeViewModel> CarTypes { get; set; } = null!;
+        //public virtual ICollection<CarTypeViewModel> CarTypes { get; set; } = null!;
 
         public ProductionCompanyViewModel ProductionCompany { get; set; } = null!;
 
@@ -40,7 +40,7 @@
 
         public DriverViewModel? Driver { get; set; } = null!;
 
-        public virtual ICollection<DriverCalendarViewModel> DriverCalendars { get; set; } = null!;
+        //public virtual ICollection<DriverCalendarViewModel> DriverCalendars { get; set; } = null!;
 
         public LocationViewModel Location { get; set; } = null!;
 
