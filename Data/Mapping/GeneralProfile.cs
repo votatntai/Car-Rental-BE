@@ -21,12 +21,22 @@ namespace Data.Mapping
 
             CreateMap<FeedBack, FeedBackViewModel>();
 
+            var emptyList = new List<FeedBackViewModel>();
+            var emptyList1 = new List<CarFeatureViewModel>();
+            var emptyList2 = new List<CarTypeViewModel>();
+            var emptyList3 = new List<DriverCalendarViewModel>();
+
+
             CreateMap<Car, CarViewModel>()
-                .ForMember(carVM => carVM.ProductionCompany, config => config.MapFrom(car => car.Model.ProductionCompany));
-                //.ForMember(carVM => carVM.Licenses,
-                //config => config.MapFrom(car => car.Images.Where(image => image.Type.Equals(ImageType.License.ToString()))))
-                //.ForMember(carVM => carVM.Thumbnails,
-                //config => config.MapFrom(car => car.Images.Where(image => image.Type.Equals(ImageType.Thumbnail.ToString()))));
+                .ForMember(carVM => carVM.ProductionCompany, config => config.MapFrom(car => car.Model.ProductionCompany))
+                .ForMember(carVM => carVM.FeedBacks, config => config.MapFrom(a => emptyList))
+                .ForMember(carVM => carVM.CarFeatures, config => config.MapFrom(car => emptyList1))
+                .ForMember(carVM => carVM.CarTypes, config => config.MapFrom(car => emptyList2))
+                .ForMember(carVM => carVM.DriverCalendars, config => config.MapFrom(car => emptyList3));
+            //.ForMember(carVM => carVM.Licenses,
+            //config => config.MapFrom(car => car.Images.Where(image => image.Type.Equals(ImageType.License.ToString()))))
+            //.ForMember(carVM => carVM.Thumbnails,
+            //config => config.MapFrom(car => car.Images.Where(image => image.Type.Equals(ImageType.Thumbnail.ToString()))));
 
             CreateMap<CarRegistration, CarRegistrationViewModel>()
                 .ForMember(carRegistrationVM => carRegistrationVM.Calendars, config => config.MapFrom(carRegistration => carRegistration.CarRegistrationCalendars));
