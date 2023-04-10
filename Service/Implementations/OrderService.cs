@@ -347,7 +347,7 @@ namespace Service.Implementations
 
         public async Task<OrderViewModel> GetOrder(Guid id)
         {
-            return await _orderRepository.GetMany(order => order.Id.Equals(id))
+            return await _orderRepository.GetMany(order => order.Id == id)
                 .ProjectTo<OrderViewModel>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync() ?? null!;
         }
