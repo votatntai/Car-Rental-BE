@@ -7,6 +7,13 @@ namespace Service
     {
         protected IUnitOfWork _unitOfWork;
         protected IMapper _mapper;
+        private IUnitOfWork unitOfWork;
+
+        public BaseService(IUnitOfWork unitOfWork)
+        {
+            this.unitOfWork = unitOfWork;
+        }
+
         public BaseService(IUnitOfWork unitOfWork, IMapper  mapper)
         {
             _unitOfWork = unitOfWork;

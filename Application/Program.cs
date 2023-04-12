@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 builder.Services.Configure<AppSetting>(builder.Configuration.GetSection("AppSetting"));
+builder.Services.AddHttpClient();
 // Add services to the container.
 builder.Services.AddDbContext<CarRentalContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

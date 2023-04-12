@@ -10,6 +10,7 @@ namespace Application.Configurations
     {
         public static void AddDependenceInjection(this IServiceCollection services)
         {
+            services.AddTransient<IVNPayService, VNPayService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IDriverService, DriverService>();
