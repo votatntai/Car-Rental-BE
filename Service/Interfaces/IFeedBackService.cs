@@ -9,7 +9,8 @@ namespace Service.Interfaces
     {
         Task<ListViewModel<FeedBackViewModel>> GetFeedBacks(FeedBackFilterModel filter, PaginationRequestModel pagination);
         Task<FeedBackViewModel> GetFeedBack(Guid id);
-        Task<FeedBackViewModel> CreateFeedBack(Guid customerId, FeedBackCreateModel model);
+        Task<FeedBackViewModel> CreateFeedBackForCar(Guid customerId, FeedBackCreateModel model);
+        Task<FeedBackViewModel> CreateFeedBackForDriver(Guid customerId, FeedBackCreateModel model);
         Task<FeedBackViewModel> UpdateFeedBack(Guid id, FeedBackUpdateModel model);
         Task<bool> DeleteFeedBack(Guid id);
     }

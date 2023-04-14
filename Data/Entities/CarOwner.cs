@@ -21,9 +21,9 @@ public partial class CarOwner
 
     public string? BankName { get; set; }
 
-    public Guid WalletId { get; set; }
-
     public bool IsAutoAcceptOrder { get; set; }
+
+    public Guid WalletId { get; set; }
 
     public virtual Account Account { get; set; } = null!;
 

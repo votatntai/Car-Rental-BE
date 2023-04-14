@@ -13,7 +13,9 @@ public partial class Location
 
     public virtual ICollection<Car> Cars { get; } = new List<Car>();
 
-    public virtual ICollection<Driver> Drivers { get; } = new List<Driver>();
+    public virtual ICollection<Driver> DriverLocations { get; } = new List<Driver>();
+
+    public virtual ICollection<Driver> DriverWishAreas { get; } = new List<Driver>();
 
     public virtual ICollection<OrderDetail> OrderDetailDeliveryLocations { get; } = new List<OrderDetail>();
 

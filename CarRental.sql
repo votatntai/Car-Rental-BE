@@ -1,4 +1,6 @@
-﻿Use CarRental
+﻿Create Database CarRental
+Go
+Use CarRental
 Go
 --Lưu trữ tài khoản của cả Manager, Admin, CarOwner, Customer
 Create Table Account(
@@ -63,6 +65,8 @@ Create Table Driver(
 	BankName nvarchar(256),
 	WalletId uniqueidentifier foreign key references Wallet(Id) not null unique,
 	LocationId uniqueidentifier foreign key references [Location](Id),
+	WishAreaId uniqueidentifier foreign key references [Location](Id),
+	MinimumTrip int default 5,
 	Status nvarchar(256) not null
 )
 Go

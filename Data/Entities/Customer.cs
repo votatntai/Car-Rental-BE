@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Data.Entities;
@@ -22,9 +21,9 @@ public partial class Customer
 
     public string? BankName { get; set; }
 
-    public Guid WalletId { get; set; }
-
     public bool IsLicenseValid { get; set; }
+
+    public Guid WalletId { get; set; }
 
     public virtual Account Account { get; set; } = null!;
 

@@ -39,14 +39,34 @@ namespace Application.Controllers
 
         [HttpPost]
         [Authorize]
+        [Route("car")]
         [ProducesResponseType(typeof(FeedBackViewModel), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<FeedBackViewModel>> CreateFeedBack([FromBody] FeedBackCreateModel model)
+        public async Task<ActionResult<FeedBackViewModel>> CreateFeedBackForCar([FromBody] FeedBackCreateModel model)
         {
             try
             {
                 var auth = (AuthViewModel?)HttpContext.Items["User"];
-                var feedBack = await _feedBackService.CreateFeedBack(auth!.Id, model);
+                var feedBack = await _feedBackService.CreateFeedBackForCar(auth!.Id, model);
+                return CreatedAtAction(nameof(GetFeedBack), new { id = feedBack.Id }, feedBack);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, e.InnerException != null ? e.InnerException.Message : e.Message);
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("driver")]
+        [ProducesResponseType(typeof(FeedBackViewModel), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<FeedBackViewModel>> CreateFeedBackForDriver([FromBody] FeedBackCreateModel model)
+        {
+            try
+            {
+                var auth = (AuthViewModel?)HttpContext.Items["User"];
+                var feedBack = await _feedBackService.CreateFeedBackForDriver(auth!.Id, model);
                 return CreatedAtAction(nameof(GetFeedBack), new { id = feedBack.Id }, feedBack);
             }
             catch (Exception e)

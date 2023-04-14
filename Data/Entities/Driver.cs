@@ -27,6 +27,10 @@ public partial class Driver
 
     public Guid? LocationId { get; set; }
 
+    public Guid? WishAreaId { get; set; }
+
+    public int? MinimumTrip { get; set; }
+
     public string Status { get; set; } = null!;
 
     public virtual Account Account { get; set; } = null!;
@@ -46,4 +50,6 @@ public partial class Driver
     public virtual ICollection<Transaction> Transactions { get; } = new List<Transaction>();
 
     public virtual Wallet Wallet { get; set; } = null!;
+
+    public virtual Location? WishArea { get; set; }
 }

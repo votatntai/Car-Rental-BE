@@ -16,10 +16,14 @@ namespace Service.Implementations
     {
         private new readonly IMapper _mapper;
         private readonly IFeedBackRepository _feedBackRepository;
+        private readonly IDriverRepository _driverRepository;
+        private readonly ICarRepository _carRepository;
         public FeedBackService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
         {
             _mapper = mapper;
             _feedBackRepository = unitOfWork.FeedBack;
+            _carRepository = unitOfWork.Car;
+            _driverRepository = unitOfWork.Driver;
         }
 
         public async Task<ListViewModel<FeedBackViewModel>> GetFeedBacks(FeedBackFilterModel filter, PaginationRequestModel pagination)
@@ -47,12 +51,13 @@ namespace Service.Implementations
                 .FirstOrDefaultAsync() ?? null!;
         }
 
-        public async Task<FeedBackViewModel> CreateFeedBack(Guid customerId, FeedBackCreateModel model)
+        public async Task<FeedBackViewModel> CreateFeedBackForDriver(Guid customerId, FeedBackCreateModel model)
         {
+            var driver = await _driverRepository.GetMany(driver => driver.AccountId.Equals(model.DriverId)).FirstOrDefaultAsync();
+            var driverFeedBack = await _feedBackRepository.GetMany(feedback => feedback.DriverId.Equals(model.DriverId)).ToListAsync();
             var feedBack = new FeedBack
             {
                 Id = Guid.NewGuid(),
-                CarId = model.CarId,
                 DriverId = model.DriverId,
                 Content = model.Content,
                 Star = model.Star,
@@ -61,6 +66,53 @@ namespace Service.Implementations
                 OrderId = model.OrderId,
             };
             _feedBackRepository.Add(feedBack);
+            var rates = driverFeedBack.Select(feedback => feedback.Star).ToList();
+            rates.Add(model.Star);
+            var rate = TinhTrungBinhCong(rates);
+            driver!.Star = rate;
+            _driverRepository.Update(driver);
+            var result = await _unitOfWork.SaveChanges();
+            return result > 0 ? await GetFeedBack(feedBack.Id) : null!;
+        }
+
+        private double TinhTrungBinhCong(ICollection<int> mangSo)
+        {
+            int tong = 0;
+            double trungBinhCong = 0.0;
+
+            if (mangSo != null && mangSo.Count > 0)
+            {
+                foreach (int so in mangSo)
+                {
+                    tong += so;
+                }
+                trungBinhCong = (double)tong / mangSo.Count;
+            }
+
+            return trungBinhCong;
+        }
+
+
+        public async Task<FeedBackViewModel> CreateFeedBackForCar(Guid customerId, FeedBackCreateModel model)
+        {
+            var car = await _carRepository.GetMany(car => car.Id.Equals(model.CarId)).FirstOrDefaultAsync();
+            var carFeedBack = await _feedBackRepository.GetMany(feedback => feedback.CarId.Equals(model.CarId)).ToListAsync();
+            var feedBack = new FeedBack
+            {
+                Id = Guid.NewGuid(),
+                CarId = model.CarId,
+                Content = model.Content,
+                Star = model.Star,
+                CreateAt = DateTime.UtcNow.AddHours(7),
+                CustomerId = customerId,
+                OrderId = model.OrderId,
+            };
+            _feedBackRepository.Add(feedBack);
+            var rates = carFeedBack.Select(feedback => feedback.Star).ToList();
+            rates.Add(model.Star);
+            var rate = TinhTrungBinhCong(rates);
+            car!.Star = rate;
+            _carRepository.Update(car);
             var result = await _unitOfWork.SaveChanges();
             return result > 0 ? await GetFeedBack(feedBack.Id) : null!;
         }

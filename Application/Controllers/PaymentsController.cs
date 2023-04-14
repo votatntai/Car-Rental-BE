@@ -1,4 +1,5 @@
-﻿using Data.Models.Get;
+﻿using Application.Configurations.Middleware;
+using Data.Models.Get;
 using Data.Models.Views;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -24,8 +25,10 @@ namespace Application.Controllers
         }
 
         [HttpPost("request")]
-        public async Task<IActionResult> CreatePayRequest(VnPayInputModel input)
+        [Authorize]
+        public async Task<ActionResult<string>> CreatePayRequest(VnPayInputModel input)
         {
+            var auth = (AuthViewModel?)HttpContext.Items["User"];
             var now = DateTime.UtcNow.AddHours(7);
             var clientIp = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? "";
             var requestModel = new VnPayRequestModel
@@ -44,7 +47,7 @@ namespace Application.Controllers
                 TmnCode = _appSettings.MerchantId
             };
 
-            var result = await _vnPayService.AddRequest(requestModel);
+            var result = await _vnPayService.AddRequest(auth!.Id, requestModel);
             return result ? Ok(VnPayHelper.CreateRequestUrl(requestModel, _appSettings.VNPayUrl, _appSettings.MerchantPassword)) : BadRequest();
         }
 
@@ -60,7 +63,7 @@ namespace Application.Controllers
         }
 
         [HttpGet("result")]
-        public IActionResult PaymentResult([FromQuery] Dictionary<string, string> queryParams)
+        public ActionResult<PaymentViewModel> PaymentResult([FromQuery] Dictionary<string, string> queryParams)
         {
             if (!VnPayHelper.ValidateSignature(_appSettings.MerchantPassword, queryParams))
                 return BadRequest("Invalid Signature.");

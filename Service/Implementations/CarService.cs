@@ -39,6 +39,14 @@ namespace Service.Implementations
         {
             var query = _carRepository.GetMany(car => car.Name != null && filter.Name != null ? (car.Name.Contains(filter.Name) ||
             car.Model.ProductionCompany.Name.Contains(filter.Name)) : true);
+            if (filter.HasShowroom != null && filter.HasShowroom == true)
+            {
+                query = query.AsQueryable().Where(car => car.Showroom != null);
+            }
+            if (filter.HasShowroom != null && filter.HasShowroom == false)
+            {
+                query = query.AsQueryable().Where(car => car.Showroom == null);
+            }
             if (filter.Status != null)
             {
                 query = query.AsQueryable().Where(car => car.Status.Equals(filter.Status.ToString()));

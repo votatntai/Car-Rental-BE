@@ -9,6 +9,7 @@ namespace Data.Models.Get
         public LocationReqeustModel? Location{ get; set; }
         public CarPriceRequestModel? Price { get; set; }
         public bool? HasDriver { get; set; }
+        public bool? HasShowroom { get; set; }
         public CarType? CarType { get; set; }
         public Guid? ModelId { get; set; }
         public DateTime? StartTime { get; set; }

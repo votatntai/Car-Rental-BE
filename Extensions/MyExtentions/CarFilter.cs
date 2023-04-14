@@ -16,12 +16,15 @@ namespace Extensions.MyExtentions
 
         public static IQueryable<T> DriverDistanceFilter<T>(this IQueryable<T> source, double lat, double lon, int? distance = 5) where T : Driver
         {
-            return source.Where(driver => driver.Location != null ?
-            6371 * Math.Acos(Math.Sin(lat * Math.PI / 180) *
-            Math.Sin(driver.Location.Latitude * Math.PI / 180) + Math.Cos(lat * Math.PI / 180) *
-            Math.Cos(driver.Location.Latitude *
-            Math.PI / 180) * Math.Cos((lon - driver.Location.Longitude) *
-            Math.PI / 180)) <= distance : true);
+            return source.Where(driver => 6371 * Math.Acos(Math.Sin(lat * Math.PI / 180) *
+            Math.Sin(driver.WishArea!.Latitude * Math.PI / 180) + Math.Cos(lat * Math.PI / 180) *
+            Math.Cos(driver.WishArea.Latitude *
+            Math.PI / 180) * Math.Cos((lon - driver.WishArea.Longitude) *
+            Math.PI / 180)) <= distance).OrderByDescending(driver => 6371 * Math.Acos(Math.Sin(lat * Math.PI / 180) *
+            Math.Sin(driver.WishArea!.Latitude * Math.PI / 180) + Math.Cos(lat * Math.PI / 180) *
+            Math.Cos(driver.WishArea.Latitude *
+            Math.PI / 180) * Math.Cos((lon - driver.WishArea.Longitude) *
+            Math.PI / 180)));
         }
     }
 }

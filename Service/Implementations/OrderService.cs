@@ -11,6 +11,7 @@ using Extensions.MyExtentions;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
 using Utility.Enums;
+using System;
 
 namespace Service.Implementations
 {
@@ -139,110 +140,188 @@ namespace Service.Implementations
                 .FirstOrDefaultAsync();
             if (order != null)
             {
-                order.Status = model.Status.ToString();
-                order.Description = model.Description;
-
                 if (model.Status.Equals(OrderStatus.ManagerConfirmed))
                 {
                     var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
-                    if (carOwner != null && !carOwner.IsAutoAcceptOrder)
+                    if (carOwner != null && carOwner.IsAutoAcceptOrder)
                     {
-                        var message = new NotificationCreateModel
-                        {
-                            Title = "Đơn hàng mới",
-                            Body = "Bạn có đơn hàng mới cần xác nhận",
-                            Data = new NotificationDataViewModel
-                            {
-                                CreateAt = DateTime.UtcNow.AddHours(7),
-                                Type = NotificationType.Order.ToString(),
-                                IsRead = false,
-                                Link = order.Id.ToString(),
-                            }
-                        };
-                        await _notificationService.SendNotification(new List<Guid>
-                        {
-                            carOwner.AccountId
-                        }, message);
+                        order = await CarOwnerAutoApproved(order);
                     }
-                    else if (carOwner != null && carOwner.IsAutoAcceptOrder)
+                    else if (carOwner != null)
                     {
-                        order.Status = OrderStatus.CarOwnerApproved.ToString();
-                        var message = new NotificationCreateModel
-                        {
-                            Title = "Bạn có đơn đặt hàng mới",
-                            Body = "Đơn hàng của bạn đã được duyệt tư động",
-                            Data = new NotificationDataViewModel
-                            {
-                                CreateAt = DateTime.UtcNow.AddHours(7),
-                                Type = NotificationType.Order.ToString(),
-                                IsRead = false,
-                                Link = order.Id.ToString(),
-                            }
-                        };
-                        await _notificationService.SendNotification(new List<Guid>
-                        {
-                            carOwner.AccountId
-                        }, message);
+                        order = await ManagerConfirmed(order);
                     }
                 }
                 if (model.Status.Equals(OrderStatus.CarOwnerApproved))
                 {
-                    var message = new NotificationCreateModel
-                    {
-                        Title = "Đơn hàng đã được chấp nhận",
-                        Body = "Đơn đặt hàng của bạn đã được chủ xe chấp nhận",
-                        Data = new NotificationDataViewModel
-                        {
-                            CreateAt = DateTime.UtcNow.AddHours(7),
-                            Type = NotificationType.Order.ToString(),
-                            IsRead = false,
-                            Link = order.Id.ToString(),
-                        }
-                    };
-                    await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
+                    order = await CarOwnerApproved(order);
                 }
                 if (model.Status.Equals(OrderStatus.Canceled))
                 {
-                    var message = new NotificationCreateModel
-                    {
-                        Title = "Đơn hàng đã bị từ chối",
-                        Body = "Đơn đặt hàng của bạn đã bị từ chối bởi bộ phận quản lý",
-                        Data = new NotificationDataViewModel
-                        {
-                            CreateAt = DateTime.UtcNow.AddHours(7),
-                            Type = NotificationType.Order.ToString(),
-                            IsRead = false,
-                            Link = order.Id.ToString(),
-                        }
-                    };
-                    await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
+                    order = await ManagerDenied(order, model.Description!);
                 }
                 if (model.Status.Equals(OrderStatus.Ongoing))
                 {
-                    var message = new NotificationCreateModel
-                    {
-                        Title = "Đơn hàng đã được tiến hành",
-                        Body = "Đơn hàng của bạn đang được thực hiện",
-                        Data = new NotificationDataViewModel
-                        {
-                            CreateAt = DateTime.UtcNow.AddHours(7),
-                            Type = NotificationType.Order.ToString(),
-                            IsRead = false,
-                            Link = order.Id.ToString(),
-                        }
-                    };
-                    var userIds = (new List<Guid> {
-                        order.CustomerId,
-                    });
-                    userIds.AddRange(order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwnerId : Guid.Empty).ToList());
-                    await _notificationService.SendNotification(userIds, message);
+                    order = await Ongoin(order);
                 }
                 if (model.Status.Equals(OrderStatus.ArrivedAtPickUpPoint))
                 {
-                    var message = new NotificationCreateModel
+                    order = await ArrivedAtPickUpPoint(order);
+                }
+                if (model.Status.Equals(OrderStatus.Finished))
+                {
+                    order = await Finished(order);
+                }
+                if (model.Status.Equals(OrderStatus.Paid))
+                {
+                    order = await Paid(order);
+                }
+                _orderRepository.Update(order);
+                result = await _unitOfWork.SaveChanges();
+            }
+            return result > 0 ? await GetOrder(id) : null!;
+        }
+
+        private async Task<Order> CarOwnerAutoApproved(Order order)
+        {
+            var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
+            order.Status = OrderStatus.CarOwnerApproved.ToString();
+            var message = new NotificationCreateModel
+            {
+                Title = "Bạn có đơn đặt hàng mới",
+                Body = "Đơn hàng của bạn đã được duyệt tư động",
+                Data = new NotificationDataViewModel
+                {
+                    CreateAt = DateTime.UtcNow.AddHours(7),
+                    Type = NotificationType.Order.ToString(),
+                    IsRead = false,
+                    Link = order.Id.ToString(),
+                }
+            };
+            await _notificationService.SendNotification(new List<Guid> { carOwner!.AccountId }, message);
+            return order;
+        }
+
+        private async Task<Order> CarOwnerApproved(Order order)
+        {
+            var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
+            order.Status = OrderStatus.CarOwnerApproved.ToString();
+            var message = new NotificationCreateModel
+            {
+                Title = "Đơn hàng đã được chấp nhận",
+                Body = "Đơn đặt hàng của bạn đã được chủ xe chấp nhận",
+                Data = new NotificationDataViewModel
+                {
+                    CreateAt = DateTime.UtcNow.AddHours(7),
+                    Type = NotificationType.Order.ToString(),
+                    IsRead = false,
+                    Link = order.Id.ToString(),
+                }
+            };
+            await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
+            return order;
+        }
+
+        private async Task<Order> ManagerConfirmed(Order order)
+        {
+            var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
+            order.Status = OrderStatus.ManagerConfirmed.ToString();
+            var message = new NotificationCreateModel
+            {
+                Title = "Đơn hàng mới",
+                Body = "Bạn có đơn hàng mới cần xác nhận",
+                Data = new NotificationDataViewModel
+                {
+                    CreateAt = DateTime.UtcNow.AddHours(7),
+                    Type = NotificationType.Order.ToString(),
+                    IsRead = false,
+                    Link = order.Id.ToString(),
+                }
+            };
+            await _notificationService.SendNotification(new List<Guid> { carOwner!.AccountId }, message);
+            return order;
+        }
+
+        private async Task<Order> ManagerDenied(Order order, string description)
+        {
+            var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
+            order.Status = OrderStatus.Canceled.ToString();
+            order.Description = description;
+            var message = new NotificationCreateModel
+            {
+                Title = "Đơn hàng đã bị từ chối",
+                Body = "Đơn đặt hàng của bạn đã bị từ chối bởi bộ phận quản lý",
+                Data = new NotificationDataViewModel
+                {
+                    CreateAt = DateTime.UtcNow.AddHours(7),
+                    Type = NotificationType.Order.ToString(),
+                    IsRead = false,
+                    Link = order.Id.ToString(),
+                }
+            };
+            await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
+            return order;
+        }
+
+        private async Task<Order> Ongoin(Order order)
+        {
+            var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
+            order.Status = OrderStatus.Ongoing.ToString();
+            var message = new NotificationCreateModel
+            {
+                Title = "Đơn hàng đã được tiến hành",
+                Body = "Đơn hàng của bạn đang được thực hiện",
+                Data = new NotificationDataViewModel
+                {
+                    CreateAt = DateTime.UtcNow.AddHours(7),
+                    Type = NotificationType.Order.ToString(),
+                    IsRead = false,
+                    Link = order.Id.ToString(),
+                }
+            };
+            var userIds = (new List<Guid> { order.CustomerId, });
+            userIds.AddRange(order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwnerId : Guid.Empty).ToList());
+            await _notificationService.SendNotification(userIds, message);
+            return order;
+        }
+
+        private async Task<Order> ArrivedAtPickUpPoint(Order order)
+        {
+            var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
+            order.Status = OrderStatus.Ongoing.ToString();
+            var message = new NotificationCreateModel
+            {
+                Title = "Tài xế đã đến điểm đón",
+                Body = "Tài xế của bạn đã đến điểm đón",
+                Data = new NotificationDataViewModel
+                {
+                    CreateAt = DateTime.UtcNow.AddHours(7),
+                    Type = NotificationType.Order.ToString(),
+                    IsRead = false,
+                    Link = order.Id.ToString(),
+                }
+            };
+            await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
+            return order;
+        }
+
+        private async Task<Order> Paid(Order order)
+        {
+            var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
+            order.Status = OrderStatus.Ongoing.ToString();
+            var cusWallet = await _walletRepository
+                     .GetMany(wallet => wallet.Customer != null ? wallet.Customer.AccountId.Equals(order.CustomerId) : false).FirstOrDefaultAsync();
+            if (cusWallet != null && cusWallet.Balance > order.Amount)
+            {
+                var amout = cusWallet.Balance - (order.Amount * 70 / 100);
+                cusWallet.Balance = amout;
+                _walletRepository.Update(cusWallet);
+                if (await _unitOfWork.SaveChanges() > 0)
+                {
+                    var cusMessage = new NotificationCreateModel
                     {
-                        Title = "Tài xế đã đến điểm đón",
-                        Body = "Tài xế của bạn đã đến điểm đón",
+                        Title = "Thanh toán thành công",
+                        Body = "Bạn đã hoàn tất thanh toán với số tiền " + (order.Amount * 70 / 100) + " VNĐ",
                         Data = new NotificationDataViewModel
                         {
                             CreateAt = DateTime.UtcNow.AddHours(7),
@@ -251,49 +330,23 @@ namespace Service.Implementations
                             Link = order.Id.ToString(),
                         }
                     };
-                    await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
-                }
-                if (model.Status.Equals(OrderStatus.Finished))
-                {
-                    //var message = new NotificationCreateModel
-                    //{
-                    //    Title = "Tài xế đã đến điểm đón",
-                    //    Body = "Tài xế của bạn đã đến điểm đón",
-                    //    Data = new NotificationDataViewModel
-                    //    {
-                    //        CreateAt = DateTime.UtcNow.AddHours(7),
-                    //        Type = NotificationType.Order.ToString(),
-                    //        IsRead = false,
-                    //        Link = order.Id.ToString(),
-                    //    }
-                    //};
-                    //await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
-                    foreach (var item in order.OrderDetails)
+                    var userIds = (new List<Guid> { order.CustomerId, });
+                    await _notificationService.SendNotification(userIds, cusMessage);
+                    var carOwnerIds = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwnerId : Guid.Empty).ToList();
+                    var carOwnerWallet = await _walletRepository
+                        .GetMany(wallet => wallet.CarOwner != null ? wallet.CarOwner.AccountId.Equals(carOwnerIds.FirstOrDefault()) : false).FirstOrDefaultAsync();
+                    if (carOwnerWallet != null)
                     {
-                        var car = await _carRepository.GetMany(car => car.Id.Equals(item.Car!.Id)).FirstOrDefaultAsync();
-                        if (car != null)
-                        {
-                            car.Status = CarStatus.Idle.ToString();
-                            _carRepository.Update(car);
-                            await _unitOfWork.SaveChanges();
-                        }
-                    }
-                }
-                if (model.Status.Equals(OrderStatus.Paid))
-                {
-                    var cusWallet = await _walletRepository
-                        .GetMany(wallet => wallet.Customer != null ? wallet.Customer.AccountId.Equals(order.CustomerId) : false).FirstOrDefaultAsync();
-                    if (cusWallet != null && cusWallet.Balance > order.Amount)
-                    {
-                        var amout = cusWallet.Balance - (order.Amount * 70 / 100);
-                        cusWallet.Balance = amout;
-                        _walletRepository.Update(cusWallet);
+                        carOwnerWallet.Balance = carOwnerWallet.Balance + ((order.Amount * 70 / 100) - order.Amount * 10 / 100);
+                        _walletRepository.Update(carOwnerWallet);
                         if (await _unitOfWork.SaveChanges() > 0)
                         {
-                            var cusMessage = new NotificationCreateModel
+                            var car = await _carRepository.GetMany(car => car.Id.Equals(order.OrderDetails.Select(od => od.Car!.Id).FirstOrDefault())).FirstOrDefaultAsync();
+                            car!.Status = CarStatus.Ongoing.ToString();
+                            var carOwnerMessage = new NotificationCreateModel
                             {
-                                Title = "Thanh toán thành công",
-                                Body = "Bạn đã hoàn tất thanh toán với số tiền " + (order.Amount * 70 / 100),
+                                Title = "Đơn hàng của bạn đã được thanh toán",
+                                Body = "Đã được cộng " + ((order.Amount * 70 / 100) - order.Amount * 10 / 100) + "VNĐ vào tài khoản",
                                 Data = new NotificationDataViewModel
                                 {
                                     CreateAt = DateTime.UtcNow.AddHours(7),
@@ -302,47 +355,48 @@ namespace Service.Implementations
                                     Link = order.Id.ToString(),
                                 }
                             };
-                            var userIds = (new List<Guid> { order.CustomerId, });
-                            await _notificationService.SendNotification(userIds, cusMessage);
-                            var carOwnerIds = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwnerId : Guid.Empty).ToList();
-                            var carOwnerWallet = await _walletRepository
-                                .GetMany(wallet => wallet.CarOwner != null ? wallet.CarOwner.AccountId.Equals(carOwnerIds.FirstOrDefault()) : false).FirstOrDefaultAsync();
-                            if (carOwnerWallet != null)
-                            {
-                                carOwnerWallet.Balance = carOwnerWallet.Balance + (order.Amount * 70 / 100);
-                                _walletRepository.Update(carOwnerWallet);
-                                if (await _unitOfWork.SaveChanges() > 0)
-                                {
-                                    var carOwnerMessage = new NotificationCreateModel
-                                    {
-                                        Title = "Đơn hàng của bạn đã được thanh toán",
-                                        Body = "Đã được cộng " + (order.Amount * 70 / 100) + " vào tài khoản",
-                                        Data = new NotificationDataViewModel
-                                        {
-                                            CreateAt = DateTime.UtcNow.AddHours(7),
-                                            Type = NotificationType.Order.ToString(),
-                                            IsRead = false,
-                                            Link = order.Id.ToString(),
-                                        }
-                                    };
-                                    await _notificationService.SendNotification(carOwnerIds, cusMessage);
-                                }
-                                else
-                                {
-                                    return null!;
-                                }
-                            }
-                        };
+                            await _notificationService.SendNotification(carOwnerIds, cusMessage);
+                            return order;
+                        }
                     }
-                    else
-                    {
-                        return null!;
-                    }
-                }
-                _orderRepository.Update(order);
-                result = await _unitOfWork.SaveChanges();
+                };
             }
-            return result > 0 ? await GetOrder(id) : null!;
+            return null!;
+        }
+
+        private async Task<Order> Finished(Order order)
+        {
+            var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
+            foreach (var item in order.OrderDetails)
+            {
+                var car = await _carRepository.GetMany(car => car.Id.Equals(item.Car!.Id)).FirstOrDefaultAsync();
+                if (car != null)
+                {
+                    car.Status = CarStatus.Idle.ToString();
+                    _carRepository.Update(car);
+                }
+            }
+            if (await _unitOfWork.SaveChanges() > 0)
+            {
+                order.Status = OrderStatus.Ongoing.ToString();
+                var message = new NotificationCreateModel
+                {
+                    Title = "Đơn hàng đã kết thúc",
+                    Body = "Đơn hàng đã hoàn tất thành công",
+                    Data = new NotificationDataViewModel
+                    {
+                        CreateAt = DateTime.UtcNow.AddHours(7),
+                        Type = NotificationType.Order.ToString(),
+                        IsRead = false,
+                        Link = order.Id.ToString(),
+                    }
+                };
+                var userIds = (new List<Guid> { order.CustomerId, });
+                userIds.AddRange(order.OrderDetails.Select(od => od.Driver != null ? od.Driver.AccountId : Guid.Empty).ToList());
+                userIds.AddRange(order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwnerId : Guid.Empty).ToList());
+                await _notificationService.SendNotification(userIds, message);
+            }
+            return order;
         }
 
         public async Task<OrderViewModel> GetOrder(Guid id)
@@ -398,13 +452,8 @@ namespace Service.Implementations
                             _carRepository.Update(car);
                             if (car.Driver == null)
                             {
-                                var driver = await _driverRepository.GetAll()
-                                .DriverDistanceFilter(orderDetail.PickUpLocation!.Latitude, orderDetail.PickUpLocation!.Longitude, 100)
-                                .FirstOrDefaultAsync();
-                                if (driver != null)
-                                {
-                                    od.DriverId = driver.AccountId;
-                                }
+                                var chossenDriver = await FindRecommendDrivver(orderDetail.PickUpLocation!.Latitude, orderDetail.PickUpLocation!.Longitude);
+                                od.DriverId = chossenDriver != null ? chossenDriver.AccountId : null!;
                             }
                             else
                             {
@@ -436,7 +485,7 @@ namespace Service.Implementations
                         var cusMessage = new NotificationCreateModel
                         {
                             Title = "Tạo đơn hàng thành công",
-                            Body = "Đã trừ " + (model.Amount * 30/100) + " tiền cọc cho đơn hàng",
+                            Body = "Đã trừ " + (model.Amount * 30 / 100) + "VNĐ tiền cọc cho đơn hàng",
                             Data = new NotificationDataViewModel
                             {
                                 CreateAt = DateTime.UtcNow.AddHours(7),
@@ -448,7 +497,7 @@ namespace Service.Implementations
                         var carOwnerMessage = new NotificationCreateModel
                         {
                             Title = "Nhận tiền cọc đơn hàng",
-                            Body = "Đã nhận " + (model.Amount * 30 / 100) + " tiền cọc cho đơn mới",
+                            Body = "Đã nhận " + ((order.Amount * 30 / 100) - order.Amount * 10 / 100) + "VNĐ tiền cọc cho đơn mới",
                             Data = new NotificationDataViewModel
                             {
                                 CreateAt = DateTime.UtcNow.AddHours(7),
@@ -469,6 +518,21 @@ namespace Service.Implementations
                 }
             }
             return null!;
+        }
+
+        private async Task<Driver?> FindRecommendDrivver(double latitude, double longitude)
+        {
+            var drivers = _driverRepository.GetMany(driver => driver.Status.Equals(DriverStatus.Idle.ToString()) &&
+            driver.MinimumTrip > 0 && driver.WishArea != null).DriverDistanceFilter(latitude, longitude, 5);
+
+            var driver = await drivers.OrderByDescending(driver => driver.MinimumTrip)
+                .ThenByDescending(driver => driver.Star).FirstOrDefaultAsync();
+            if (driver != null)
+            {
+                driver.MinimumTrip = driver.MinimumTrip - 1;
+                _driverRepository.Update(driver);
+            }
+            return await _unitOfWork.SaveChanges() > 0 ? driver : null!;
         }
 
         private async Task<Guid> CreateLocation(LocationCreateModel model)
