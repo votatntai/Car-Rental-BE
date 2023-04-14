@@ -137,6 +137,7 @@ namespace Service.Implementations
             var result = 0;
             var order = await _orderRepository.GetMany(order => order.Id.Equals(id))
                 .Include(order => order.OrderDetails).ThenInclude(od => od.Car).ThenInclude(car => car != null ? car.CarOwner : null!)
+                .Include(order => order.OrderDetails).ThenInclude(od => od.Driver)
                 .FirstOrDefaultAsync();
             if (order != null)
             {
@@ -392,7 +393,15 @@ namespace Service.Implementations
                     }
                 };
                 var userIds = (new List<Guid> { order.CustomerId, });
-                userIds.AddRange(order.OrderDetails.Select(od => od.Driver != null ? od.Driver.AccountId : Guid.Empty).ToList());
+                var drivers = order.OrderDetails.Select(od => od!.Driver).ToList();
+                if (drivers != null && drivers.Count > 0)
+                {
+                    var driver = drivers.FirstOrDefault();
+                    driver!.Status = DriverStatus.Idle.ToString();
+                    _driverRepository.Update(driver);
+                    await _unitOfWork.SaveChanges();
+                    userIds.AddRange(drivers.Select(driver => driver!.AccountId).ToList());
+                }
                 userIds.AddRange(order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwnerId : Guid.Empty).ToList());
                 await _notificationService.SendNotification(userIds, message);
             }
@@ -408,112 +417,120 @@ namespace Service.Implementations
 
         public async Task<OrderViewModel> CreateOrder(Guid customerId, OrderCreateModel model)
         {
-            var cusWallet = await _walletRepository
-                        .GetMany(wallet => wallet.Customer != null ? wallet.Customer.AccountId.Equals(customerId) : false).FirstOrDefaultAsync();
-            if (cusWallet != null && cusWallet.Balance > model.Amount)
+            if (!_orderRepository.Any(od => od.CustomerId.Equals(customerId) && od.Status.Equals(OrderStatus.Pending.ToString())))
             {
-                var order = new Order
+                var cusWallet = await _walletRepository
+                            .GetMany(wallet => wallet.Customer != null ? wallet.Customer.AccountId.Equals(customerId) : false).FirstOrDefaultAsync();
+                if (cusWallet != null && cusWallet.Balance > model.Amount)
                 {
-                    Id = Guid.NewGuid(),
-                    CustomerId = customerId,
-                    Amount = model.Amount,
-                    IsPaid = model.IsPaid,
-                    Description = model.Description,
-                    PromotionId = model.PromotionId,
-                    RentalTime = model.RentalTime,
-                    Status = OrderStatus.Pending.ToString(),
-                    Deposit = model.Deposit,
-                    CreateAt = DateTime.UtcNow,
-                    UnitPrice = model.UnitPrice,
-                    DeliveryFee = model.DeliveryFee,
-                    DeliveryDistance = model.DeliveryDistance,
-                };
-                _orderRepository.Add(order);
-                foreach (var orderDetail in model.OrderDetails)
-                {
-                    var od = new OrderDetail
+                    var order = new Order
                     {
                         Id = Guid.NewGuid(),
-                        CarId = orderDetail.CarId,
-                        DeliveryTime = orderDetail.DeliveryTime,
-                        PickUpTime = orderDetail.PickUpTime,
-                        StartTime = orderDetail.StartTime,
-                        EndTime = orderDetail.EndTime,
-                        OrderId = order.Id,
-                        DeliveryLocationId = await CreateLocation(orderDetail?.DeliveryLocation!),
-                        PickUpLocationId = await CreateLocation(orderDetail?.PickUpLocation!),
+                        CustomerId = customerId,
+                        Amount = model.Amount,
+                        IsPaid = model.IsPaid,
+                        Description = model.Description,
+                        PromotionId = model.PromotionId,
+                        RentalTime = model.RentalTime,
+                        Status = OrderStatus.Pending.ToString(),
+                        Deposit = model.Deposit,
+                        CreateAt = DateTime.UtcNow,
+                        UnitPrice = model.UnitPrice,
+                        DeliveryFee = model.DeliveryFee,
+                        DeliveryDistance = model.DeliveryDistance,
                     };
-                    if (orderDetail != null && orderDetail.HasDriver)
+                    _orderRepository.Add(order);
+                    foreach (var orderDetail in model.OrderDetails)
                     {
-                        var car = await _carRepository.GetMany(car => car.Id.Equals(orderDetail.CarId)).FirstOrDefaultAsync();
-                        if (car != null)
+                        var od = new OrderDetail
                         {
-                            car.Status = CarStatus.Ongoing.ToString();
-                            _carRepository.Update(car);
-                            if (car.Driver == null)
+                            Id = Guid.NewGuid(),
+                            CarId = orderDetail.CarId,
+                            DeliveryTime = orderDetail.DeliveryTime,
+                            PickUpTime = orderDetail.PickUpTime,
+                            StartTime = orderDetail.StartTime,
+                            EndTime = orderDetail.EndTime,
+                            OrderId = order.Id,
+                            DeliveryLocationId = await CreateLocation(orderDetail?.DeliveryLocation!),
+                            PickUpLocationId = await CreateLocation(orderDetail?.PickUpLocation!),
+                        };
+                        if (orderDetail != null && orderDetail.HasDriver)
+                        {
+                            var car = await _carRepository.GetMany(car => car.Id.Equals(orderDetail.CarId)).FirstOrDefaultAsync();
+                            if (car != null)
                             {
-                                var chossenDriver = await FindRecommendDrivver(orderDetail.PickUpLocation!.Latitude, orderDetail.PickUpLocation!.Longitude);
-                                od.DriverId = chossenDriver != null ? chossenDriver.AccountId : null!;
-                            }
-                            else
-                            {
-                                od.DriverId = car.Driver.AccountId;
+                                car.Status = CarStatus.Ongoing.ToString();
+                                _carRepository.Update(car);
+                                if (car.Driver == null)
+                                {
+                                    var chossenDriver = await FindRecommendDrivver(orderDetail.PickUpLocation!.Latitude, orderDetail.PickUpLocation!.Longitude);
+                                    if (chossenDriver != null)
+                                    {
+                                        chossenDriver.Status = DriverStatus.OnGoing.ToString();
+                                        od.DriverId = chossenDriver.AccountId;
+                                        _driverRepository.Update(chossenDriver);
+                                    }
+                                }
+                                else
+                                {
+                                    od.DriverId = car.Driver.AccountId;
+                                }
                             }
                         }
+                        _orderDetailRepository.Add(od);
                     }
-                    _orderDetailRepository.Add(od);
-                }
-                var result = await _unitOfWork.SaveChanges();
-                if (result > 0)
-                {
-                    cusWallet.Balance = cusWallet.Balance - (model.Amount * 30 / 100);
-                    _walletRepository.Update(cusWallet);
-                    if (await _unitOfWork.SaveChanges() > 0)
+                    var result = await _unitOfWork.SaveChanges();
+                    if (result > 0)
                     {
-                        var message = new NotificationCreateModel
+                        cusWallet.Balance = cusWallet.Balance - (model.Amount * 30 / 100);
+                        _walletRepository.Update(cusWallet);
+                        if (await _unitOfWork.SaveChanges() > 0)
                         {
-                            Title = "Đơn hàng mới",
-                            Body = "Bạn có đơn hàng mới cần xác nhận",
-                            Data = new NotificationDataViewModel
+                            var message = new NotificationCreateModel
                             {
-                                CreateAt = DateTime.UtcNow.AddHours(7),
-                                Type = NotificationType.Order.ToString(),
-                                IsRead = false,
-                                Link = order.Id.ToString(),
-                            }
-                        };
-                        var cusMessage = new NotificationCreateModel
-                        {
-                            Title = "Tạo đơn hàng thành công",
-                            Body = "Đã trừ " + (model.Amount * 30 / 100) + "VNĐ tiền cọc cho đơn hàng",
-                            Data = new NotificationDataViewModel
+                                Title = "Đơn hàng mới",
+                                Body = "Bạn có đơn hàng mới cần xác nhận",
+                                Data = new NotificationDataViewModel
+                                {
+                                    CreateAt = DateTime.UtcNow.AddHours(7),
+                                    Type = NotificationType.Order.ToString(),
+                                    IsRead = false,
+                                    Link = order.Id.ToString(),
+                                }
+                            };
+                            var cusMessage = new NotificationCreateModel
                             {
-                                CreateAt = DateTime.UtcNow.AddHours(7),
-                                Type = NotificationType.Order.ToString(),
-                                IsRead = false,
-                                Link = order.Id.ToString(),
-                            }
-                        };
-                        var carOwnerMessage = new NotificationCreateModel
-                        {
-                            Title = "Nhận tiền cọc đơn hàng",
-                            Body = "Đã nhận " + ((order.Amount * 30 / 100) - order.Amount * 10 / 100) + "VNĐ tiền cọc cho đơn mới",
-                            Data = new NotificationDataViewModel
+                                Title = "Tạo đơn hàng thành công",
+                                Body = "Đã trừ " + (model.Amount * 30 / 100) + "VNĐ tiền cọc cho đơn hàng",
+                                Data = new NotificationDataViewModel
+                                {
+                                    CreateAt = DateTime.UtcNow.AddHours(7),
+                                    Type = NotificationType.Order.ToString(),
+                                    IsRead = false,
+                                    Link = order.Id.ToString(),
+                                }
+                            };
+                            var carOwnerMessage = new NotificationCreateModel
                             {
-                                CreateAt = DateTime.UtcNow.AddHours(7),
-                                Type = NotificationType.Order.ToString(),
-                                IsRead = false,
-                                Link = order.Id.ToString(),
-                            }
-                        };
-                        var managers = await _userRepository.GetMany(user => user.Role.Equals(UserRole.Manager.ToString()))
-                            .Select(manager => manager.AccountId).ToListAsync();
-                        var carId = model.OrderDetails.Select(od => od.CarId).FirstOrDefault();
-                        var carOwnerIds = await _carRepository.GetMany(con => con.Id.Equals(carId)).Select(car => car.CarOwnerId).ToListAsync();
-                        await _notificationService.SendNotification(new List<Guid> { customerId }, cusMessage);
-                        await _notificationService.SendNotification(managers, message);
-                        await _notificationService.SendNotification(carOwnerIds, carOwnerMessage);
-                        return await GetOrder(order.Id);
+                                Title = "Nhận tiền cọc đơn hàng",
+                                Body = "Đã nhận " + ((order.Amount * 30 / 100) - order.Amount * 10 / 100) + "VNĐ tiền cọc cho đơn mới",
+                                Data = new NotificationDataViewModel
+                                {
+                                    CreateAt = DateTime.UtcNow.AddHours(7),
+                                    Type = NotificationType.Order.ToString(),
+                                    IsRead = false,
+                                    Link = order.Id.ToString(),
+                                }
+                            };
+                            var managers = await _userRepository.GetMany(user => user.Role.Equals(UserRole.Manager.ToString()))
+                                .Select(manager => manager.AccountId).ToListAsync();
+                            var carId = model.OrderDetails.Select(od => od.CarId).FirstOrDefault();
+                            var carOwnerIds = await _carRepository.GetMany(con => con.Id.Equals(carId)).Select(car => car.CarOwnerId).ToListAsync();
+                            await _notificationService.SendNotification(new List<Guid> { customerId }, cusMessage);
+                            await _notificationService.SendNotification(managers, message);
+                            await _notificationService.SendNotification(carOwnerIds, carOwnerMessage);
+                            return await GetOrder(order.Id);
+                        }
                     }
                 }
             }

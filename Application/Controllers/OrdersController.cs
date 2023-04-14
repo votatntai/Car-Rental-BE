@@ -27,7 +27,7 @@ namespace Application.Controllers
         {
             var auth = (AuthViewModel?)HttpContext.Items["User"];
             var order = await _orderService.GetOrders(auth != null ? auth.Id : null!, filter, pagination);
-            return order != null ? Ok(order) : BadRequest();
+            return order != null ? Ok(order) : NotFound();
         }
 
         [HttpGet]
@@ -40,7 +40,7 @@ namespace Application.Controllers
         {
             var auth = (AuthViewModel?)HttpContext.Items["User"];
             var order = await _orderService.GetOrdersForCarOwner(auth!.Id, pagination);
-            return order != null ? Ok(order) : BadRequest();
+            return order != null ? Ok(order) : NotFound();
         }
 
         [HttpGet]
@@ -53,7 +53,7 @@ namespace Application.Controllers
         {
             var auth = (AuthViewModel?)HttpContext.Items["User"];
             var order = await _orderService.GetOrdersForDriver(auth!.Id, pagination);
-            return order != null ? Ok(order) : BadRequest();
+            return order != null ? Ok(order) : NotFound();
         }
 
         [HttpGet]
@@ -77,7 +77,7 @@ namespace Application.Controllers
             {
                 var auth = (AuthViewModel?)HttpContext.Items["User"];
                 var order = await _orderService.CreateOrder(auth!.Id, model);
-                return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
+                return order != null ? CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order) : BadRequest();
             }
             catch (Exception e)
             {

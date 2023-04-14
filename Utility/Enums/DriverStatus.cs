@@ -3,6 +3,7 @@
     public enum DriverStatus
     {
         Idle,
-        Busy
+        Busy,
+        OnGoing
     }
 }

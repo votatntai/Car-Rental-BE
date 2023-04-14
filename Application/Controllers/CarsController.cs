@@ -26,7 +26,7 @@ namespace Application.Controllers
         public async Task<ActionResult<ListViewModel<CarViewModel>>> GetCars([FromQuery] CarFilterModel filter, [FromQuery] PaginationRequestModel pagination)
         {
             var car = await _carService.GetCars(filter, pagination);
-            return car != null ? Ok(car) : BadRequest();
+            return car != null ? Ok(car) : NotFound();
         }
 
         [HttpGet]
@@ -38,7 +38,7 @@ namespace Application.Controllers
         {
             var auth = (AuthViewModel?)HttpContext.Items["User"];
             var car = await _carService.GetCarsByCarOwnerId(auth!.Id, status, pagination);
-            return car != null ? Ok(car) : BadRequest();
+            return car != null ? Ok(car) : NotFound();
         }
 
         [HttpGet]

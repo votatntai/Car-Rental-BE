@@ -38,7 +38,7 @@ namespace Service.Implementations
         public async Task<ListViewModel<CarViewModel>> GetCars(CarFilterModel filter, PaginationRequestModel pagination)
         {
             var query = _carRepository.GetMany(car => car.Name != null && filter.Name != null ? (car.Name.Contains(filter.Name) ||
-            car.Model.ProductionCompany.Name.Contains(filter.Name)) : true);
+            car.Model.ProductionCompany.Name.Contains(filter.Name)) : true && car.Status.Equals(CarStatus.Idle.ToString()));
             if (filter.HasShowroom != null && filter.HasShowroom == true)
             {
                 query = query.AsQueryable().Where(car => car.Showroom != null);

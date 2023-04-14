@@ -25,7 +25,7 @@ namespace Application.Controllers
         {
             var auth = (AuthViewModel?)HttpContext.Items["User"];
             var transaction = await _transactionService.GetTransactions(auth!.Id, pagination);
-            return transaction != null ? Ok(transaction) : BadRequest();
+            return transaction != null ? Ok(transaction) : NotFound();
         }
     }
 }

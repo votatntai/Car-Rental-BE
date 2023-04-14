@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Data;
+using Data.Entities;
 using Data.Models.Get;
 using Data.Models.Views;
 using Data.Repositories.Interfaces;
@@ -30,7 +31,7 @@ namespace Service.Implementations
                 .AsNoTracking()
                 .ToListAsync();
             var totalRow = await query.AsNoTracking().CountAsync();
-            return transactions != null && transactions.Any()
+                return transactions != null || transactions != null && transactions.Any()
                 ? new ListViewModel<TransactionViewModel>
                 {
                     Pagination = new PaginationViewModel
