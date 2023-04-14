@@ -28,12 +28,10 @@ public class VNPayService : BaseService, IVNPayService
             CreateAt = DateTime.UtcNow.AddHours(7),
             CustomerId = customerId,
             Type = "Nạp tiền",
-            Status = "Thành công",
+            Status = "Đang xử lý",
             Id = model.TxnRef,
         };
-        var customer = await _customerRepository.GetMany(customer => customer.AccountId.Equals(transaction.CustomerId)).FirstOrDefaultAsync();
-        customer!.Wallet.Balance = transaction.Amount;
-        _customerRepository.Update(customer);
+        _transactionRepository.Add(transaction);
         return await _unitOfWork.SaveChanges() > 0;
     }
 
@@ -42,7 +40,8 @@ public class VNPayService : BaseService, IVNPayService
         var transaction = await _transactionRepository.GetMany(transaction => transaction.Id.Equals(model.TxnRef)).FirstOrDefaultAsync();
         if (transaction != null)
         {
-            var customer = await _customerRepository.GetMany(customer => customer.AccountId.Equals(transaction.CustomerId)).FirstOrDefaultAsync();
+            var customer = await _customerRepository.GetMany(customer => customer.AccountId.Equals(transaction.CustomerId))
+                .Include(customer => customer.Wallet).FirstOrDefaultAsync();
             customer!.Wallet.Balance = transaction.Amount;
             transaction.Status = "Thành công";
             _customerRepository.Update(customer);
