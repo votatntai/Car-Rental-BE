@@ -42,7 +42,7 @@ public class VNPayService : BaseService, IVNPayService
         {
             var customer = await _customerRepository.GetMany(customer => customer.AccountId.Equals(transaction.CustomerId))
                 .Include(customer => customer.Wallet).FirstOrDefaultAsync();
-            customer!.Wallet.Balance = transaction.Amount;
+            customer!.Wallet.Balance += transaction.Amount;
             transaction.Status = "Thành công";
             _customerRepository.Update(customer);
             _transactionRepository.Update(transaction);

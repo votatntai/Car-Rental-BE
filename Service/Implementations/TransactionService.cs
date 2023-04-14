@@ -24,7 +24,7 @@ namespace Service.Implementations
             var query = _transactionRepository.GetAll()
                 .Where(t => t.CarOwnerId == userId || t.DriverId == userId || t.UserId == userId || t.CustomerId == userId);
             var transactions = await query.ProjectTo<TransactionViewModel>(_mapper.ConfigurationProvider)
-                .OrderBy(t => t.CreateAt)
+                .OrderByDescending(t => t.CreateAt)
                 .Skip(pagination.PageNumber * pagination.PageSize)
                 .Take(pagination.PageSize)
                 .AsNoTracking()
