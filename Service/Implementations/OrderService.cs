@@ -421,7 +421,7 @@ namespace Service.Implementations
                 };
                 var userIds = (new List<Guid> { order.CustomerId, });
                 var drivers = order.OrderDetails.Select(od => od!.Driver).ToList();
-                if (drivers != null && drivers.Count > 0)
+                if (!drivers.Any(driver => driver == null))
                 {
                     var driver = drivers.FirstOrDefault();
                     driver!.Status = DriverStatus.Idle.ToString();
