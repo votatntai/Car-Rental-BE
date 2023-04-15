@@ -31,6 +31,7 @@ namespace Data
         private ICalendarRepository _calendar= null!;
         private ICarCalendarRepository _carCalendar= null!;
         private IImageRepository _image = null!;
+        private IShowroomRepository _showroom = null!;
 
         public UnitOfWork(CarRentalContext context)
         {
@@ -142,6 +143,11 @@ namespace Data
         public IImageRepository Image
         {
             get { return _image ??= new ImageRepository(_context); }
+        }
+
+        public IShowroomRepository Showroom
+        {
+            get { return _showroom ??= new ShowroomRepository(_context); }
         }
 
         public async Task<int> SaveChanges()

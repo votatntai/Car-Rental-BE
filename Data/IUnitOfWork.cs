@@ -28,6 +28,7 @@ namespace Data
         public ICalendarRepository Calendar { get; }
         public ICarCalendarRepository CarCalendar { get; }
         public IImageRepository Image { get; }
+        public IShowroomRepository Showroom { get; }
 
         Task<int> SaveChanges();
         IDbContextTransaction Transaction();
