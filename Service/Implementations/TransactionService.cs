@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using Data;
 using Data.Entities;
+using Data.Models.Create;
 using Data.Models.Get;
 using Data.Models.Views;
 using Data.Repositories.Interfaces;
@@ -43,6 +44,34 @@ namespace Service.Implementations
                     Data = transactions
                 }
                 : null!;
+        }
+
+        public async Task<bool> CreateTransactionForCarOwner(Guid carOwnerId, TransactionCreateModel model)
+        {
+            var transaction = new Transaction
+            {
+                CarOwnerId = carOwnerId,
+                Status = model.Status,
+                Amount = model.Amount,
+                Description = model.Description,
+                CreateAt = DateTime.UtcNow.AddHours(7),
+            };
+            _transactionRepository.Add(transaction);
+            return await _unitOfWork.SaveChanges() > 0;
+        }
+
+        public async Task<bool> CreateTransactionForCustomer(Guid customerId, TransactionCreateModel model)
+        {
+            var transaction = new Transaction
+            {
+                CustomerId = customerId,
+                Status = model.Status,
+                Amount = model.Amount,
+                Description = model.Description,
+                CreateAt = DateTime.UtcNow.AddHours(7),
+            };
+            _transactionRepository.Add(transaction);
+            return await _unitOfWork.SaveChanges() > 0;
         }
 
     }

@@ -8,6 +8,8 @@
 
         public Guid CustomerId { get; set; }
 
+        public Guid DriverId { get; set; }
+
         public int Star { get; set; }
 
         public DateTime CreateAt { get; set; }

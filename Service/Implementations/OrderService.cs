@@ -25,9 +25,9 @@ namespace Service.Implementations
         private readonly IOrderDetailRepository _orderDetailRepository;
         private readonly ILocationRepository _locationRepository;
         private readonly IWalletRepository _walletRepository;
-        private readonly ICarOwnerRepository _carOwnerRepository;
+        private readonly ITransactionService _transactionService;
         private new readonly IMapper _mapper;
-        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, INotificationService notificationService) : base(unitOfWork, mapper)
+        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, INotificationService notificationService, ITransactionService transactionService) : base(unitOfWork, mapper)
         {
             _orderRepository = unitOfWork.Order;
             _driverRepository = unitOfWork.Driver;
@@ -37,8 +37,8 @@ namespace Service.Implementations
             _orderDetailRepository = unitOfWork.OrderDetail;
             _locationRepository = unitOfWork.Location;
             _walletRepository = unitOfWork.Wallet;
-            _carOwnerRepository = unitOfWork.CarOwner;
             _mapper = mapper;
+            _transactionService = transactionService;
         }
 
         public async Task<ListViewModel<OrderViewModel>> GetOrders(Guid? userId, OrderFilterModel filter, PaginationRequestModel pagination)
@@ -153,29 +153,40 @@ namespace Service.Implementations
                         order = await ManagerConfirmed(order);
                     }
                 }
+                else
                 if (model.Status.Equals(OrderStatus.CarOwnerApproved))
                 {
                     order = await CarOwnerApproved(order);
                 }
+                else
                 if (model.Status.Equals(OrderStatus.Canceled))
                 {
                     order = await ManagerDenied(order, model.Description!);
                 }
+                else
                 if (model.Status.Equals(OrderStatus.Ongoing))
                 {
                     order = await Ongoin(order);
                 }
+                else
                 if (model.Status.Equals(OrderStatus.ArrivedAtPickUpPoint))
                 {
                     order = await ArrivedAtPickUpPoint(order);
                 }
+                else
                 if (model.Status.Equals(OrderStatus.Finished))
                 {
                     order = await Finished(order);
                 }
+                else
                 if (model.Status.Equals(OrderStatus.Paid))
                 {
                     order = await Paid(order);
+                }
+                else
+                if (Enum.IsDefined(typeof(OrderStatus), model.Status.ToString()))
+                {
+                    order.Status = model.Status.ToString();
                 }
                 _orderRepository.Update(order);
                 result = await _unitOfWork.SaveChanges();
@@ -319,6 +330,22 @@ namespace Service.Implementations
                 _walletRepository.Update(cusWallet);
                 if (await _unitOfWork.SaveChanges() > 0)
                 {
+                    var cusTransaction = new TransactionCreateModel
+                    {
+                        Amount = order.Amount * 70 / 100,
+                        Description = "Tiền thanh toán đơn hàng",
+                        Status = "Đã hoàn thành",
+                        Type = TransactionType.Payment.ToString(),
+                    };
+                    var carOwnerTransaction = new TransactionCreateModel
+                    {
+                        Amount = order.Amount * 70 / 100,
+                        Description = "Tiền thanh toán đơn hàng",
+                        Status = "Đã hoàn thành",
+                        Type = TransactionType.Deposit.ToString(),
+                    };
+                    await _transactionService.CreateTransactionForCarOwner(carOwner!.AccountId, carOwnerTransaction);
+                    await _transactionService.CreateTransactionForCarOwner(order.CustomerId, carOwnerTransaction);
                     var cusMessage = new NotificationCreateModel
                     {
                         Title = "Thanh toán thành công",

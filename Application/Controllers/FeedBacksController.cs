@@ -37,6 +37,26 @@ namespace Application.Controllers
             return feedBack != null ? Ok(feedBack) : NotFound();
         }
 
+        [HttpGet]
+        [Route("drivers/{id}")]
+        [ProducesResponseType(typeof(ListViewModel<FeedBackViewModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ListViewModel<FeedBackViewModel>>> GetFeedBacksForDriver([FromRoute] Guid id, [FromQuery] PaginationRequestModel pagination)
+        {
+            var feedBacks = await _feedBackService.GetFeedBacksForDriver(id, pagination);
+            return feedBacks != null ? Ok(feedBacks) : NotFound();
+        }
+
+        [HttpGet]
+        [Route("cars/{id}")]
+        [ProducesResponseType(typeof(ListViewModel<FeedBackViewModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ListViewModel<FeedBackViewModel>>> GetFeedBacksForCar([FromRoute] Guid id, [FromQuery] PaginationRequestModel pagination)
+        {
+            var feedBacks = await _feedBackService.GetFeedBacksForCar(id, pagination);
+            return feedBacks != null ? Ok(feedBacks) : NotFound();
+        }
+
         [HttpPost]
         [Authorize]
         [Route("car")]

@@ -51,6 +51,22 @@ namespace Service.Implementations
                 .FirstOrDefaultAsync() ?? null!;
         }
 
+        public async Task<FeedBackViewModel> GetFeedBacksForDriver(Guid id, PaginationRequestModel pagination)
+        {
+            return await _feedBackRepository.GetMany(feedBack => feedBack.DriverId.Equals(id))
+                .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking()
+                .ProjectTo<FeedBackViewModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync() ?? null!;
+        }
+
+        public async Task<FeedBackViewModel> GetFeedBacksForCar(Guid id, PaginationRequestModel pagination)
+        {
+            return await _feedBackRepository.GetMany(feedBack => feedBack.CarId.Equals(id))
+                .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking()
+                .ProjectTo<FeedBackViewModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync() ?? null!;
+        }
+
         public async Task<FeedBackViewModel> CreateFeedBackForDriver(Guid customerId, FeedBackCreateModel model)
         {
             var driver = await _driverRepository.GetMany(driver => driver.AccountId.Equals(model.DriverId)).FirstOrDefaultAsync();
