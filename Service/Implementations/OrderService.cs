@@ -406,7 +406,7 @@ namespace Service.Implementations
             }
             if (await _unitOfWork.SaveChanges() > 0)
             {
-                order.Status = OrderStatus.Ongoing.ToString();
+                order.Status = OrderStatus.Finished.ToString();
                 var message = new NotificationCreateModel
                 {
                     Title = "Đơn hàng đã kết thúc",
