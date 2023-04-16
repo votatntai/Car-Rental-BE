@@ -344,8 +344,8 @@ namespace Service.Implementations
                         Status = "Đã hoàn thành",
                         Type = TransactionType.Deposit.ToString(),
                     };
-                    await _transactionService.CreateTransactionForCarOwner(carOwner!.AccountId, carOwnerTransaction);
-                    await _transactionService.CreateTransactionForCarOwner(order.CustomerId, carOwnerTransaction);
+                    //await _transactionService.CreateTransactionForCarOwner(carOwner!.AccountId, carOwnerTransaction);
+                    //await _transactionService.CreateTransactionForCarOwner(order.CustomerId, carOwnerTransaction);
                     var cusMessage = new NotificationCreateModel
                     {
                         Title = "Thanh toán thành công",
