@@ -53,6 +53,7 @@ namespace Service.Implementations
                 CarOwnerId = carOwnerId,
                 Status = model.Status,
                 Amount = model.Amount,
+                Type= model.Type,
                 Description = model.Description,
                 CreateAt = DateTime.UtcNow.AddHours(7),
             };
@@ -66,6 +67,7 @@ namespace Service.Implementations
             {
                 CustomerId = customerId,
                 Status = model.Status,
+                Type= model.Type,
                 Amount = model.Amount,
                 Description = model.Description,
                 CreateAt = DateTime.UtcNow.AddHours(7),
