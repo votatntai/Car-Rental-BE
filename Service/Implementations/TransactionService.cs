@@ -50,6 +50,7 @@ namespace Service.Implementations
         {
             var transaction = new Transaction
             {
+                Id = Guid.NewGuid(),
                 CarOwnerId = carOwnerId,
                 Status = model.Status,
                 Amount = model.Amount,
@@ -65,6 +66,7 @@ namespace Service.Implementations
         {
             var transaction = new Transaction
             {
+                Id = Guid.NewGuid(),
                 CustomerId = customerId,
                 Status = model.Status,
                 Type= model.Type,
