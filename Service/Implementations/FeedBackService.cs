@@ -51,20 +51,50 @@ namespace Service.Implementations
                 .FirstOrDefaultAsync() ?? null!;
         }
 
-        public async Task<FeedBackViewModel> GetFeedBacksForDriver(Guid id, PaginationRequestModel pagination)
+        public async Task<ListViewModel<FeedBackViewModel>> GetFeedBacksForDriver(Guid id, PaginationRequestModel pagination)
         {
-            return await _feedBackRepository.GetMany(feedBack => feedBack.DriverId.Equals(id))
-                .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking()
+            var query = _feedBackRepository.GetMany(feedBack => feedBack.DriverId.Equals(id));
+            var feedbacks = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking()
                 .ProjectTo<FeedBackViewModel>(_mapper.ConfigurationProvider)
-                .FirstOrDefaultAsync() ?? null!;
+                .ToListAsync();
+            var totalRow = await query.AsNoTracking().CountAsync();
+            if (feedbacks != null || feedbacks != null && feedbacks.Any())
+            {
+                return new ListViewModel<FeedBackViewModel>
+                {
+                    Pagination = new PaginationViewModel
+                    {
+                        PageNumber = pagination.PageNumber,
+                        PageSize = pagination.PageSize,
+                        TotalRow = totalRow
+                    },
+                    Data = feedbacks
+                };
+            }
+            return null!;
         }
 
-        public async Task<FeedBackViewModel> GetFeedBacksForCar(Guid id, PaginationRequestModel pagination)
+        public async Task<ListViewModel<FeedBackViewModel>> GetFeedBacksForCar(Guid id, PaginationRequestModel pagination)
         {
-            return await _feedBackRepository.GetMany(feedBack => feedBack.CarId.Equals(id))
-                .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking()
+            var query = _feedBackRepository.GetMany(feedBack => feedBack.CarId.Equals(id));
+            var feedbacks = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking()
                 .ProjectTo<FeedBackViewModel>(_mapper.ConfigurationProvider)
-                .FirstOrDefaultAsync() ?? null!;
+                .ToListAsync();
+            var totalRow = await query.AsNoTracking().CountAsync();
+            if (feedbacks != null || feedbacks != null && feedbacks.Any())
+            {
+                return new ListViewModel<FeedBackViewModel>
+                {
+                    Pagination = new PaginationViewModel
+                    {
+                        PageNumber = pagination.PageNumber,
+                        PageSize = pagination.PageSize,
+                        TotalRow = totalRow
+                    },
+                    Data = feedbacks
+                };
+            }
+            return null!;
         }
 
         public async Task<FeedBackViewModel> CreateFeedBackForDriver(Guid customerId, FeedBackCreateModel model)
