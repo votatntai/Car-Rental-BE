@@ -320,7 +320,7 @@ namespace Service.Implementations
         private async Task<Order> Paid(Order order)
         {
             var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
-            order.Status = OrderStatus.Ongoing.ToString();
+            order.Status = OrderStatus.Paid.ToString();
             var cusWallet = await _walletRepository
                      .GetMany(wallet => wallet.Customer != null ? wallet.Customer.AccountId.Equals(order.CustomerId) : false).FirstOrDefaultAsync();
             if (cusWallet != null && cusWallet.Balance > order.Amount)
