@@ -29,5 +29,7 @@
         public AdditionalChargeCreateModel AdditionalCharge { get; set; } = null!;
 
         public Guid? RegistrationId { get; set; } = null!;
+
+        public Guid? ShowroomId { get; set; } = null!;
     }
 }

@@ -4,6 +4,7 @@ using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
 using Microsoft.AspNetCore.Mvc;
+using Service.Implementations;
 using Service.Interfaces;
 using Utility.Enums;
 
@@ -30,14 +31,12 @@ namespace Application.Controllers
         }
 
         [HttpGet]
-        [Authorize]
-        [Route("for-car-owners")]
+        [Route("for-car-owners/{id}")]
         [ProducesResponseType(typeof(ListViewModel<CarViewModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ListViewModel<CarViewModel>>> GetCarsForCarOwner([FromQuery] CarStatus status, [FromQuery] PaginationRequestModel pagination)
+        public async Task<ActionResult<ListViewModel<CarViewModel>>> GetCarsForCarOwner([FromRoute] Guid id,[FromQuery] CarStatus status, [FromQuery] PaginationRequestModel pagination)
         {
-            var auth = (AuthViewModel?)HttpContext.Items["User"];
-            var car = await _carService.GetCarsByCarOwnerId(auth!.Id, status, pagination);
+            var car = await _carService.GetCarsByCarOwnerId(id, status, pagination);
             return car != null ? Ok(car) : NotFound();
         }
 
@@ -81,6 +80,25 @@ namespace Application.Controllers
             try
             {
                 var car = await _carService.CreateCar(model);
+                return CreatedAtAction(nameof(GetCar), new { id = car.Id }, car);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, e.InnerException != null ? e.InnerException.Message : e.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("showrooms")]
+        [ProducesResponseType(typeof(CarRegistrationViewModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<CarRegistrationViewModel>>
+    CreateShowroomCar(ICollection<IFormFile> images, ICollection<IFormFile> licenses, [FromQuery] CarShowroomCreateModel modssssel)
+        {
+            try
+            {
+                var auth = (AuthViewModel?)HttpContext.Items["User"];
+                var car = await _carService.CreateShowroomCar(images, licenses, modssssel);
                 return CreatedAtAction(nameof(GetCar), new { id = car.Id }, car);
             }
             catch (Exception e)

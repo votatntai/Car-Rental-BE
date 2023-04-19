@@ -4,6 +4,6 @@
     {
         Blocked,
         Idle,
-        Ongoing
+        OnGoing
     }
 }

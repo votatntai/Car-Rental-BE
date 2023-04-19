@@ -139,7 +139,6 @@ public partial class CarRentalContext : DbContext
 
             entity.HasOne(d => d.CarOwner).WithMany(p => p.Cars)
                 .HasForeignKey(d => d.CarOwnerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Car__CarOwnerId__123EB7A3");
 
             entity.HasOne(d => d.Driver).WithMany(p => p.Cars)

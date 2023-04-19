@@ -7,6 +7,7 @@ using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
 using Data.Repositories.Interfaces;
+using FirebaseAdmin.Messaging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
@@ -20,14 +21,18 @@ namespace Service.Implementations
         private readonly IAdditionalChargeRepository _additionalChargeRepository;
         private readonly IImageRepository _imageRepository;
         private readonly ICloudStorageService _cloudStorageService;
+        private readonly INotificationService _notificationService;
         private new readonly IMapper _mapper;
-        public CarRegistrationService(IUnitOfWork unitOfWork, IMapper mapper, ICloudStorageService cloudStorageService) : base(unitOfWork, mapper)
+        public CarRegistrationService(IUnitOfWork unitOfWork, IMapper mapper,
+            ICloudStorageService cloudStorageService, INotificationService notificationService)
+            : base(unitOfWork, mapper)
         {
             _carRegistrationRepository = unitOfWork.CarRegistration;
             _additionalChargeRepository = unitOfWork.AdditionalCharge;
             _imageRepository = unitOfWork.Image;
             _mapper = mapper;
             _cloudStorageService = cloudStorageService;
+            _notificationService = notificationService;
         }
 
         public async Task<ListViewModel<CarRegistrationViewModel>> GetCarRegistrations(CarRegistrationFilterModel filter, PaginationRequestModel pagination)
@@ -156,8 +161,37 @@ namespace Service.Implementations
                 .FirstOrDefaultAsync();
             if (carRegistration == null) return null!;
             carRegistration.Status = model.IsApproved ?? carRegistration.Status;
+            carRegistration.Description = model.Description ?? carRegistration.Description;
             _carRegistrationRepository.Update(carRegistration);
-            await _unitOfWork.SaveChanges();
+            if (await _unitOfWork.SaveChanges() > 0)
+            {
+                var acceptMessage = new NotificationCreateModel
+                {
+                    Title = "Phiếu đăng ký xe",
+                    Body = "Phiếu đăng ký của bạn đã được phê duyệt",
+                    Data = new NotificationDataViewModel
+                    {
+                        CreateAt = DateTime.UtcNow.AddHours(7),
+                        Type = NotificationType.CarRegistration.ToString(),
+                        IsRead = false,
+                        Link = carRegistration.Id.ToString(),
+                    }
+                };
+                var denyMessage = new NotificationCreateModel
+                {
+                    Title = "Phiếu đăng ký xe",
+                    Body = "Phiếu đăng ký của bạn đã bị từ chối",
+                    Data = new NotificationDataViewModel
+                    {
+                        CreateAt = DateTime.UtcNow.AddHours(7),
+                        Type = NotificationType.CarRegistration.ToString(),
+                        IsRead = false,
+                        Link = carRegistration.Id.ToString(),
+                    }
+                };
+                var carOwnerIds = new List<Guid> { carRegistration.CarOwnerId };
+                await _notificationService.SendNotification(carOwnerIds, carRegistration.Status ? acceptMessage : denyMessage);
+            }
             return await GetCarRegistration(id);
         }
 

@@ -8,6 +8,7 @@ using Data.Models.Update;
 using Data.Models.Views;
 using Data.Repositories.Interfaces;
 using Extensions.MyExtentions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
 using Utility.Enums;
@@ -22,9 +23,10 @@ namespace Service.Implementations
         private readonly ICarCalendarRepository _carCalendarRepository;
         private readonly IAdditionalChargeRepository _additionalChargeRepository;
         private readonly IImageRepository _imageRepository;
+        private readonly ICloudStorageService _cloudStorageService;
         private new readonly IMapper _mapper;
 
-        public CarService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
+        public CarService(IUnitOfWork unitOfWork, IMapper mapper, ICloudStorageService cloudStorageService) : base(unitOfWork, mapper)
         {
             _carRepository = unitOfWork.Car;
             _locationRepository = unitOfWork.Location;
@@ -33,6 +35,7 @@ namespace Service.Implementations
             _additionalChargeRepository = unitOfWork.AdditionalCharge;
             _imageRepository = unitOfWork.Image;
             _mapper = mapper;
+            _cloudStorageService = cloudStorageService;
         }
 
         public async Task<ListViewModel<CarViewModel>> GetCars(CarFilterModel filter, PaginationRequestModel pagination)
@@ -118,7 +121,6 @@ namespace Service.Implementations
         public async Task<CarViewModel> CreateCar(CarCreateModel model)
         {
             using var transaction = _unitOfWork.Transaction();
-
             try
             {
                 var locationId = await CreateLocation(model.Location);
@@ -180,13 +182,74 @@ namespace Service.Implementations
                         {
                             foreach(var image in images)
                             {
-                                image.CarRegistrationId = null;
                                 image.CarId = car.Id;
                             }
                             _imageRepository.UpdateRange(images);
                             await _unitOfWork.SaveChanges();
                         }
                     }
+                    transaction.Commit();
+                    return await GetCar(car.Id) ?? throw new InvalidOperationException("Failed to retrieve car.");
+                }
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+
+            transaction.Rollback();
+            return null!;
+        }
+
+        public async Task<CarViewModel> CreateShowroomCar(ICollection<IFormFile> images, ICollection<IFormFile> licenses, CarShowroomCreateModel model)
+        {
+            using var transaction = _unitOfWork.Transaction();
+            try
+            {
+                var location = await _locationRepository.GetMany(location => location.Showrooms.Select(showroom => showroom.Id.Equals(model.ShowroomId)).FirstOrDefault()).FirstOrDefaultAsync();
+                var additionalChargeId = await CreateAdditionalCharge(null);
+                var car = new Car
+                {
+                    Id = Guid.NewGuid(),
+                    Description = model.Description,
+                    LocationId = location!.Id,
+                    LicensePlate = model.LicensePlate,
+                    AdditionalChargeId = additionalChargeId,
+                    Name = model.Name,
+                    Price = 500000,
+                    Status = CarStatus.Idle.ToString(),
+                    ModelId = model.ModelId,
+                    Rented = 0,
+                    ShowroomId = model.ShowroomId,
+                    CreateAt = DateTime.UtcNow.AddHours(7)
+                };
+
+                foreach (var weekday in Enum.GetValues(typeof(Weekday)))
+                {
+                    var calendar = new Calendar
+                    {
+                        Id = Guid.NewGuid(),
+                        StartTime = TimeSpan.Parse("08:00:00"),
+                        EndTime = TimeSpan.Parse("20:00:00"),
+                        Weekday = weekday.ToString() ?? null!,
+                    };
+
+                    _calendarRepository.Add(calendar);
+                    var carCalendar = new CarCalendar
+                    {
+                        CalendarId = calendar.Id,
+                        CarId = car.Id,
+                    };
+                    _carCalendarRepository.Add(carCalendar);
+                }
+
+                _carRepository.Add(car);
+
+                if (await _unitOfWork.SaveChanges() > 0)
+                {
+                    await CreateCarRegistrationLicenses(car.Id, licenses);
+                    await CreateCarRegistrationImages(car.Id, images);
                     transaction.Commit();
                     return await GetCar(car.Id) ?? throw new InvalidOperationException("Failed to retrieve car.");
                 }
@@ -262,7 +325,7 @@ namespace Service.Implementations
 
         public async Task<ICollection<CarViewModel>> GetCarsByCarOwnerId(Guid carOwnerId, CarStatus? status, PaginationRequestModel pagination)
         {
-            return await _carRepository.GetMany(car => car.CarOwnerId.Equals(carOwnerId) && (status != null ? car.Status.Equals(status.ToString()) : false))
+            return await _carRepository.GetMany(car => car.CarOwnerId.Equals(carOwnerId) && (status == null || car.Status.Equals(status.ToString())))
                 .ProjectTo<CarViewModel>(_mapper.ConfigurationProvider)
                 .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize)
                 .ToListAsync();
@@ -302,6 +365,46 @@ namespace Service.Implementations
 
         // PRIVATE METHODS
 
+        private async Task<ICollection<Image>> CreateCarRegistrationImages(Guid id, ICollection<IFormFile> files)
+        {
+            var images = new List<Image>();
+            foreach (IFormFile file in files)
+            {
+                var imageId = Guid.NewGuid();
+                var url = await _cloudStorageService.Upload(imageId, file.ContentType, file.OpenReadStream());
+                var image = new Image
+                {
+                    Id = imageId,
+                    CarId = id,
+                    Type = ImageType.Thumbnail.ToString(),
+                    Url = url,
+                };
+                images.Add(image);
+            }
+            _imageRepository.AddRange(images);
+            return await _unitOfWork.SaveChanges() > 0 ? images : null!;
+        }
+
+        private async Task<ICollection<Image>> CreateCarRegistrationLicenses(Guid id, ICollection<IFormFile> files)
+        {
+            var images = new List<Image>();
+            foreach (IFormFile file in files)
+            {
+                var imageId = Guid.NewGuid();
+                var url = await _cloudStorageService.Upload(imageId, file.ContentType, file.OpenReadStream());
+                var image = new Image
+                {
+                    Id = imageId,
+                    CarId = id,
+                    Type = ImageType.License.ToString(),
+                    Url = url,
+                };
+                images.Add(image);
+            }
+            _imageRepository.AddRange(images);
+            return await _unitOfWork.SaveChanges() > 0 ? images : null!;
+        }
+
         private async Task<Guid> CreateLocation(LocationCreateModel model)
         {
             var id = Guid.NewGuid();
@@ -316,19 +419,19 @@ namespace Service.Implementations
             return result > 0 ? id : Guid.Empty;
         }
 
-        private async Task<Guid> CreateAdditionalCharge(AdditionalChargeCreateModel model)
+        private async Task<Guid> CreateAdditionalCharge(AdditionalChargeCreateModel? model)
         {
             var id = Guid.NewGuid();
-            var AdditionalCharge = new AdditionalCharge
+            var additionalCharge = new AdditionalCharge
             {
                 Id = id,
-                DistanceSurcharge = model.DistanceSurcharge,
-                MaximumDistance = model.MaximumDistance,
-                TimeSurcharge = model.TimeSurcharge,
-                AdditionalDistance = model.AdditionalDistance,
-                AdditionalTime = model.AdditionalTime,
+                DistanceSurcharge = model != null ? model.DistanceSurcharge : 200000,
+                MaximumDistance = model != null ? model.MaximumDistance : 100,
+                TimeSurcharge = model != null ? model.TimeSurcharge : 100000,
+                AdditionalDistance = model != null ? model.AdditionalDistance : 10,
+                AdditionalTime = model != null ? model.AdditionalTime : 12,
             };
-            _additionalChargeRepository.Add(AdditionalCharge);
+            _additionalChargeRepository.Add(additionalCharge);
             var result = await _unitOfWork.SaveChanges();
             return result > 0 ? id : Guid.Empty;
         }

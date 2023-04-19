@@ -2,6 +2,7 @@
 using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
+using Microsoft.AspNetCore.Http;
 using Utility.Enums;
 
 namespace Service.Interfaces
@@ -12,6 +13,7 @@ namespace Service.Interfaces
         Task<CarViewModel> GetCar(Guid id);
         Task<ICollection<CarCalendarViewModel>> GetCarCalendar(Guid id);
         Task<CarViewModel> CreateCar(CarCreateModel model);
+        Task<CarViewModel> CreateShowroomCar(ICollection<IFormFile> images, ICollection<IFormFile> licenses, CarShowroomCreateModel model);
         Task<CarViewModel> UpdateCar(Guid id, CarUpdateModel model);
         Task<ICollection<CarViewModel>> GetCarsByCarOwnerId(Guid carOwnerId, CarStatus? status, PaginationRequestModel pagination);
         Task<ICollection<CarViewModel>> GetCarsIsNotTracking(Guid carOwnerId, PaginationRequestModel pagination);

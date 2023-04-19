@@ -11,7 +11,6 @@ using Extensions.MyExtentions;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
 using Utility.Enums;
-using System;
 
 namespace Service.Implementations
 {
@@ -54,7 +53,7 @@ namespace Service.Implementations
             {
                 query = query.Where(order => order.Customer.AccountId == userId ||
                                                  order.OrderDetails.Any(od => od.DriverId == userId) ||
-                                                 (order.OrderDetails.Any(od => od.Car != null && od.Car.CarOwner.AccountId == userId)));
+                                                 (order.OrderDetails.Any(od => od.Car != null && od.Car.CarOwner != null && od.Car.CarOwner.AccountId == userId)));
             }
 
             if (filter.Status != null)
@@ -84,7 +83,7 @@ namespace Service.Implementations
         public async Task<ListViewModel<OrderViewModel>> GetOrdersForCarOwner(Guid userId, PaginationRequestModel pagination)
         {
             var query = _orderRepository.GetMany(order =>
-                order.OrderDetails.Any(od => od.Car != null ? od.Car.CarOwner.AccountId.Equals(userId) : false)
+                order.OrderDetails.Any(od => od.Car != null && od.Car.CarOwner != null ? od.Car.CarOwner.AccountId.Equals(userId) : false)
                 && order.Status.Equals(OrderStatus.Pending.ToString()) || order.Status.Equals(OrderStatus.ManagerConfirmed.ToString()))
                 .ProjectTo<OrderViewModel>(_mapper.ConfigurationProvider);
             var orders = await query.OrderBy(order => order.CreateAt)
@@ -166,7 +165,7 @@ namespace Service.Implementations
                 else
                 if (model.Status.Equals(OrderStatus.Ongoing))
                 {
-                    order = await Ongoin(order);
+                    order = await Ongoing(order);
                 }
                 else
                 if (model.Status.Equals(OrderStatus.ArrivedAtPickUpPoint))
@@ -275,7 +274,7 @@ namespace Service.Implementations
             return order;
         }
 
-        private async Task<Order> Ongoin(Order order)
+        private async Task<Order> Ongoing(Order order)
         {
             var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
             order.Status = OrderStatus.Ongoing.ToString();
@@ -291,9 +290,27 @@ namespace Service.Implementations
                     Link = order.Id.ToString(),
                 }
             };
-            var userIds = (new List<Guid> { order.CustomerId, });
-            userIds.AddRange(order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwnerId : Guid.Empty).ToList());
-            await _notificationService.SendNotification(userIds, message);
+            var userIds = new List<Guid> { order.CustomerId };
+            foreach (var od in order.OrderDetails)
+            {
+                var car = await _carRepository.GetMany(car => car.Id.Equals(od.CarId)).FirstOrDefaultAsync();
+                car!.Status = CarStatus.OnGoing.ToString();
+                _carRepository.Update(car);
+                if (od.DriverId != null)
+                {
+                    var driver = await _driverRepository.GetMany(driver => driver.AccountId.Equals(od.DriverId)).FirstOrDefaultAsync();
+                    driver!.Status = DriverStatus.OnGoing.ToString();
+                    _driverRepository.Update(driver);
+                }
+                if (od.Car != null && od.Car.CarOwnerId != null)
+                {
+                    userIds.Add((Guid)od.Car.CarOwnerId);
+                }
+            }
+            if (await _unitOfWork.SaveChanges() > 0)
+            {
+                await _notificationService.SendNotification(userIds, message);
+            }
             return order;
         }
 
@@ -360,30 +377,35 @@ namespace Service.Implementations
                     };
                     var userIds = (new List<Guid> { order.CustomerId, });
                     await _notificationService.SendNotification(userIds, cusMessage);
-                    var carOwnerIds = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwnerId : Guid.Empty).ToList();
-                    var carOwnerWallet = await _walletRepository
-                        .GetMany(wallet => wallet.CarOwner != null ? wallet.CarOwner.AccountId.Equals(carOwnerIds.FirstOrDefault()) : false).FirstOrDefaultAsync();
-                    if (carOwnerWallet != null)
+                    foreach (var item in order.OrderDetails)
                     {
-                        carOwnerWallet.Balance = carOwnerWallet.Balance + ((order.Amount * 70 / 100) - order.Amount * 10 / 100);
-                        _walletRepository.Update(carOwnerWallet);
-                        if (await _unitOfWork.SaveChanges() > 0)
+                        if (item.Car != null && item.Car.CarOwnerId != null)
                         {
-                            var car = await _carRepository.GetMany(car => car.Id.Equals(order.OrderDetails.Select(od => od.Car!.Id).FirstOrDefault())).FirstOrDefaultAsync();
-                            car!.Status = CarStatus.Ongoing.ToString();
-                            var carOwnerMessage = new NotificationCreateModel
+                            var carOwnerWallet = await _walletRepository
+                        .GetMany(wallet => wallet.CarOwner != null ? wallet.CarOwner.AccountId.Equals(item.Car.CarOwnerId) : false).FirstOrDefaultAsync();
+                            if (carOwnerWallet != null)
                             {
-                                Title = "Đơn hàng của bạn đã được thanh toán",
-                                Body = "Đã được cộng " + ((order.Amount * 70 / 100) - order.Amount * 10 / 100) + "VNĐ vào tài khoản",
-                                Data = new NotificationDataViewModel
+                                carOwnerWallet.Balance = carOwnerWallet.Balance + ((order.Amount * 70 / 100) - order.Amount * 10 / 100);
+                                _walletRepository.Update(carOwnerWallet);
+                                if (await _unitOfWork.SaveChanges() > 0)
                                 {
-                                    CreateAt = DateTime.UtcNow.AddHours(7),
-                                    Type = NotificationType.Order.ToString(),
-                                    IsRead = false,
-                                    Link = order.Id.ToString(),
+                                    var car = await _carRepository.GetMany(car => car.Id.Equals(order.OrderDetails.Select(od => od.Car!.Id).FirstOrDefault())).FirstOrDefaultAsync();
+                                    car!.Status = CarStatus.OnGoing.ToString();
+                                    var carOwnerMessage = new NotificationCreateModel
+                                    {
+                                        Title = "Đơn hàng của bạn đã được thanh toán",
+                                        Body = "Đã được cộng " + ((order.Amount * 70 / 100) - order.Amount * 10 / 100) + "VNĐ vào tài khoản",
+                                        Data = new NotificationDataViewModel
+                                        {
+                                            CreateAt = DateTime.UtcNow.AddHours(7),
+                                            Type = NotificationType.Order.ToString(),
+                                            IsRead = false,
+                                            Link = order.Id.ToString(),
+                                        }
+                                    };
+                                    await _notificationService.SendNotification(new List<Guid> { (Guid)item.Car.CarOwnerId }, carOwnerMessage);
                                 }
-                            };
-                            await _notificationService.SendNotification(carOwnerIds, cusMessage);
+                            }
                             return order;
                         }
                     }
@@ -429,7 +451,13 @@ namespace Service.Implementations
                     await _unitOfWork.SaveChanges();
                     userIds.AddRange(drivers.Select(driver => driver!.AccountId).ToList());
                 }
-                userIds.AddRange(order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwnerId : Guid.Empty).ToList());
+                foreach (var od in order.OrderDetails)
+                {
+                    if (od.Car != null && od.Car.CarOwnerId != null)
+                    {
+                        userIds.Add((Guid)od.Car.CarOwnerId);
+                    }
+                }
                 await _notificationService.SendNotification(userIds, message);
             }
             return order;
@@ -486,14 +514,14 @@ namespace Service.Implementations
                             var car = await _carRepository.GetMany(car => car.Id.Equals(orderDetail.CarId)).FirstOrDefaultAsync();
                             if (car != null)
                             {
-                                car.Status = CarStatus.Ongoing.ToString();
-                                _carRepository.Update(car);
+                                //car.Status = CarStatus.Ongoing.ToString();
+                                //_carRepository.Update(car);
                                 if (car.Driver == null)
                                 {
                                     var chossenDriver = await FindRecommendDrivver(orderDetail.PickUpLocation!.Latitude, orderDetail.PickUpLocation!.Longitude);
                                     if (chossenDriver != null)
                                     {
-                                        chossenDriver.Status = DriverStatus.OnGoing.ToString();
+                                        //chossenDriver.Status = DriverStatus.OnGoing.ToString();
                                         od.DriverId = chossenDriver.AccountId;
                                         _driverRepository.Update(chossenDriver);
                                     }
@@ -555,7 +583,13 @@ namespace Service.Implementations
                             var carOwnerIds = await _carRepository.GetMany(con => con.Id.Equals(carId)).Select(car => car.CarOwnerId).ToListAsync();
                             await _notificationService.SendNotification(new List<Guid> { customerId }, cusMessage);
                             await _notificationService.SendNotification(managers, message);
-                            await _notificationService.SendNotification(carOwnerIds, carOwnerMessage);
+                            foreach (var od in order.OrderDetails)
+                            {
+                                if (od.Car != null && od.Car.CarOwnerId != null)
+                                {
+                                    await _notificationService.SendNotification(new List<Guid> { (Guid)od.Car.CarOwnerId }, carOwnerMessage);
+                                }
+                            }
                             return await GetOrder(order.Id);
                         }
                     }

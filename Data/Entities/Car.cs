@@ -25,7 +25,7 @@ public partial class Car
 
     public Guid? DriverId { get; set; }
 
-    public Guid CarOwnerId { get; set; }
+    public Guid? CarOwnerId { get; set; }
 
     public Guid? ShowroomId { get; set; }
 
@@ -51,7 +51,7 @@ public partial class Car
 
     public virtual ICollection<CarFeature> CarFeatures { get; } = new List<CarFeature>();
 
-    public virtual CarOwner CarOwner { get; set; } = null!;
+    public virtual CarOwner? CarOwner { get; set; }
 
     public virtual ICollection<CarType> CarTypes { get; } = new List<CarType>();
 

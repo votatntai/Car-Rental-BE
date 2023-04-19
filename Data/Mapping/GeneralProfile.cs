@@ -38,7 +38,8 @@ namespace Data.Mapping
 
             CreateMap<DriverCalendar, DriverCalendarViewModel>();
 
-            CreateMap<Showroom, ShowroomViewModel>();
+            CreateMap<Showroom, ShowroomViewModel>()
+                .ForMember(showroomVM => showroomVM.NumberOfCar, config => config.MapFrom(showroom => showroom.Cars.Count))                ;
 
             CreateMap<ProductionCompany, ProductionCompanyViewModel>();
 

@@ -8,6 +8,8 @@
 
         public string? Description { get; set; }
 
+        public int NumberOfCar { get; set; }
+
         public LocationViewModel? Location { get; set; }
     }
 }

@@ -16,10 +16,12 @@ namespace Service.Implementations
     {
         private new readonly IMapper _mapper;
         private readonly IShowroomRepository _showroomRepository;
+        private readonly ILocationRepository _locationRepository;
         public ShowroomService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
         {
             _mapper = mapper;
             _showroomRepository = unitOfWork.Showroom;
+            _locationRepository = unitOfWork.Location;
         }
 
         public async Task<ListViewModel<ShowroomViewModel>> GetShowrooms(ShowroomFilterModel filter, PaginationRequestModel pagination)
@@ -49,11 +51,13 @@ namespace Service.Implementations
 
         public async Task<ShowroomViewModel> CreateShowroom(ShowroomCreateModel model)
         {
+            var locationId = await CreateLocation(model.Location);
             var showroom = new Showroom
             {
                 Id = Guid.NewGuid(),
                 Name = model.Name,
                 Description = model.Description,
+                LocationId = locationId,
             };
             _showroomRepository.Add(showroom);
             var result = await _unitOfWork.SaveChanges();
@@ -84,6 +88,22 @@ namespace Service.Implementations
             _showroomRepository.Remove(showroom);
             var result = await _unitOfWork.SaveChanges();
             return result > 0;
+        }
+
+        // PRIVATE METHODS
+
+        private async Task<Guid> CreateLocation(LocationCreateModel model)
+        {
+            var id = Guid.NewGuid();
+            var location = new Location
+            {
+                Id = id,
+                Latitude = model.Latitude,
+                Longitude = model.Longitude,
+            };
+            _locationRepository.Add(location);
+            var result = await _unitOfWork.SaveChanges();
+            return result > 0 ? id : Guid.Empty;
         }
     }
 }
