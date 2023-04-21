@@ -60,7 +60,7 @@ namespace Service.Implementations
             }
             if (filter.Location != null)
             {
-                query = query.AsQueryable().DistanceFilter(filter.Location.Latitude, filter.Location.Longitude);
+                query = query.AsQueryable().DistanceFilter(filter.Location.Latitude, filter.Location.Longitude, filter.Distance);
             }
             if (filter.CarType != null)
             {

@@ -37,7 +37,8 @@ namespace Service.Implementations
 
         public async Task<ListViewModel<CustomerViewModel>> GetCustomers(CustomerFilterModel filter, PaginationRequestModel pagination)
         {
-            var query = _customerRepository.GetMany(customer => filter.Name != null ? customer.Name.Contains(filter.Name) : true)
+            var query = _customerRepository.GetMany(customer => filter.Name != null ? customer.Name.Contains(filter.Name) : true &&
+            filter.IsLicenseValid != null ? customer.IsLicenseValid == filter.IsLicenseValid : customer.IsLicenseValid != filter.IsLicenseValid)
                 .Include(customer => customer.Account)
                 .ProjectTo<CustomerViewModel>(_mapper.ConfigurationProvider);
             var customers = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();

@@ -8,6 +8,7 @@ namespace Data.Models.Get
         public CarStatus? Status { get; set; }
         public bool? IsAvailable { get; set; }
         public LocationReqeustModel? Location{ get; set; }
+        public int? Distance { get; set; }
         public CarPriceRequestModel? Price { get; set; }
         public bool? HasDriver { get; set; }
         public bool? HasShowroom { get; set; }
