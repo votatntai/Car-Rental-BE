@@ -18,6 +18,7 @@ namespace Service.Implementations
         private readonly IDriverRepository _driverRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly IWalletRepository _walletRepository;
+        private readonly ILocationRepository _locationRepository;
         private new readonly IMapper _mapper;
 
         public DriverService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
@@ -25,6 +26,7 @@ namespace Service.Implementations
             _driverRepository = unitOfWork.Driver;
             _accountRepository = unitOfWork.Account;
             _walletRepository = unitOfWork.Wallet;
+            _locationRepository = unitOfWork.Location;
             _mapper = mapper;
         }
 
@@ -66,6 +68,7 @@ namespace Service.Implementations
                 try
                 {
                     accountId = await CreateAccount(model.Username, model.Password);
+                    var locationId = await CreateLocation(model.Location);
                     var walletId = await CreateWallet();
 
                     var driver = new Driver
@@ -79,6 +82,7 @@ namespace Service.Implementations
                         AccountId = accountId,
                         WalletId = walletId,
                         Status = DriverStatus.Idle.ToString(),
+                        WishAreaId = locationId
                     };
                     _driverRepository.Add(driver);
                     result = await _unitOfWork.SaveChanges();
@@ -143,6 +147,20 @@ namespace Service.Implementations
                 Status = true
             };
             _accountRepository.Add(account);
+            var result = await _unitOfWork.SaveChanges();
+            return result > 0 ? id : Guid.Empty;
+        }
+
+        private async Task<Guid> CreateLocation(LocationCreateModel model)
+        {
+            var id = Guid.NewGuid();
+            var location = new Location
+            {
+                Id = id,
+                Latitude = model.Latitude,
+                Longitude = model.Longitude,
+            };
+            _locationRepository.Add(location);
             var result = await _unitOfWork.SaveChanges();
             return result > 0 ? id : Guid.Empty;
         }

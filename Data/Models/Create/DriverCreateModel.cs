@@ -17,5 +17,7 @@
         public string Phone { get; set; } = null!;
 
         public string Gender { get; set; } = null!;
+
+        public LocationCreateModel Location { get; set; } = null!;
     }
 }
