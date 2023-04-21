@@ -362,7 +362,7 @@ namespace Service.Implementations
                         Type = TransactionType.Deposit.ToString(),
                     };
                     //await _transactionService.CreateTransactionForCarOwner(carOwner!.AccountId, carOwnerTransaction);
-                    //await _transactionService.CreateTransactionForCarOwner(order.CustomerId, carOwnerTransaction);
+                    //await _transactionService.CreateTransactionForCustomer(order.CustomerId, carOwnerTransaction);
                     var cusMessage = new NotificationCreateModel
                     {
                         Title = "Thanh toán thành công",
@@ -514,16 +514,14 @@ namespace Service.Implementations
                             var car = await _carRepository.GetMany(car => car.Id.Equals(orderDetail.CarId)).FirstOrDefaultAsync();
                             if (car != null)
                             {
-                                //car.Status = CarStatus.Ongoing.ToString();
-                                //_carRepository.Update(car);
+                                car.Status = CarStatus.InOrder.ToString();
+                                _carRepository.Update(car);
                                 if (car.Driver == null)
                                 {
                                     var chossenDriver = await FindRecommendDrivver(orderDetail.PickUpLocation!.Latitude, orderDetail.PickUpLocation!.Longitude);
                                     if (chossenDriver != null)
                                     {
-                                        //chossenDriver.Status = DriverStatus.OnGoing.ToString();
                                         od.DriverId = chossenDriver.AccountId;
-                                        _driverRepository.Update(chossenDriver);
                                     }
                                 }
                                 else

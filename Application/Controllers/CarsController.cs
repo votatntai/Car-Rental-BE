@@ -34,9 +34,9 @@ namespace Application.Controllers
         [Route("for-car-owners/{id}")]
         [ProducesResponseType(typeof(ListViewModel<CarViewModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ListViewModel<CarViewModel>>> GetCarsForCarOwner([FromRoute] Guid id,[FromQuery] CarStatus status, [FromQuery] PaginationRequestModel pagination)
+        public async Task<ActionResult<ListViewModel<CarViewModel>>> GetCarsForCarOwner([FromRoute] Guid id, [FromQuery] CarFilterModel filter, [FromQuery] PaginationRequestModel pagination)
         {
-            var car = await _carService.GetCarsByCarOwnerId(id, status, pagination);
+            var car = await _carService.GetCarsByCarOwnerId(id, filter, pagination);
             return car != null ? Ok(car) : NotFound();
         }
 

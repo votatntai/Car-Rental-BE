@@ -15,7 +15,7 @@ namespace Service.Interfaces
         Task<CarViewModel> CreateCar(CarCreateModel model);
         Task<CarViewModel> CreateShowroomCar(ICollection<IFormFile> images, ICollection<IFormFile> licenses, CarShowroomCreateModel model);
         Task<CarViewModel> UpdateCar(Guid id, CarUpdateModel model);
-        Task<ICollection<CarViewModel>> GetCarsByCarOwnerId(Guid carOwnerId, CarStatus? status, PaginationRequestModel pagination);
+        Task<ListViewModel<CarViewModel>> GetCarsByCarOwnerId(Guid carOwnerId, CarFilterModel filter, PaginationRequestModel pagination);
         Task<ICollection<CarViewModel>> GetCarsIsNotTracking(Guid carOwnerId, PaginationRequestModel pagination);
         Task<CarViewModel> TrackingACar(Guid carId);
         Task<CarViewModel> CancelTrackingACar(Guid carId);

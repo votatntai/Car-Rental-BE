@@ -78,7 +78,8 @@ namespace Service.Implementations
             {
                 var startTime = new TimeSpan(filter.StartTime.Value.Hour, filter.StartTime.Value.Minute, filter.StartTime.Value.Second);
                 var endTime = new TimeSpan(filter.EndTime.Value.Hour, filter.StartTime.Value.Minute, filter.StartTime.Value.Second);
-                query = query.AsQueryable().Where(car => car.ReceiveStartTime <= startTime && car.ReceiveEndTime >= endTime);
+                query = query.AsQueryable().Where(car => car.ReceiveStartTime <= startTime && car.ReceiveEndTime >= endTime &&
+                car.OrderDetails.Any(od => (od.StartTime > filter.EndTime.Value.AddDays(1) || od.EndTime < filter.StartTime.Value.AddDays(1))));
             }
             var cars = await query
             .OrderByDescending(car => car.Star)
@@ -180,7 +181,7 @@ namespace Service.Implementations
                         var images = await _imageRepository.GetMany(image => image.CarRegistrationId.Equals(model.RegistrationId)).ToListAsync();
                         if (images != null)
                         {
-                            foreach(var image in images)
+                            foreach (var image in images)
                             {
                                 image.CarId = car.Id;
                             }
@@ -270,6 +271,7 @@ namespace Service.Implementations
                 .Include(c => c.Location)
                 .Include(c => c.AdditionalCharge)
                 .Include(c => c.Model).ThenInclude(m => m.ProductionCompany)
+                .Include(c => c.CarCalendars).ThenInclude(cc => cc.Calendar)
                 .FirstOrDefaultAsync();
 
             if (car == null) return null!;
@@ -323,12 +325,27 @@ namespace Service.Implementations
             return await GetCar(id);
         }
 
-        public async Task<ICollection<CarViewModel>> GetCarsByCarOwnerId(Guid carOwnerId, CarStatus? status, PaginationRequestModel pagination)
+        public async Task<ListViewModel<CarViewModel>> GetCarsByCarOwnerId(Guid carOwnerId, CarFilterModel filter, PaginationRequestModel pagination)
         {
-            return await _carRepository.GetMany(car => car.CarOwnerId.Equals(carOwnerId) && (status == null || car.Status.Equals(status.ToString())))
-                .ProjectTo<CarViewModel>(_mapper.ConfigurationProvider)
+            var query = _carRepository.GetMany(car => car.CarOwnerId.Equals(carOwnerId));
+            if (filter.Status != null)
+            {
+                query = query.Where(car => car.Status.Equals(filter.Status.ToString()));
+            };
+            var totalRow = await query.AsNoTracking().CountAsync();
+            var cars = await query.ProjectTo<CarViewModel>(_mapper.ConfigurationProvider)
                 .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize)
-                .ToListAsync();
+                .AsNoTracking().ToListAsync();
+            return new ListViewModel<CarViewModel>
+            {
+                Data = cars,
+                Pagination = new PaginationViewModel
+                {
+                    PageNumber = pagination.PageNumber,
+                    PageSize = pagination.PageSize,
+                    TotalRow = totalRow,
+                },
+            };
         }
 
         public async Task<ICollection<CarViewModel>> GetCarsIsNotTracking(Guid carOwnerId, PaginationRequestModel pagination)
