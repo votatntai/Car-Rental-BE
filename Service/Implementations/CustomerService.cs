@@ -18,15 +18,20 @@ namespace Service.Implementations
     {
         private readonly ICustomerRepository _customerRepository;
         private readonly IAccountRepository _accountRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly INotificationService _notificationService;
         private readonly IWalletRepository _walletRepository;
         private readonly IImageRepository _imageRepository;
         private readonly ICloudStorageService _cloudStorageService;
         private new readonly IMapper _mapper;
 
-        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper, ICloudStorageService cloudStorageService) : base(unitOfWork, mapper)
+        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper,
+            ICloudStorageService cloudStorageService, INotificationService notificationService) : base(unitOfWork, mapper)
         {
             _customerRepository = unitOfWork.Customer;
             _accountRepository = unitOfWork.Account;
+            _userRepository = unitOfWork.User;
+            _notificationService = notificationService;
             _walletRepository = unitOfWork.Wallet;
             _imageRepository = unitOfWork.Image;
             _cloudStorageService = cloudStorageService;
@@ -142,7 +147,25 @@ namespace Service.Implementations
                 .GetMany(image => image.CustomerId.Equals(id) && image.Type.Equals(ImageType.License.ToString())).ToListAsync();
             _imageRepository.RemoveRange(oldImages);
             _imageRepository.AddRange(images);
-            return await _unitOfWork.SaveChanges() > 0 ? _mapper.Map<List<Image>, List<ImageViewModel>>(images) : null!;
+            if (await _unitOfWork.SaveChanges() > 0)
+            {
+                var message = new NotificationCreateModel
+                {
+                    Title = "Có giấy phép cần xác nhận",
+                    Body = "Khách hàng cập nhật giấy phép mới",
+                    Data = new NotificationDataViewModel
+                    {
+                        CreateAt = DateTime.UtcNow.AddHours(7),
+                        Type = NotificationType.CustomerLicense.ToString(),
+                        IsRead = false,
+                        Link = id.ToString(),
+                    }
+                };
+                var admins = await _userRepository.GetMany(user => user.Role.Equals(UserRole.Admin)).Select(admin => admin.AccountId).ToListAsync();
+                await _notificationService.SendNotification(admins, message);
+                return _mapper.Map<List<Image>, List<ImageViewModel>>(images);
+            }
+            return null!;
         }
 
         // PRIVATE METHODS

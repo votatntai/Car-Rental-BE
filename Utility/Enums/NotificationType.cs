@@ -9,6 +9,7 @@ namespace Utility.Enums
     public enum NotificationType
     {
         Order,
-        CarRegistration
+        CarRegistration,
+        CustomerLicense
     }
 }
