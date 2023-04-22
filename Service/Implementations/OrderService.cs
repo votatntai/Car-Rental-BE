@@ -258,19 +258,31 @@ namespace Service.Implementations
             var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
             order.Status = OrderStatus.Canceled.ToString();
             order.Description = description;
-            var message = new NotificationCreateModel
+            foreach (var item in order.OrderDetails)
             {
-                Title = "Đơn hàng đã bị từ chối",
-                Body = "Đơn đặt hàng của bạn đã bị từ chối bởi bộ phận quản lý",
-                Data = new NotificationDataViewModel
+                var car = await _carRepository.GetMany(car => car.Id.Equals(item.Car!.Id)).FirstOrDefaultAsync();
+                if (car != null)
                 {
-                    CreateAt = DateTime.UtcNow.AddHours(7),
-                    Type = NotificationType.Order.ToString(),
-                    IsRead = false,
-                    Link = order.Id.ToString(),
+                    car.Status = CarStatus.Idle.ToString();
+                    _carRepository.Update(car);
                 }
-            };
-            await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
+            }
+            if (await _unitOfWork.SaveChanges() > 0)
+            {
+                var message = new NotificationCreateModel
+                {
+                    Title = "Đơn hàng đã bị từ chối",
+                    Body = "Đơn đặt hàng của bạn đã bị từ chối bởi bộ phận quản lý",
+                    Data = new NotificationDataViewModel
+                    {
+                        CreateAt = DateTime.UtcNow.AddHours(7),
+                        Type = NotificationType.Order.ToString(),
+                        IsRead = false,
+                        Link = order.Id.ToString(),
+                    }
+                };
+                await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
+            }
             return order;
         }
 
