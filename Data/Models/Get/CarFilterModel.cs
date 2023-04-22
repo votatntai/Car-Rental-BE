@@ -14,6 +14,7 @@ namespace Data.Models.Get
         public bool? HasShowroom { get; set; }
         public CarType? CarType { get; set; }
         public Guid? ModelId { get; set; }
+        public Guid? ProductionCompanyId { get; set; }
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
         public TransmissionType? TransmissionType { get; set; }

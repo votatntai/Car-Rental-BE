@@ -70,6 +70,10 @@ namespace Service.Implementations
             {
                 query = query.AsQueryable().Where(car => car.ModelId.Equals(filter.ModelId));
             }
+            if (filter.ProductionCompanyId != null)
+            {
+                query = query.AsQueryable().Where(car => car.Model.ProductionCompanyId.Equals(filter.ProductionCompanyId));
+            }
             if (filter.Price != null)
             {
                 query = query.AsQueryable().Where(car => car.Price >= filter.Price.MinPrice && car.Price <= filter.Price.MaxPrice);
