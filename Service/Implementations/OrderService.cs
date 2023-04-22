@@ -237,19 +237,22 @@ namespace Service.Implementations
         {
             var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
             order.Status = OrderStatus.ManagerConfirmed.ToString();
-            var message = new NotificationCreateModel
+            if (await _unitOfWork.SaveChanges() > 0)
             {
-                Title = "Đơn hàng mới",
-                Body = "Bạn có đơn hàng mới cần xác nhận",
-                Data = new NotificationDataViewModel
+                var message = new NotificationCreateModel
                 {
-                    CreateAt = DateTime.UtcNow.AddHours(7),
-                    Type = NotificationType.Order.ToString(),
-                    IsRead = false,
-                    Link = order.Id.ToString(),
-                }
-            };
-            await _notificationService.SendNotification(new List<Guid> { carOwner!.AccountId }, message);
+                    Title = "Đơn hàng mới",
+                    Body = "Bạn có đơn hàng mới cần xác nhận",
+                    Data = new NotificationDataViewModel
+                    {
+                        CreateAt = DateTime.UtcNow.AddHours(7),
+                        Type = NotificationType.Order.ToString(),
+                        IsRead = false,
+                        Link = order.Id.ToString(),
+                    }
+                };
+                await _notificationService.SendNotification(new List<Guid> { carOwner!.AccountId }, message);
+            }
             return order;
         }
 
@@ -330,19 +333,23 @@ namespace Service.Implementations
         {
             var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
             order.Status = OrderStatus.Ongoing.ToString();
-            var message = new NotificationCreateModel
+            if (await _unitOfWork.SaveChanges() > 0)
             {
-                Title = "Tài xế đã đến điểm đón",
-                Body = "Tài xế của bạn đã đến điểm đón",
-                Data = new NotificationDataViewModel
+
+                var message = new NotificationCreateModel
                 {
-                    CreateAt = DateTime.UtcNow.AddHours(7),
-                    Type = NotificationType.Order.ToString(),
-                    IsRead = false,
-                    Link = order.Id.ToString(),
-                }
-            };
-            await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
+                    Title = "Tài xế đã đến điểm đón",
+                    Body = "Tài xế của bạn đã đến điểm đón",
+                    Data = new NotificationDataViewModel
+                    {
+                        CreateAt = DateTime.UtcNow.AddHours(7),
+                        Type = NotificationType.Order.ToString(),
+                        IsRead = false,
+                        Link = order.Id.ToString(),
+                    }
+                };
+                await _notificationService.SendNotification(new List<Guid> { order.CustomerId }, message);
+            }
             return order;
         }
 
@@ -530,7 +537,7 @@ namespace Service.Implementations
                                 _carRepository.Update(car);
                                 if (car.Driver == null)
                                 {
-                                    var chossenDriver = await FindRecommendDrivver(orderDetail.PickUpLocation!.Latitude, orderDetail.PickUpLocation!.Longitude);
+                                    var chossenDriver = await FindRecommendDriver(orderDetail.PickUpLocation!.Latitude, orderDetail.PickUpLocation!.Longitude);
                                     if (chossenDriver != null)
                                     {
                                         od.DriverId = chossenDriver.AccountId;
@@ -608,10 +615,13 @@ namespace Service.Implementations
             return null!;
         }
 
-        private async Task<Driver?> FindRecommendDrivver(double latitude, double longitude)
+        private async Task<Driver?> FindRecommendDriver(double latitude, double longitude)
         {
-            var drivers = _driverRepository.GetMany(driver => driver.Status.Equals(DriverStatus.Idle.ToString()) &&
-            driver.MinimumTrip > 0 && driver.WishArea != null).DriverDistanceFilter(latitude, longitude, 5);
+            var drivers = _driverRepository.GetMany(driver => driver.Status.Equals(DriverStatus.Idle.ToString()) && driver.WishArea != null)
+                .DriverDistanceFilter(latitude, longitude, 20);
+
+            var driverssss = await _driverRepository.GetMany(driver => driver.Status.Equals(DriverStatus.Idle.ToString()) && driver.WishArea != null)
+    .DriverDistanceFilter(latitude, longitude, 2000).ToListAsync();
 
             var driver = await drivers.OrderByDescending(driver => driver.MinimumTrip)
                 .ThenByDescending(driver => driver.Star).FirstOrDefaultAsync();

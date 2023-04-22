@@ -14,7 +14,7 @@ namespace Extensions.MyExtentions
             Math.PI / 180)) <= distance : true);
         }
 
-        public static IQueryable<T> DriverDistanceFilter<T>(this IQueryable<T> source, double lat, double lon, int? distance = 5) where T : Driver
+        public static IQueryable<T> DriverDistanceFilter<T>(this IQueryable<T> source, double lat, double lon, int? distance = 100) where T : Driver
         {
             return source.Where(driver => 6371 * Math.Acos(Math.Sin(lat * Math.PI / 180) *
             Math.Sin(driver.WishArea!.Latitude * Math.PI / 180) + Math.Cos(lat * Math.PI / 180) *

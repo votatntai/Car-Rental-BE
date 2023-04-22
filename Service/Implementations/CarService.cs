@@ -88,7 +88,7 @@ namespace Service.Implementations
                 var endTime = new TimeSpan(filter.EndTime.Value.Hour, filter.StartTime.Value.Minute, filter.StartTime.Value.Second);
                 query = query.AsQueryable().Where(car => car.ReceiveStartTime <= startTime && car.ReceiveEndTime >= endTime &&
                 car.OrderDetails.Any(od => od.CarId.Equals(car.Id)) ?
-                car.OrderDetails.Any(od => (od.StartTime > filter.EndTime.Value.AddDays(1) || od.EndTime < filter.StartTime.Value.AddDays(1))) : true);
+                car.OrderDetails.Any(od => (od.StartTime > filter.EndTime.Value.AddDays(-1) || od.EndTime < filter.StartTime.Value.AddDays(-1))) : true);
             }
             var cars = await query
             .OrderByDescending(car => car.Star)
