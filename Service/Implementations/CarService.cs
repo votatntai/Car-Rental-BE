@@ -130,6 +130,10 @@ namespace Service.Implementations
 
         public async Task<CarViewModel> CreateCar(CarCreateModel model)
         {
+            if (_carRepository.Any(car => car.LicensePlate.Equals(model.LicensePlate)))
+            {
+                return null!;
+            }
             using var transaction = _unitOfWork.Transaction();
             try
             {
@@ -214,6 +218,10 @@ namespace Service.Implementations
 
         public async Task<CarViewModel> CreateShowroomCar(ICollection<IFormFile> images, ICollection<IFormFile> licenses, CarShowroomCreateModel model)
         {
+            if (_carRepository.Any(car => car.LicensePlate.Equals(model.LicensePlate)))
+            {
+                return null!;
+            }
             using var transaction = _unitOfWork.Transaction();
             try
             {
