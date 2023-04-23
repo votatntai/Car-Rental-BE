@@ -6,8 +6,10 @@ using Data.Models.Create;
 using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
+using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
 using Utility.Enums;
@@ -119,6 +121,42 @@ namespace Service.Implementations
                 if (model.BankAccountNumber != null) customer.BankAccountNumber = model.BankAccountNumber;
                 if (model.Phone != null) customer.Phone = model.Phone;
                 if (model.Password != null) customer.Account.Password = model.Password;
+                if (model.IsLicenseValid != null)
+                {
+                    customer.IsLicenseValid = (bool)model.IsLicenseValid;
+                    if (model.IsLicenseValid == true)
+                    {
+                        var acceptMessage = new NotificationCreateModel
+                        {
+                            Title = "Bằng lái",
+                            Body = "Bằng lái của bạn đã được phê duyệt",
+                            Data = new NotificationDataViewModel
+                            {
+                                CreateAt = DateTime.UtcNow.AddHours(7),
+                                Type = NotificationType.CustomerLicense.ToString(),
+                                IsRead = false,
+                                Link = id.ToString(),
+                            }
+                        };
+                        await _notificationService.SendNotification(new List<Guid> { id }, acceptMessage);
+                    }
+                    else
+                    {
+                        var denyMessage = new NotificationCreateModel
+                        {
+                            Title = "Bằng lái",
+                            Body = "Bằng lái của bạn đã bị từ chối, vui lòng tải lên đầy đủ giấy tờ",
+                            Data = new NotificationDataViewModel
+                            {
+                                CreateAt = DateTime.UtcNow.AddHours(7),
+                                Type = NotificationType.CustomerLicense.ToString(),
+                                IsRead = false,
+                                Link = id.ToString(),
+                            }
+                        };
+                        await _notificationService.SendNotification(new List<Guid> { id }, denyMessage);
+                    }
+                }
                 if (model.Status != null) customer.Account.Status = (bool)model.Status;
                 _customerRepository.Update(customer);
                 var result = await _unitOfWork.SaveChanges();
