@@ -37,7 +37,8 @@ namespace Service.Implementations
 
         public async Task<TokenViewModel> AuthenticatedUser(AuthRequestModel model)
         {
-            var user = await _userRepository.GetMany(user => user.Account.Username.Equals(model.Username) && user.Account.Password.Equals(model.Password))
+            var user = await _userRepository.GetMany(user => user.Account.Username.Equals(model.Username) && user.Account.Password.Equals(model.Password)
+            && user.Account.Status == true)
                 .Include(user => user.Account)
                 .FirstOrDefaultAsync();
             if (user != null)
