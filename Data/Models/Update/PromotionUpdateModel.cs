@@ -8,6 +8,8 @@
 
         public double? Discount { get; set; }
 
+        public int? Quantity { get; set; }
+
         public DateTime? ExpiryAt { get; set; }
     }
 }

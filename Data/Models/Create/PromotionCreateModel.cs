@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Data.Models.Create
+﻿namespace Data.Models.Create
 {
     public class PromotionCreateModel
     {
@@ -13,6 +7,8 @@ namespace Data.Models.Create
         public string? Description { get; set; }
 
         public double Discount { get; set; }
+
+        public int Quantity { get; set; }
 
         public DateTime ExpiryAt { get; set; }
     }

@@ -24,6 +24,7 @@ namespace Service.Implementations
         private readonly IOrderDetailRepository _orderDetailRepository;
         private readonly ILocationRepository _locationRepository;
         private readonly IWalletRepository _walletRepository;
+        private readonly IPromotionRepository _promotionRepository;
         private readonly ITransactionService _transactionService;
         private new readonly IMapper _mapper;
         public OrderService(IUnitOfWork unitOfWork, IMapper mapper, INotificationService notificationService, ITransactionService transactionService) : base(unitOfWork, mapper)
@@ -36,6 +37,7 @@ namespace Service.Implementations
             _orderDetailRepository = unitOfWork.OrderDetail;
             _locationRepository = unitOfWork.Location;
             _walletRepository = unitOfWork.Wallet;
+            _promotionRepository = unitOfWork.Promotion;
             _mapper = mapper;
             _transactionService = transactionService;
         }
@@ -550,6 +552,11 @@ namespace Service.Implementations
                             }
                         }
                         _orderDetailRepository.Add(od);
+                    }
+                    var promotion = await _promotionRepository.GetMany(promotion => promotion.Id.Equals(model.PromotionId)).FirstOrDefaultAsync();
+                    if (promotion != null)
+                    {
+                        promotion.Quantity = promotion.Quantity - 1;
                     }
                     var result = await _unitOfWork.SaveChanges();
                     if (result > 0)

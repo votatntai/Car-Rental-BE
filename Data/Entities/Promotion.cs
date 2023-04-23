@@ -17,5 +17,7 @@ public partial class Promotion
 
     public DateTime ExpiryAt { get; set; }
 
+    public int Quantity { get; set; }
+
     public virtual ICollection<Order> Orders { get; } = new List<Order>();
 }

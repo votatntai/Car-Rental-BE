@@ -13,5 +13,7 @@
         public DateTime CreateAt { get; set; }
 
         public DateTime ExpiryAt { get; set; }
+
+        public int Quantity { get; set; }
     }
 }

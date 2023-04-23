@@ -5,7 +5,6 @@ using Data.Models.Update;
 using Data.Models.Views;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
-using Utility.Enums;
 
 namespace Application.Controllers
 {
