@@ -140,12 +140,12 @@ namespace Service.Implementations
                         };
                         await _notificationService.SendNotification(new List<Guid> { id }, acceptMessage);
                     }
-                    else
+                    else if (model.Description != null)
                     {
                         var denyMessage = new NotificationCreateModel
                         {
                             Title = "Bằng lái",
-                            Body = "Bằng lái của bạn đã bị từ chối, vui lòng tải lên đầy đủ giấy tờ",
+                            Body = "Bằng lái của bạn đã bị từ chối với lý do " + model.Description,
                             Data = new NotificationDataViewModel
                             {
                                 CreateAt = DateTime.UtcNow.AddHours(7),
