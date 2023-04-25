@@ -27,7 +27,8 @@ namespace Service.Implementations
         private readonly IPromotionRepository _promotionRepository;
         private readonly ITransactionService _transactionService;
         private new readonly IMapper _mapper;
-        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, INotificationService notificationService, ITransactionService transactionService) : base(unitOfWork, mapper)
+        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, INotificationService notificationService, 
+            ITransactionService transactionService) : base(unitOfWork, mapper)
         {
             _orderRepository = unitOfWork.Order;
             _driverRepository = unitOfWork.Driver;
@@ -149,7 +150,7 @@ namespace Service.Implementations
                     {
                         order = await CarOwnerAutoApproved(order);
                     }
-                    else if (carOwner != null)
+                    else
                     {
                         order = await ManagerConfirmed(order);
                     }
@@ -241,26 +242,28 @@ namespace Service.Implementations
             order.Status = OrderStatus.ManagerConfirmed.ToString();
             if (await _unitOfWork.SaveChanges() > 0)
             {
-                var message = new NotificationCreateModel
+                if (carOwner != null)
                 {
-                    Title = "Đơn hàng mới",
-                    Body = "Bạn có đơn hàng mới cần xác nhận",
-                    Data = new NotificationDataViewModel
+                    var message = new NotificationCreateModel
                     {
-                        CreateAt = DateTime.UtcNow.AddHours(7),
-                        Type = NotificationType.Order.ToString(),
-                        IsRead = false,
-                        Link = order.Id.ToString(),
-                    }
-                };
-                await _notificationService.SendNotification(new List<Guid> { carOwner!.AccountId }, message);
+                        Title = "Đơn hàng mới",
+                        Body = "Bạn có đơn hàng mới cần xác nhận",
+                        Data = new NotificationDataViewModel
+                        {
+                            CreateAt = DateTime.UtcNow.AddHours(7),
+                            Type = NotificationType.Order.ToString(),
+                            IsRead = false,
+                            Link = order.Id.ToString(),
+                        }
+                    };
+                    await _notificationService.SendNotification(new List<Guid> { carOwner!.AccountId }, message);
+                }
             }
             return order;
         }
 
         private async Task<Order> ManagerDenied(Order order, string description)
         {
-            var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
             order.Status = OrderStatus.Canceled.ToString();
             order.Description = description;
             foreach (var item in order.OrderDetails)
@@ -319,9 +322,9 @@ namespace Service.Implementations
                     driver!.Status = DriverStatus.OnGoing.ToString();
                     _driverRepository.Update(driver);
                 }
-                if (od.Car != null && od.Car.CarOwnerId != null)
+                if (carOwner != null)
                 {
-                    userIds.Add((Guid)od.Car.CarOwnerId);
+                    userIds.Add(carOwner.AccountId);
                 }
             }
             if (await _unitOfWork.SaveChanges() > 0)
@@ -334,7 +337,7 @@ namespace Service.Implementations
         private async Task<Order> ArrivedAtPickUpPoint(Order order)
         {
             var carOwner = order.OrderDetails.Select(od => od.Car != null ? od.Car.CarOwner : null!).FirstOrDefault();
-            order.Status = OrderStatus.Ongoing.ToString();
+            order.Status = OrderStatus.ArrivedAtPickUpPoint.ToString();
             if (await _unitOfWork.SaveChanges() > 0)
             {
 
@@ -375,15 +378,18 @@ namespace Service.Implementations
                         Status = "Đã hoàn thành",
                         Type = TransactionType.Payment.ToString(),
                     };
-                    var carOwnerTransaction = new TransactionCreateModel
+                    await _transactionService.CreateTransactionForCustomer(order.CustomerId, cusTransaction);
+                    if (carOwner != null)
                     {
-                        Amount = order.Amount * 70 / 100,
-                        Description = "Tiền thanh toán đơn hàng",
-                        Status = "Đã hoàn thành",
-                        Type = TransactionType.Deposit.ToString(),
-                    };
-                    //await _transactionService.CreateTransactionForCarOwner(carOwner!.AccountId, carOwnerTransaction);
-                    //await _transactionService.CreateTransactionForCustomer(order.CustomerId, carOwnerTransaction);
+                        var carOwnerTransaction = new TransactionCreateModel
+                        {
+                            Amount = ((order.Amount * 70 / 100) - order.Amount * 10 / 100),
+                            Description = "Tiền thanh toán đơn hàng",
+                            Status = "Đã hoàn thành",
+                            Type = TransactionType.Deposit.ToString(),
+                        };
+                        await _transactionService.CreateTransactionForCarOwner(carOwner.AccountId, carOwnerTransaction);
+                    }
                     var cusMessage = new NotificationCreateModel
                     {
                         Title = "Thanh toán thành công",
@@ -412,19 +418,22 @@ namespace Service.Implementations
                                 {
                                     var car = await _carRepository.GetMany(car => car.Id.Equals(order.OrderDetails.Select(od => od.Car!.Id).FirstOrDefault())).FirstOrDefaultAsync();
                                     car!.Status = CarStatus.OnGoing.ToString();
-                                    var carOwnerMessage = new NotificationCreateModel
+                                    if (carOwner != null)
                                     {
-                                        Title = "Đơn hàng của bạn đã được thanh toán",
-                                        Body = "Đã được cộng " + ((order.Amount * 70 / 100) - order.Amount * 10 / 100) + "VNĐ vào tài khoản",
-                                        Data = new NotificationDataViewModel
+                                        var carOwnerMessage = new NotificationCreateModel
                                         {
-                                            CreateAt = DateTime.UtcNow.AddHours(7),
-                                            Type = NotificationType.Order.ToString(),
-                                            IsRead = false,
-                                            Link = order.Id.ToString(),
-                                        }
-                                    };
-                                    await _notificationService.SendNotification(new List<Guid> { (Guid)item.Car.CarOwnerId }, carOwnerMessage);
+                                            Title = "Đơn hàng của bạn đã được thanh toán",
+                                            Body = "Đã được cộng " + ((order.Amount * 70 / 100) - order.Amount * 10 / 100) + " VNĐ vào tài khoản",
+                                            Data = new NotificationDataViewModel
+                                            {
+                                                CreateAt = DateTime.UtcNow.AddHours(7),
+                                                Type = NotificationType.Order.ToString(),
+                                                IsRead = false,
+                                                Link = order.Id.ToString(),
+                                            }
+                                        };
+                                        await _notificationService.SendNotification(new List<Guid> { carOwner.AccountId }, carOwnerMessage);
+                                    }
                                 }
                             }
                             return order;
