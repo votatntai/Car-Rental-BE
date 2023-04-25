@@ -29,7 +29,7 @@ namespace Service.Implementations
         private readonly IPromotionRepository _promotionRepository;
         private readonly ITransactionService _transactionService;
         private new readonly IMapper _mapper;
-        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, INotificationService notificationService, 
+        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, INotificationService notificationService,
             ITransactionService transactionService) : base(unitOfWork, mapper)
         {
             _orderRepository = unitOfWork.Order;
@@ -618,7 +618,26 @@ namespace Service.Implementations
                             var managers = await _userRepository.GetMany(user => user.Role.Equals(UserRole.Manager.ToString()))
                                 .Select(manager => manager.AccountId).ToListAsync();
                             var carId = model.OrderDetails.Select(od => od.CarId).FirstOrDefault();
-                            var carOwnerIds = await _carRepository.GetMany(con => con.Id.Equals(carId)).Select(car => car.CarOwnerId).ToListAsync();
+                            var cusTransaction = new TransactionCreateModel
+                            {
+                                Amount = RoundedAmount(order.Amount * 30 / 100),
+                                Description = "Tiền cọc đơn hàng",
+                                Status = "Đã hoàn thành",
+                                Type = TransactionType.Payment.ToString(),
+                            };
+                            await _transactionService.CreateTransactionForCustomer(order.CustomerId, cusTransaction);
+                            var carOwnerId = await _carRepository.GetMany(con => con.Id.Equals(carId)).Select(car => car.CarOwnerId).FirstOrDefaultAsync();
+                            if (carOwnerId != null)
+                            {
+                                var carOwnerTransaction = new TransactionCreateModel
+                                {
+                                    Amount = RoundedAmount((order.Amount * 30 / 100) - order.Amount * 10 / 100),
+                                    Description = "Tiền cọc đơn hàng",
+                                    Status = "Đã hoàn thành",
+                                    Type = TransactionType.Deposit.ToString(),
+                                };
+                                await _transactionService.CreateTransactionForCarOwner((Guid)carOwnerId, carOwnerTransaction);
+                            }
                             await _notificationService.SendNotification(new List<Guid> { customerId }, cusMessage);
                             await _notificationService.SendNotification(managers, message);
                             foreach (var od in order.OrderDetails)
