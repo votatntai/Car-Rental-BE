@@ -19,7 +19,7 @@ public partial class Driver
 
     public double? Star { get; set; }
 
-    public double? Finished { get; set; }
+    public int? Finished { get; set; }
 
     public string? BankAccountNumber { get; set; }
 
