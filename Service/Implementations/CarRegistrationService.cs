@@ -115,7 +115,7 @@ namespace Service.Implementations
                             Link = carRegistration.Id.ToString(),
                         }
                     };
-                    var admins = await _userRepository.GetMany(user => user.Role.Equals(UserRole.Admin.ToString())).Select(admin => admin.AccountId).ToListAsync();
+                    var admins = await _userRepository.GetMany(user => user.Role.Equals(UserRole.Manager.ToString())).Select(admin => admin.AccountId).ToListAsync();
                     await _notificationService.SendNotification(admins, message);
                     transaction.Commit();
                     return await GetCarRegistration(carRegistration.Id) ?? throw new InvalidOperationException("Failed to retrieve car registration.");
