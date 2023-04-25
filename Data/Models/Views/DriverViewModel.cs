@@ -16,6 +16,8 @@
 
         public double? Star { get; set; }
 
+        public int? Finished { get; set; }
+
         public string? BankAccountNumber { get; set; }
 
         public string? BankName { get; set; }

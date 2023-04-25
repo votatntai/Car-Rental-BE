@@ -366,14 +366,14 @@ namespace Service.Implementations
                      .GetMany(wallet => wallet.Customer != null ? wallet.Customer.AccountId.Equals(order.CustomerId) : false).FirstOrDefaultAsync();
             if (cusWallet != null && cusWallet.Balance > order.Amount)
             {
-                var amout = cusWallet.Balance - (order.Amount * 70 / 100);
+                var amout = cusWallet.Balance - RoundedAmount(order.Amount * 70 / 100);
                 cusWallet.Balance = amout;
                 _walletRepository.Update(cusWallet);
                 if (await _unitOfWork.SaveChanges() > 0)
                 {
                     var cusTransaction = new TransactionCreateModel
                     {
-                        Amount = order.Amount * 70 / 100,
+                        Amount = RoundedAmount(order.Amount * 70 / 100),
                         Description = "Tiền thanh toán đơn hàng",
                         Status = "Đã hoàn thành",
                         Type = TransactionType.Payment.ToString(),
@@ -383,7 +383,7 @@ namespace Service.Implementations
                     {
                         var carOwnerTransaction = new TransactionCreateModel
                         {
-                            Amount = ((order.Amount * 70 / 100) - order.Amount * 10 / 100),
+                            Amount = RoundedAmount((order.Amount * 70 / 100) - order.Amount * 10 / 100),
                             Description = "Tiền thanh toán đơn hàng",
                             Status = "Đã hoàn thành",
                             Type = TransactionType.Deposit.ToString(),
@@ -393,7 +393,7 @@ namespace Service.Implementations
                     var cusMessage = new NotificationCreateModel
                     {
                         Title = "Thanh toán thành công",
-                        Body = "Bạn đã hoàn tất thanh toán với số tiền " + (order.Amount * 70 / 100) + " VNĐ",
+                        Body = "Bạn đã hoàn tất thanh toán với số tiền " + RoundedAmount(order.Amount * 70 / 100) + " VNĐ",
                         Data = new NotificationDataViewModel
                         {
                             CreateAt = DateTime.UtcNow.AddHours(7),
@@ -412,7 +412,7 @@ namespace Service.Implementations
                         .GetMany(wallet => wallet.CarOwner != null ? wallet.CarOwner.AccountId.Equals(item.Car.CarOwnerId) : false).FirstOrDefaultAsync();
                             if (carOwnerWallet != null)
                             {
-                                carOwnerWallet.Balance = carOwnerWallet.Balance + ((order.Amount * 70 / 100) - order.Amount * 10 / 100);
+                                carOwnerWallet.Balance = carOwnerWallet.Balance + RoundedAmount((order.Amount * 70 / 100) - order.Amount * 10 / 100);
                                 _walletRepository.Update(carOwnerWallet);
                                 if (await _unitOfWork.SaveChanges() > 0)
                                 {
@@ -423,7 +423,7 @@ namespace Service.Implementations
                                         var carOwnerMessage = new NotificationCreateModel
                                         {
                                             Title = "Đơn hàng của bạn đã được thanh toán",
-                                            Body = "Đã được cộng " + ((order.Amount * 70 / 100) - order.Amount * 10 / 100) + " VNĐ vào tài khoản",
+                                            Body = "Đã được cộng " + RoundedAmount((order.Amount * 70 / 100) - order.Amount * 10 / 100) + " VNĐ vào tài khoản",
                                             Data = new NotificationDataViewModel
                                             {
                                                 CreateAt = DateTime.UtcNow.AddHours(7),
@@ -453,6 +453,7 @@ namespace Service.Implementations
                 if (car != null)
                 {
                     car.Status = CarStatus.Idle.ToString();
+                    car.Rented += car.Rented;
                     _carRepository.Update(car);
                 }
             }
@@ -477,6 +478,8 @@ namespace Service.Implementations
                 {
                     var driver = drivers.FirstOrDefault();
                     driver!.Status = DriverStatus.Idle.ToString();
+                    driver!.Finished += driver.Finished;
+
                     _driverRepository.Update(driver);
                     await _unitOfWork.SaveChanges();
                     userIds.AddRange(drivers.Select(driver => driver!.AccountId).ToList());
@@ -570,7 +573,7 @@ namespace Service.Implementations
                     var result = await _unitOfWork.SaveChanges();
                     if (result > 0)
                     {
-                        cusWallet.Balance = cusWallet.Balance - (model.Amount * 30 / 100);
+                        cusWallet.Balance = cusWallet.Balance - RoundedAmount(model.Amount * 30 / 100);
                         _walletRepository.Update(cusWallet);
                         if (await _unitOfWork.SaveChanges() > 0)
                         {
@@ -589,7 +592,7 @@ namespace Service.Implementations
                             var cusMessage = new NotificationCreateModel
                             {
                                 Title = "Tạo đơn hàng thành công",
-                                Body = "Đã trừ " + (model.Amount * 30 / 100) + "VNĐ tiền cọc cho đơn hàng",
+                                Body = "Đã trừ " + RoundedAmount(model.Amount * 30 / 100) + "VNĐ tiền cọc cho đơn hàng",
                                 Data = new NotificationDataViewModel
                                 {
                                     CreateAt = DateTime.UtcNow.AddHours(7),
@@ -601,7 +604,7 @@ namespace Service.Implementations
                             var carOwnerMessage = new NotificationCreateModel
                             {
                                 Title = "Nhận tiền cọc đơn hàng",
-                                Body = "Đã nhận " + ((order.Amount * 30 / 100) - order.Amount * 10 / 100) + "VNĐ tiền cọc cho đơn mới",
+                                Body = "Đã nhận " + RoundedAmount((order.Amount * 30 / 100) - order.Amount * 10 / 100) + "VNĐ tiền cọc cho đơn mới",
                                 Data = new NotificationDataViewModel
                                 {
                                     CreateAt = DateTime.UtcNow.AddHours(7),
@@ -636,12 +639,9 @@ namespace Service.Implementations
             var drivers = _driverRepository.GetMany(driver => driver.Status.Equals(DriverStatus.Idle.ToString()) && driver.WishArea != null)
                 .DriverDistanceFilter(latitude, longitude, 20);
 
-            var driverssss = await _driverRepository.GetMany(driver => driver.Status.Equals(DriverStatus.Idle.ToString()) && driver.WishArea != null)
-    .DriverDistanceFilter(latitude, longitude, 2000).ToListAsync();
-
             var driver = await drivers.OrderByDescending(driver => driver.MinimumTrip)
                 .ThenByDescending(driver => driver.Star).FirstOrDefaultAsync();
-            if (driver != null)
+            if (driver != null && driver.MinimumTrip > 0)
             {
                 driver.MinimumTrip = driver.MinimumTrip - 1;
                 _driverRepository.Update(driver);
@@ -659,6 +659,11 @@ namespace Service.Implementations
             };
             _locationRepository.Add(location);
             return await _unitOfWork.SaveChanges() > 0 ? location.Id : Guid.Empty;
+        }
+
+        private int RoundedAmount(double amount)
+        {
+            return Convert.ToInt32(Math.Round(amount));
         }
 
     }
