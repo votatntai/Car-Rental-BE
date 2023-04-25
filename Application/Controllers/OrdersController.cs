@@ -1,4 +1,5 @@
 ﻿using Application.Configurations.Middleware;
+using Data.Entities;
 using Data.Models.Create;
 using Data.Models.Get;
 using Data.Models.Update;
@@ -68,15 +69,23 @@ namespace Application.Controllers
         [HttpPost]
         [Authorize]
         [ProducesResponseType(typeof(OrderViewModel), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<OrderViewModel>> CreateOrder([FromBody] OrderCreateModel model)
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status402PaymentRequired)]
+        public async Task<IActionResult> CreateOrder([FromBody] OrderCreateModel model)
         {
             try
             {
                 var auth = (AuthViewModel?)HttpContext.Items["User"];
-                var order = await _orderService.CreateOrder(auth!.Id, model);
-                return order != null ? CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order) : BadRequest();
+                var result = await _orderService.CreateOrder(auth!.Id, model);
+                if (result is JsonResult json)
+                {
+                    var order = json.Value as Order;
+                    if (order != null)
+                    {
+                        return StatusCode(StatusCodes.Status201Created, order);
+                    }
+                }
+                return result;
             }
             catch (Exception e)
             {

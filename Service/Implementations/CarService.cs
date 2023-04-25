@@ -237,6 +237,7 @@ namespace Service.Implementations
                     AdditionalChargeId = additionalChargeId,
                     Name = model.Name,
                     Price = 500000,
+                    CarOwnerId = Guid.Parse("00000000-0000-0000-0000-000000000000"),
                     Status = CarStatus.Idle.ToString(),
                     ModelId = model.ModelId,
                     Rented = 0,

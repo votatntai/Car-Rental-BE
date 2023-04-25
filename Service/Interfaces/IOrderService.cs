@@ -2,6 +2,7 @@
 using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Service.Interfaces
 {
@@ -11,7 +12,7 @@ namespace Service.Interfaces
         Task<OrderViewModel> GetOrder(Guid id);
         Task<ListViewModel<OrderViewModel>> GetOrdersForDriver(Guid userId, PaginationRequestModel pagination);
         Task<ListViewModel<OrderViewModel>> GetOrdersForCarOwner(Guid userId, PaginationRequestModel pagination);
-        Task<OrderViewModel> CreateOrder(Guid customerId, OrderCreateModel model);
+        Task<IActionResult> CreateOrder(Guid customerId, OrderCreateModel model);
         Task<OrderViewModel> UpdateOrderStatus(Guid id, OrderUpdateModel model);
     }
 }

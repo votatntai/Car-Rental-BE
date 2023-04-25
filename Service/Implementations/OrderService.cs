@@ -8,6 +8,8 @@ using Data.Models.Update;
 using Data.Models.Views;
 using Data.Repositories.Interfaces;
 using Extensions.MyExtentions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
 using Utility.Enums;
@@ -503,7 +505,7 @@ namespace Service.Implementations
                 .FirstOrDefaultAsync() ?? null!;
         }
 
-        public async Task<OrderViewModel> CreateOrder(Guid customerId, OrderCreateModel model)
+        public async Task<IActionResult> CreateOrder(Guid customerId, OrderCreateModel model)
         {
             if (!_orderRepository.Any(od => od.CustomerId.Equals(customerId) && od.Status.Equals(OrderStatus.Pending.ToString())))
             {
@@ -626,12 +628,13 @@ namespace Service.Implementations
                                     await _notificationService.SendNotification(new List<Guid> { (Guid)od.Car.CarOwnerId }, carOwnerMessage);
                                 }
                             }
-                            return await GetOrder(order.Id);
+                            return new JsonResult(await GetOrder(order.Id));
                         }
                     }
                 }
+                return new StatusCodeResult(StatusCodes.Status402PaymentRequired);
             }
-            return null!;
+            return new StatusCodeResult(StatusCodes.Status409Conflict);
         }
 
         private async Task<Driver?> FindRecommendDriver(double latitude, double longitude)
