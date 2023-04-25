@@ -6,8 +6,8 @@ using Data.Models.Create;
 using Data.Models.Get;
 using Data.Models.Update;
 using Data.Models.Views;
+using Data.Repositories.Implementations;
 using Data.Repositories.Interfaces;
-using FirebaseAdmin.Messaging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Service.Interfaces;
@@ -20,6 +20,7 @@ namespace Service.Implementations
         private readonly ICarRegistrationRepository _carRegistrationRepository;
         private readonly IAdditionalChargeRepository _additionalChargeRepository;
         private readonly IImageRepository _imageRepository;
+        private readonly IUserRepository _userRepository;
         private readonly ICloudStorageService _cloudStorageService;
         private readonly INotificationService _notificationService;
         private new readonly IMapper _mapper;
@@ -30,6 +31,7 @@ namespace Service.Implementations
             _carRegistrationRepository = unitOfWork.CarRegistration;
             _additionalChargeRepository = unitOfWork.AdditionalCharge;
             _imageRepository = unitOfWork.Image;
+            _userRepository = unitOfWork.User;  
             _mapper = mapper;
             _cloudStorageService = cloudStorageService;
             _notificationService = notificationService;
@@ -101,6 +103,20 @@ namespace Service.Implementations
                 {
                     await CreateCarRegistrationLicenses(carRegistration.Id, licenses);
                     await CreateCarRegistrationImages(carRegistration.Id, images);
+                    var message = new NotificationCreateModel
+                    {
+                        Title = "Có đơn đăng ký mới cần xác nhận",
+                        Body = "Có một phiếu đăng ký xe mới đang chờ xác nhận",
+                        Data = new NotificationDataViewModel
+                        {
+                            CreateAt = DateTime.UtcNow.AddHours(7),
+                            Type = NotificationType.CarRegistration.ToString(),
+                            IsRead = false,
+                            Link = carRegistration.Id.ToString(),
+                        }
+                    };
+                    var admins = await _userRepository.GetMany(user => user.Role.Equals(UserRole.Admin.ToString())).Select(admin => admin.AccountId).ToListAsync();
+                    await _notificationService.SendNotification(admins, message);
                     transaction.Commit();
                     return await GetCarRegistration(carRegistration.Id) ?? throw new InvalidOperationException("Failed to retrieve car registration.");
                 }

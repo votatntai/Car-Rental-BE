@@ -296,7 +296,7 @@ namespace Service.Implementations
 
             car.Name = model.Name ?? car.Name;
             car.Description = model.Description ?? car.Description;
-            car.Status = model.Status ?? car.Status;
+            car.Status = model.Status.ToString() ?? car.Status;
             car.LicensePlate = model.LicensePlate ?? car.LicensePlate;
             car.Price = model.Price ?? car.Price;
 

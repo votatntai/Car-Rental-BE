@@ -1,4 +1,6 @@
-﻿namespace Data.Models.Update
+﻿using Utility.Enums;
+
+namespace Data.Models.Update
 {
     public class CarUpdateModel
     {
@@ -28,6 +30,6 @@
 
         public AdditionalChargeUpdateModel? AdditionalCharge { get; set; }
 
-        public string? Status { get; set; } = null!;
+        public CarStatus? Status { get; set; } = null!;
     }
 }

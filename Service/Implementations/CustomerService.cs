@@ -199,7 +199,7 @@ namespace Service.Implementations
                         Link = id.ToString(),
                     }
                 };
-                var admins = await _userRepository.GetMany(user => user.Role.Equals(UserRole.Admin)).Select(admin => admin.AccountId).ToListAsync();
+                var admins = await _userRepository.GetMany(user => user.Role.Equals(UserRole.Admin.ToString())).Select(admin => admin.AccountId).ToListAsync();
                 await _notificationService.SendNotification(admins, message);
                 return _mapper.Map<List<Image>, List<ImageViewModel>>(images);
             }

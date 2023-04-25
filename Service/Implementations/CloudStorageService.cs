@@ -38,6 +38,7 @@ public class CloudStorageService : ICloudStorageService
             return CloudStorageHelper.GenerateV4UploadSignedUrl(
                 _settings.Bucket,
                 $"{_settings.Folder}/{id}");
+            //return GetMediaLink(id);
         }
         catch
         {
