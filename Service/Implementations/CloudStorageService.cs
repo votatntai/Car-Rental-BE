@@ -34,10 +34,11 @@ public class CloudStorageService : ICloudStorageService
                 stream,
                 null,
                 CancellationToken.None);
-
-            return CloudStorageHelper.GenerateV4UploadSignedUrl(
-                _settings.Bucket,
-                $"{_settings.Folder}/{id}");
+            var url = "https://firebasestorage.googleapis.com/v0/b/car-rental-236aa.appspot.com/o/attachments%2F" + id + "?alt=media";
+            return url;
+            //return CloudStorageHelper.GenerateV4UploadSignedUrl(
+            //    _settings.Bucket,
+            //    $"{_settings.Folder}/{id}");
             //return GetMediaLink(id);
         }
         catch
