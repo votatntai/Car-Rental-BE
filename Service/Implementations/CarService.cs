@@ -91,7 +91,8 @@ namespace Service.Implementations
                 car.OrderDetails.Any(od => (od.StartTime > filter.EndTime.Value.AddDays(-1) || od.EndTime < filter.StartTime.Value.AddDays(-1))) : true);
             }
             var cars = await query
-            .OrderByDescending(car => car.Star)
+            .OrderByDescending(car => car.CreateAt)
+            .ThenByDescending(car => car.Star)
             .ThenByDescending(car => car.Rented)
             .ProjectTo<CarViewModel>(_mapper.ConfigurationProvider)
             .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize)

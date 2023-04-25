@@ -66,7 +66,7 @@ namespace Service.Implementations
 
             var totalRow = await query.CountAsync();
             var orders = await query
-                .OrderBy(order => order.CreateAt)
+                .OrderByDescending(order => order.CreateAt)
                 .Skip(pagination.PageNumber * pagination.PageSize)
                 .Take(pagination.PageSize)
                 .ProjectTo<OrderViewModel>(_mapper.ConfigurationProvider).ToListAsync();

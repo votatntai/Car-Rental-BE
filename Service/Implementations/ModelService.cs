@@ -28,7 +28,8 @@ namespace Service.Implementations
                 pc.ProductionCompany.Name.Contains(filter.Name) : true &&
                 filter.ProductionCompanyId != null ? pc.ProductionCompanyId.Equals(filter.ProductionCompanyId) : true)
             .ProjectTo<CarModelViewModel>(_mapper.ConfigurationProvider);
-            var models = await query.Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
+            var models = await query
+                .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
             var totalRow = await query.AsNoTracking().CountAsync();
             return models != null && totalRow > 0 ? new ListViewModel<CarModelViewModel>
             {

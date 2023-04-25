@@ -40,7 +40,7 @@ namespace Service.Implementations
             var query = _carRegistrationRepository.GetMany(carRegistration => filter.Name != null && carRegistration.Name != null ?
                 carRegistration.Name.Contains(filter.Name) : true)
                 .ProjectTo<CarRegistrationViewModel>(_mapper.ConfigurationProvider);
-            var carRegistrations = await query.OrderBy(carRegistration => carRegistration.CreateAt)
+            var carRegistrations = await query.OrderByDescending(carRegistration => carRegistration.CreateAt)
                 .Skip(pagination.PageNumber * pagination.PageSize).Take(pagination.PageSize).AsNoTracking().ToListAsync();
             var totalRow = await query.AsNoTracking().CountAsync();
             if (carRegistrations != null || carRegistrations != null && carRegistrations.Any())
