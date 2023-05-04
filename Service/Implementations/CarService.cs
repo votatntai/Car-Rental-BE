@@ -44,7 +44,7 @@ namespace Service.Implementations
             car.Model.ProductionCompany.Name.Contains(filter.Name)) : true);
             if (filter.IsAvailable != null && filter.IsAvailable == true)
             {
-                query = query.AsQueryable().Where(car => !car.Status.Equals(CarStatus.InOrder.ToString()));
+                query = query.AsQueryable().Where(car => !car.Status.Equals(CarStatus.InOrder.ToString()) && !car.Status.Equals(CarStatus.Blocked.ToString()));
             }
             if (filter.HasShowroom != null && filter.HasShowroom == true)
             {
