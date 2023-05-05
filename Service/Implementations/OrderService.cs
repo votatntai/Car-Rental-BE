@@ -483,7 +483,8 @@ namespace Service.Implementations
                     if (driver!.Finished != null)
                     {
                         driver!.Finished += 1;
-                    } else
+                    }
+                    else
                     {
                         driver!.Finished = 1;
                     }
@@ -643,11 +644,11 @@ namespace Service.Implementations
                                 };
                                 await _transactionService.CreateTransactionForCarOwner((Guid)carOwnerId, carOwnerTransaction);
                             }
-                            var driverIds = order.OrderDetails.Select(od => od.DriverId).ToList();
                             await _notificationService.SendNotification(new List<Guid> { customerId }, cusMessage);
                             await _notificationService.SendNotification(managers, message);
                             if (order.OrderDetails.Any(od => od.DriverId != null))
                             {
+                                var driverIds = order.OrderDetails.Select(od => od.DriverId).ToList();
                                 var driverMessage = new NotificationCreateModel
                                 {
                                     Title = "Đơn hàng mới",
@@ -660,7 +661,7 @@ namespace Service.Implementations
                                         Link = order.Id.ToString(),
                                     }
                                 };
-                            await _notificationService.SendNotification((ICollection<Guid>)driverIds, driverMessage);
+                                await _notificationService.SendNotification((ICollection<Guid>)driverIds, driverMessage);
                             }
                             foreach (var od in order.OrderDetails)
                             {
