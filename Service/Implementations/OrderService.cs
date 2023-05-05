@@ -620,18 +620,6 @@ namespace Service.Implementations
                                     Link = order.Id.ToString(),
                                 }
                             };
-                            var driverMessage = new NotificationCreateModel
-                            {
-                                Title = "Đơn hàng mới",
-                                Body = "Bạn có đơn hàng mới",
-                                Data = new NotificationDataViewModel
-                                {
-                                    CreateAt = DateTime.UtcNow.AddHours(7),
-                                    Type = NotificationType.Order.ToString(),
-                                    IsRead = false,
-                                    Link = order.Id.ToString(),
-                                }
-                            };
                             var managers = await _userRepository.GetMany(user => user.Role.Equals(UserRole.Manager.ToString()))
                                 .Select(manager => manager.AccountId).ToListAsync();
                             var carId = model.OrderDetails.Select(od => od.CarId).FirstOrDefault();
@@ -658,7 +646,22 @@ namespace Service.Implementations
                             var driverIds = order.OrderDetails.Select(od => od.DriverId).ToList();
                             await _notificationService.SendNotification(new List<Guid> { customerId }, cusMessage);
                             await _notificationService.SendNotification(managers, message);
+                            if (order.OrderDetails.Any(od => od.DriverId != null))
+                            {
+                                var driverMessage = new NotificationCreateModel
+                                {
+                                    Title = "Đơn hàng mới",
+                                    Body = "Bạn có đơn hàng mới",
+                                    Data = new NotificationDataViewModel
+                                    {
+                                        CreateAt = DateTime.UtcNow.AddHours(7),
+                                        Type = NotificationType.Order.ToString(),
+                                        IsRead = false,
+                                        Link = order.Id.ToString(),
+                                    }
+                                };
                             await _notificationService.SendNotification((ICollection<Guid>)driverIds, driverMessage);
+                            }
                             foreach (var od in order.OrderDetails)
                             {
                                 if (od.Car != null && od.Car.CarOwnerId != null)
