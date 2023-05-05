@@ -21,6 +21,7 @@ namespace Service.Implementations
         private readonly IOrderRepository _orderRepository;
         private readonly IDriverRepository _driverRepository;
         private readonly ICarRepository _carRepository;
+        private readonly ICarOwnerRepository _carOwnerRepository;
         private readonly IUserRepository _userRepository;
         private readonly INotificationService _notificationService;
         private readonly IOrderDetailRepository _orderDetailRepository;
@@ -35,6 +36,7 @@ namespace Service.Implementations
             _orderRepository = unitOfWork.Order;
             _driverRepository = unitOfWork.Driver;
             _carRepository = unitOfWork.Car;
+            _carOwnerRepository = unitOfWork.CarOwner;
             _userRepository = unitOfWork.User;
             _notificationService = notificationService;
             _orderDetailRepository = unitOfWork.OrderDetail;
@@ -385,7 +387,7 @@ namespace Service.Implementations
                     {
                         var carOwnerTransaction = new TransactionCreateModel
                         {
-                            Amount = RoundedAmount((order.Amount * 70 / 100) - order.Amount * 10 / 100),
+                            Amount = RoundedAmount(order.Amount - order.Amount * 20 / 100),
                             Description = "Tiền thanh toán đơn hàng",
                             Status = "Đã hoàn thành",
                             Type = TransactionType.Deposit.ToString(),
@@ -414,7 +416,7 @@ namespace Service.Implementations
                         .GetMany(wallet => wallet.CarOwner != null ? wallet.CarOwner.AccountId.Equals(item.Car.CarOwnerId) : false).FirstOrDefaultAsync();
                             if (carOwnerWallet != null)
                             {
-                                carOwnerWallet.Balance = carOwnerWallet.Balance + RoundedAmount((order.Amount * 70 / 100) - order.Amount * 10 / 100);
+                                carOwnerWallet.Balance = carOwnerWallet.Balance + RoundedAmount(order.Amount - order.Amount * 20 / 100);
                                 _walletRepository.Update(carOwnerWallet);
                                 if (await _unitOfWork.SaveChanges() > 0)
                                 {
@@ -425,7 +427,7 @@ namespace Service.Implementations
                                         var carOwnerMessage = new NotificationCreateModel
                                         {
                                             Title = "Đơn hàng của bạn đã được thanh toán",
-                                            Body = "Đã được cộng " + RoundedAmount((order.Amount * 70 / 100) - order.Amount * 10 / 100) + " VNĐ vào tài khoản",
+                                            Body = "Đã được cộng " + RoundedAmount(order.Amount - order.Amount * 20 / 100) + " VNĐ vào tài khoản",
                                             Data = new NotificationDataViewModel
                                             {
                                                 CreateAt = DateTime.UtcNow.AddHours(7),
@@ -613,19 +615,7 @@ namespace Service.Implementations
                             var cusMessage = new NotificationCreateModel
                             {
                                 Title = "Tạo đơn hàng thành công",
-                                Body = "Đã trừ " + RoundedAmount(model.Amount * 30 / 100) + "VNĐ tiền cọc cho đơn hàng",
-                                Data = new NotificationDataViewModel
-                                {
-                                    CreateAt = DateTime.UtcNow.AddHours(7),
-                                    Type = NotificationType.Order.ToString(),
-                                    IsRead = false,
-                                    Link = order.Id.ToString(),
-                                }
-                            };
-                            var carOwnerMessage = new NotificationCreateModel
-                            {
-                                Title = "Nhận tiền cọc đơn hàng",
-                                Body = "Đã nhận " + RoundedAmount((order.Amount * 30 / 100) - order.Amount * 10 / 100) + "VNĐ tiền cọc cho đơn mới",
+                                Body = "Đã trừ " + RoundedAmount(model.Amount * 30 / 100) + " VNĐ tiền cọc cho đơn hàng",
                                 Data = new NotificationDataViewModel
                                 {
                                     CreateAt = DateTime.UtcNow.AddHours(7),
@@ -645,27 +635,8 @@ namespace Service.Implementations
                                 Type = TransactionType.Payment.ToString(),
                             };
                             await _transactionService.CreateTransactionForCustomer(order.CustomerId, cusTransaction);
-                            var carOwnerId = await _carRepository.GetMany(con => con.Id.Equals(carId)).Select(car => car.CarOwnerId).FirstOrDefaultAsync();
-                            if (carOwnerId != null)
-                            {
-                                var carOwnerTransaction = new TransactionCreateModel
-                                {
-                                    Amount = RoundedAmount((order.Amount * 30 / 100) - order.Amount * 10 / 100),
-                                    Description = "Tiền cọc đơn hàng",
-                                    Status = "Đã hoàn thành",
-                                    Type = TransactionType.Deposit.ToString(),
-                                };
-                                await _transactionService.CreateTransactionForCarOwner((Guid)carOwnerId, carOwnerTransaction);
-                            }
                             await _notificationService.SendNotification(new List<Guid> { customerId }, cusMessage);
                             await _notificationService.SendNotification(managers, message);
-                            foreach (var od in order.OrderDetails)
-                            {
-                                if (od.Car != null && od.Car.CarOwnerId != null)
-                                {
-                                    await _notificationService.SendNotification(new List<Guid> { (Guid)od.Car.CarOwnerId }, carOwnerMessage);
-                                }
-                            }
                             return new JsonResult(await GetOrder(order.Id));
                         }
                     }
@@ -678,7 +649,7 @@ namespace Service.Implementations
         private async Task<Driver?> FindRecommendDriver(double latitude, double longitude)
         {
             var drivers = _driverRepository.GetMany(driver => driver.Status.Equals(DriverStatus.Idle.ToString()) && driver.WishArea != null)
-                .DriverDistanceFilter(latitude, longitude, 20);
+                .DriverDistanceFilter(latitude, longitude, 10);
 
             var driver = await drivers.OrderByDescending(driver => driver.MinimumTrip)
                 .ThenByDescending(driver => driver.Star).FirstOrDefaultAsync();
