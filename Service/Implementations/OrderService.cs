@@ -521,6 +521,7 @@ namespace Service.Implementations
                             .GetMany(wallet => wallet.Customer != null ? wallet.Customer.AccountId.Equals(customerId) : false).FirstOrDefaultAsync();
                 if (cusWallet != null && cusWallet.Balance > model.Amount)
                 {
+                    var rentalTime = model.OrderDetails.Select(od => od.EndTime - od.StartTime).FirstOrDefault();
                     var order = new Order
                     {
                         Id = Guid.NewGuid(),
@@ -529,7 +530,7 @@ namespace Service.Implementations
                         IsPaid = model.IsPaid,
                         Description = model.Description,
                         PromotionId = model.PromotionId,
-                        RentalTime = model.RentalTime,
+                        RentalTime = Convert.ToInt32((rentalTime).TotalDays),
                         Status = OrderStatus.Pending.ToString(),
                         Deposit = model.Deposit,
                         CreateAt = DateTime.UtcNow,
