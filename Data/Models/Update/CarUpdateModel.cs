@@ -16,6 +16,8 @@ namespace Data.Models.Update
 
         public double? Price { get; set; }
 
+        public Guid? DriverId { get; set; }
+
         public string? FuelConsumption { get; set; } = null!;
 
         public int? YearOfManufacture { get; set; }

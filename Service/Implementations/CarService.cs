@@ -300,6 +300,7 @@ namespace Service.Implementations
             car.Status = model.Status.ToString() ?? car.Status;
             car.LicensePlate = model.LicensePlate ?? car.LicensePlate;
             car.Price = model.Price ?? car.Price;
+            car.DriverId = model.DriverId ?? car.DriverId;
 
             if (model.Seater != null) car.Model.Seater = (int)model.Seater;
             if (model.FuelType != null) car.Model.FuelType = model.FuelType;
