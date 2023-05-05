@@ -563,6 +563,19 @@ namespace Service.Implementations
                                     if (chossenDriver != null)
                                     {
                                         od.DriverId = chossenDriver.AccountId;
+                                        var driverMessage = new NotificationCreateModel
+                                        {
+                                            Title = "Đơn hàng mới",
+                                            Body = "Bạn có đơn hàng mới",
+                                            Data = new NotificationDataViewModel
+                                            {
+                                                CreateAt = DateTime.UtcNow.AddHours(7),
+                                                Type = NotificationType.Order.ToString(),
+                                                IsRead = false,
+                                                Link = order.Id.ToString(),
+                                            }
+                                        };
+                                        await _notificationService.SendNotification(new List<Guid> { chossenDriver.AccountId }, driverMessage);
                                     }
                                 }
                                 else
@@ -646,23 +659,6 @@ namespace Service.Implementations
                             }
                             await _notificationService.SendNotification(new List<Guid> { customerId }, cusMessage);
                             await _notificationService.SendNotification(managers, message);
-                            if (order.OrderDetails.Any(od => od.DriverId != null))
-                            {
-                                var driverIds = order.OrderDetails.Select(od => od.DriverId).ToList();
-                                var driverMessage = new NotificationCreateModel
-                                {
-                                    Title = "Đơn hàng mới",
-                                    Body = "Bạn có đơn hàng mới",
-                                    Data = new NotificationDataViewModel
-                                    {
-                                        CreateAt = DateTime.UtcNow.AddHours(7),
-                                        Type = NotificationType.Order.ToString(),
-                                        IsRead = false,
-                                        Link = order.Id.ToString(),
-                                    }
-                                };
-                                await _notificationService.SendNotification((ICollection<Guid>)driverIds, driverMessage);
-                            }
                             foreach (var od in order.OrderDetails)
                             {
                                 if (od.Car != null && od.Car.CarOwnerId != null)
